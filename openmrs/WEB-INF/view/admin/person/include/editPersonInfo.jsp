@@ -54,7 +54,7 @@
 					name="birthdate" size="10" id="birthdate"
 					value="${status.value}"
 					onChange="updateAge(); updateEstimated(this);"
-					onfocus="showCalendar(this,60)" />
+					onClick="showCalendar(this,60)" />
 			<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if> 
 		</spring:bind>
 		
@@ -150,7 +150,7 @@
 	<td style="white-space: nowrap">
 		<spring:bind path="deathDate">
 			<input type="text" name="deathDate" size="10" 
-				   value="${status.value}" onfocus="showCalendar(this)"
+				   value="${status.value}" onClick="showCalendar(this)" 
 				   id="deathDate" />
 			<i style="font-weight: normal; font-size: 0.8em;">(<spring:message code="general.format"/>: <openmrs:datePattern />)</i>
 			<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
@@ -197,12 +197,24 @@
 
 <tr>
 	<td><spring:message code="general.voided"/></td>
-	<td>${patient.voided}</td>
+	<td>
+		<spring:bind path="voided">
+			<input type="hidden" name="_${status.expression}"/>
+			<input type="checkbox" name="${status.expression}"
+				   <c:if test="${status.value == true}">checked</c:if> 
+				   onClick="toggleLayer('personVoidReasonRow');"
+			/>
+		</spring:bind>
+	</td>
 </tr>
-
-<tr id="personVoidReasonRow" <c:if test="${patient.voided == false}">style="display: none"</c:if> >
+<tr  id="personVoidReasonRow" <spring:bind path="voided"><c:if test="${status.value == false}">style="display: none"</c:if></spring:bind> >
 	<td><spring:message code="general.voidReason"/></td>
-	<td>${patient.voidReason}</td>
+	<spring:bind path="voidReason">
+		<td>
+			<input type="text" name="${status.expression}" value="${status.value}" size="35"/>
+			<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
+		</td>
+	</spring:bind>
 </tr>
 
 <spring:bind path="voidedBy">

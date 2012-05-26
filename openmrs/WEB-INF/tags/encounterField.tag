@@ -11,7 +11,6 @@
 
 <openmrs:htmlInclude file="/dwr/interface/DWREncounterService.js" />
 <openmrs:htmlInclude file="/scripts/jquery/autocomplete/OpenmrsAutoComplete.js" />
-<openmrs:htmlInclude file="/scripts/jquery/autocomplete/jquery.ui.autocomplete.autoSelect.js" />
 
 <c:if test="${empty formFieldId}">
 	<c:set var="formFieldId" value="${formFieldName}_id" />
@@ -35,23 +34,14 @@
 					${callback}(ui.item.object.encounterId);
 				}
 				</c:if>
-			},
-            placeholder:'<spring:message code="Encounter.search.placeholder" javaScriptEscape="true"/>'
-		});
-
-		//Clear hidden value on losing focus with no valid entry
-		$j("#${displayFieldId}").autocomplete().blur(function(event, ui) {
-			if (!event.target.value) {
-				jquerySelectEscaped('${formFieldId}').val('');
 			}
 		});
-		
+
 		// get the name of the person that they passed in the id for
 		<c:if test="${not empty initialValue}">
 			jquerySelectEscaped("${formFieldId}").val("${initialValue}");
 			DWREncounterService.getEncounter("${initialValue}", function(enc) {
 				jquerySelectEscaped("${displayFieldId}").val(enc.location + " - " + enc.encounterDateString);
-				jquerySelectEscaped("${displayFieldId}").autocomplete("option", "initialValue", enc.location + " - " + enc.encounterDateString);
 				<c:if test="${not empty callback}">
 					${callback}(enc.encounterId);
 				</c:if>

@@ -352,7 +352,7 @@ function parseDateFromJsToString(sFormat, jsDate) {
  * @return the input, with the following characters escaped: #;&,.+*~':"!^$[]()=>|/@
  */
 function escapeJquerySelector(partialSelector) {
-	return partialSelector.replace(/#/g, '\\#').replace(/;/g, '\\;').replace(/&/g, '\\&').replace(/,/g, '\\,').replace(/\./g, '\\.').replace(/\+/g, '\\+').replace(/\*/g, '\\*').replace(/~/g, '\\~').replace(/'/g, "\\'").replace(/:/g, '\\:').replace(/"/g, '\\"').replace(/!/g, '\\!').replace(/\^/g, '\\^').replace(/\$/g, '\\$').replace(/\[/g, '\\[').replace(/\]/g, '\\]').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/=/g, '\\=').replace(/>/g, '\\>').replace('/\|/g', '\\|').replace(/\//, '\\/').replace(/@/g, '\\@');
+	return partialSelector.replace('#', '\\#').replace(';', '\\;').replace('&', '\\&').replace(',', '\\,').replace('.', '\\.').replace('+', '\\+').replace('*', '\\*').replace('~', '\\~').replace("'", "\\'").replace(':', '\\:').replace('"', '\\"').replace('!', '\\!').replace('^', '\\^').replace('$', '\\$').replace('[', '\\[').replace(']', '\\]').replace('(', '\\(').replace(')', '\\)').replace('=', '\\=').replace('>', '\\>').replace('|', '\\|').replace('/', '\\/').replace('@', '\\@');
 }
 
 /**
@@ -417,90 +417,11 @@ function DatePicker(dateFormat, id, opts) {
 }
 
 /**
- * DateTimePicker class
- * @param dateFormat :String date format to use (ex: dd-mm-yyyy)
- * @param timeFormat :String time format to use (ex: hh:mm )
- * @param id :Element the html element (when id is not present)
- *           :String the id of the text box to use as the datetime picker
- * @param opts :Map additional options for the jquery datetime picker widget (included are ampm, separator, gotoCurrent)
- */
-function DateTimePicker(dateFormat, timeFormat, id, opts) {
-	var jq;
-	if(typeof id == 'string') {
-		id = escapeJquerySelector(id);
-		jq = jQuery('#' + id);
-	}
-	else {
-		jq = jQuery(id);
-	}
-
- 	if(opts == null) {
- 		opts = {};
- 	}
- 	setOptions(opts, 'dateFormat', dateFormat.replace("yyyy", "yy"));//have to do the replace here because the datetimepicker only required 'yy' for 4-number year
- 	setOptions(opts, 'timeFormat', timeFormat);
- 	setOptions(opts, 'separator', " ");
-    if( timeFormat.search(/t/i) != -1){
-        setOptions(opts, 'ampm', true);
-    }
-	setOptions(opts, 'appendText', "(" + dateFormat+opts.separator+timeFormat+ ")");
- 	setOptions(opts, 'gotoCurrent', true);
- 	setOptions(opts, 'changeMonth', true);
- 	setOptions(opts, 'changeYear', true);
- 	setOptions(opts, 'showOtherMonths', true);
- 	setOptions(opts, 'selectOtherMonths', true);
-
- 	jq.datetimepicker(opts);
-
- 	this.show = function() {
- 		jq.datetimepicker("show");
- 	}
-}
-
-/**
- * TimePicker class
- * @param timeFormat :String time format to use (ex: hh:mm )
- * @param id :Element the html element (when id is not present)
- *           :String the id of the text box to use as the time picker
- * @param opts :Map additional options for the jquery datetime picker widget (included are ampm,separator, gotoCurrent)
- */
-function TimePicker(timeFormat, id, opts) {
-	var jq;
-	if(typeof id == 'string') {
-		id = escapeJquerySelector(id);
-		jq = jQuery('#' + id);
-	}
-	else {
-		jq = jQuery(id);
-	}
-
- 	if(opts == null) {
- 		opts = {};
- 	}
- 	setOptions(opts, 'timeFormat', timeFormat);
- 	if( timeFormat.search(/t/i) != -1){
-        setOptions(opts, 'ampm', true);
-    }
- 	setOptions(opts, 'appendText', "(" +timeFormat+ ")");
- 	setOptions(opts, 'gotoCurrent', true);
- 	setOptions(opts, 'changeMonth', true);
- 	setOptions(opts, 'changeYear', true);
- 	setOptions(opts, 'showOtherMonths', true);
- 	setOptions(opts, 'selectOtherMonths', true);
-
- 	jq.timepicker(opts);
-
- 	this.show = function() {
- 		jq.timepicker("show");
- 	}
-}
-
-/**
  * AutoComplete class
  * @param id :Element the html element (when id is not present)
  * 			 :String the id of the text box
  * @param callback a function with 2 params (query - the text in the box, and response - use when the data is returned and takes an array as a param)
- * @param opts :Map addtional options (included are: minLength, delay, source, placeholder)
+ * @param opts :Map addtional options (included are: minLength, delay, source)
  */
 function AutoComplete(id, callback, opts) {
 	var jq;
@@ -522,13 +443,6 @@ function AutoComplete(id, callback, opts) {
  	});
  	
  	jq.autocomplete(opts);
-
-    //Add the placeholder text to the Search field
-    if(opts.placeholder){
-        //The value should not contain line feeds or carriage returns.
-        var textShown=opts.placeholder.toString().replace(/(\r\n|\n|\r)/gm,"");
-        jq.attr('placeholder', textShown);
-    }
 }
 
 /**
@@ -551,47 +465,4 @@ function colorVisibleTableRows(tableId, oddColorClass, evenColorClass, includeHe
  		jQuery(rows[i]).css("backgroundColor", (odd ? oddColorClass : evenColorClass));
  		odd = !odd;
  	}
-}
-/**
- * Simple utility method to only allow the user to enter the given number of characters
- *
- * @param object a textarea
- * @param maxLength max length of the string
- */
- function maxLength(object, maxLength) {
-      if( object.value.length >= maxLength) {
-         object.value = object.value.substring(0, maxLength); 
-      }
-   }
- 
- /**
-  * Removes the specified DOM node from it's parent node
-  * 
-  * @param node the node to remove
-  */
-function removeNode(node){
-	node.parentNode.removeChild(node);
-}
-
-/**
- * Adds the autocomplete feature to the specified field
- * 
- * @param displayNameInputId (Required) The id for the display input element
- * @param formFieldId (Required) The id for the formFieldId element
- * @param searchFunction (Required) The callback function to call to perform the search
- * @param valueField (Required) The field of the list item to be set as the value of the selected item
- * @param placeHolderText (Optional) Placeholder text for the input field
- * @param callBack (Optional) The callBack function
- */
-function addAutoComplete(displayNameInputId, formFieldId, searchFunction, valueField, placeHolderText, callBack){
-	new AutoComplete(displayNameInputId, searchFunction,  {
-		select: function(event, ui) {
-			jquerySelectEscaped(formFieldId).val(ui.item.object[valueField]);
-			if (ui.item.object && callBack) {
-				// only call the callback if we got a true selection, not a click on an error field
-				callBack(ui.item.object);
-			}
-		},
-		placeholder: placeHolderText
-	});
 }

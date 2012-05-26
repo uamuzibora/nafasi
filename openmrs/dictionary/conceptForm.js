@@ -29,8 +29,8 @@ dojo.addOnLoad( function() {
 });
 
 function selectConcept(nameList, idList, conceptList, widget) {
-	var nameListBox = document.getElementById(nameList);
-	var idListBox = document.getElementById(idList);
+	var nameListBox = $(nameList);
+	var idListBox = $(idList);
 	
 	var options = nameListBox.options;
 	for (i=0; i<conceptList.length; i++)
@@ -38,6 +38,7 @@ function selectConcept(nameList, idList, conceptList, widget) {
 		
 	copyIds(nameListBox.id, idListBox.id, ' ');
 }
+
 
 function removeItem(nameList, idList, delim)
 {
@@ -124,11 +125,11 @@ function copyIds(from, to, delimiter)
 
 function addOption(obj, options) {
 	var objId = obj.conceptId;
-	var objName =  (obj.drugId != null ? obj.fullName : obj.name) + ' ('+objId+')';
+	var objName = obj.name + ' ('+objId+')';
 	
 	if (obj.drugId != null) //if obj is actually a drug object
 		objId = objId + "^" + obj.drugId;
-	
+		
 	if (isAddable(objId, options)==true) {
 		var opt = new Option(objName, objId);
 		opt.selected = true;
@@ -179,8 +180,6 @@ function changeDatatype(obj) {
 }
 
 function listKeyPress(from, to, delim, event) {
-	if(!event)
-		event = window.event;
 	var keyCode = event.keyCode;
 	if (keyCode == 8 || keyCode == 46) {
 		removeItem(from, to, delim);
@@ -189,62 +188,21 @@ function listKeyPress(from, to, delim, event) {
 }
 
 function hotkeys(event) {
-	if(!event)
-		event = window.event;
 	var k = event.keyCode;
 	if (event.cntrlKey == true) {
 		if (k == 86) { // v
-			var element = document.getElementById('viewConcept');
-			if (element) {
-				document.location = element.href;
-			}
+			document.location = document.getElementById('viewConcept').href;
 		}
 	}
 	if (k == 37) { // left key
-		var element = document.getElementById('previousConcept');
-		if (element) {
-			document.location = element.href;
-		}
+		document.location = document.getElementById('previousConcept').href;
 	}
 	else if (k == 39) { //right key
-		var element = document.getElementById('nextConcept');
-		if (element) {
-			document.location = element.href;
-		}
+		document.location = document.getElementById('nextConcept').href;
 	}
 }
 
 var numberOfClonedElements = {};
-
-/**
- * Clone the synonym text field element given by the id and put the newly cloned
- * element right before said id. Also it checks whether do need to show 
- * preferred label and radio button
- * 
- * 
- * @param id 
- *                      the string id of the element to clone
- * @param initialSizeOfClonedSiblings 
- *                      integer number of other objects
- * @param inputNamePrefix 
- *                      string to prepend to all input names in the cloned element
- * @param preferredContainerId 
- *                      the string with id of preferred elements group container
- */
-function cloneSynonymElement(id, initialSizeOfClonedSiblings, inputNamePrefix, preferredContainerId) {
-	// simply cloning of synonym field element
-	cloneElement(id, initialSizeOfClonedSiblings, inputNamePrefix);
-	// try to make preferred radio button and label visible
-	// in case of adding new text field
-	if (preferredContainerId != null) {
-		// makes group of preferred elements visible in case if it was hidden
-		var preferredContainer = document.getElementById(preferredContainerId);
-		for (var i = 0; i < preferredContainer.children.length; i++) {
-			if (preferredContainer.children[i].style.visibility == "hidden")
-				preferredContainer.children[i].style.visibility = "visible";
-		}		
-	}	
-}
 
 /**
  * Clone the element given by the id and put the newly cloned
@@ -255,12 +213,9 @@ function cloneSynonymElement(id, initialSizeOfClonedSiblings, inputNamePrefix, p
  * 
  * The iteration will start at (int)initialSizeOfClonedSiblings.
  * 
- * @param id 
- *                      the string id of the element to clone
- * @param initialSizeOfClonedSiblings 
- *                      integer number of other objects
- * @param inputNamePrefix 
- *                      string to prepend to all input names in the cloned element
+ * @param id the string id of the element to clone
+ * @param initialSizeOfClonedSiblings integer number of other objects
+ * @param inputNamePrefix string to prepend to all input names in the cloned element
  */
 function cloneElement(id, initialSizeOfClonedSiblings, inputNamePrefix) {
 	if (numberOfClonedElements[id] != null) {
@@ -282,68 +237,14 @@ function cloneElement(id, initialSizeOfClonedSiblings, inputNamePrefix) {
 	}
 	clone.id = "";
 	elementToClone.parentNode.insertBefore(clone, elementToClone);
-	clone.style.display = "";
-
-	return clone;
+	clone.style.display = "block";
+	
 }
 
-/**
- * Handles synonym field deleting and update visibility of 
- * preferred concept name radio button
- *
- * @param btn 
- *           the source object of event, that use it handler
- * @param key
- *           the key object for receiving amount of existing synonyms
- *           for specified concept name
- * @param preferredContainerId 
- *           the string with id of preferred label container element
- * @param amount 
- *           number of existing synonym's names in case of removing existing one
- *           or null, if removing new synonym name
- * @param checkBoxId 
- *           the id of the checkbox to mark as checked
-*/
-function removeSynonymElement(btn, key, preferredContainerId, amount, checkBoxId) {
-	// we need to set number of existing elements if it's null
-	if (numberOfClonedElements[key] == null)
-		numberOfClonedElements[key] = amount - 1;
-
-	if (checkBoxId != null) {
-		// we need to process already existing 
-		// synonym name in special way
-		voidName(btn, checkBoxId);
-	} else {
-		// as we are removing new synonym
-		// we should remove synonym field element
-		removeParentElement(btn);
-	}
-		
-	// try to make preferred radio button unvisible
-	// in case of deleting all its synonyms
-	if (preferredContainerId != null) {
-		if (numberOfClonedElements[key] == 0) {
-			// makes group of preferred elements invisible in case if it was visible
-			var preferrContainer = document.getElementById(preferredContainerId);
-			for (var i = 0; i < preferrContainer.children.length; i++) {
-				if (preferrContainer.children[i].style.visibility == "visible")
-					preferrContainer.children[i].style.visibility = "hidden";
-			}
-		}
-		numberOfClonedElements[key]--;
-	}
-}
-
-/**
- * Handles removing of child element from parent one. It can be used when deleting new synonym field or
- * concept mapping field or concept index term field. 
- *
- * @param btn 
- *           the source object of event, that use it handler
-*/
 function removeParentElement(btn) {
 	btn.parentNode.parentNode.removeChild(btn.parentNode);
 }
+
 
 /**
  * Calls the server via ajax to convert the concept datatype from boolean to coded
@@ -404,69 +305,5 @@ function setCloneRadioValue(textElement){
 			inputs[x].value = textElement.value;
 	}
 }
-
-/**
- * Method is called to to add a new concept mapping and assigns the attribute values to the cloned element
- * @param id id of the element to clone
- * @param initialSizeOfClonedSiblings the number of mappings on page load
- */
-function addConceptMapping(initialSizeOfClonedSiblings){
-		
-	var inputNamePrefix = 'conceptMappings';
-	var newMappingRow = cloneElement('newConceptMapping', initialSizeOfClonedSiblings, inputNamePrefix);
-	
-	if(newMappingRow){
-		newMappingRow.id = "";
-		var index = numberOfClonedElements['newConceptMapping'];
-		var inputs = newMappingRow.getElementsByTagName("input");
-		var selects = newMappingRow.getElementsByTagName("select");
-		
-		//find the term(termId), name and code text boxes and set their names and ids
-		for (var x = 0; x < inputs.length; x++) {
-			var input = inputs[x];
-			if (input && input.name == 'termId' && input.type == 'hidden') {
-				input.name = inputNamePrefix+'[' + index + '].conceptReferenceTerm';
-				input.id = inputNamePrefix+'[' + index + '].conceptReferenceTerm';
-			}else if (input && input.name == 'term.code' && input.type == 'text') {
-				input.id = 'term[' + index + '].code';
-			}else if (input && input.name == 'term.name' && input.type == 'text') {
-				input.id = 'term[' + index + '].name';
-			}
-		}
-		
-		//find the select element and set the name attribute for the conceptSource and map type
-		for (var i in selects) {
-			var select = selects[i];
-			if (select && select.name == "type.name") {
-				select.id = 'term[' + index + '].conceptMapType';
-				select.name = inputNamePrefix+'[' + index + '].conceptMapType';
-			}else if (select && select.name == "term.source") {
-				select.id = 'term[' + index + '].source';
-			}
-		}
-		
-		if(!$j("#headerRow").is(":visible"))
-			$j(".hideableEle").show();
-		
-		//set up the auto complete
-		addAutoComplete('term[' + index + '].code', 'term[' + index + '].source', inputNamePrefix+'[' + index + '].conceptReferenceTerm', 'term[' + index + '].name')
-	}
-}
-
-function addAutoComplete(displayInputId, sourceSelectElementId, hiddenElementId, nameInputId){
-	var selectOption = document.getElementById(sourceSelectElementId);
-	// set up the autocomplete on the conceptReferenceTerm input box for the new mapping
-	new AutoComplete(displayInputId, new CreateCallback().conceptReferenceTermCallback(selectOption), {
-		select: function(event, ui) {
-			jquerySelectEscaped(hiddenElementId).val(ui.item.object.conceptReferenceTermId);
-			//set the concept source in the source dropdown to match that of the selected term
-			selectOption.value = ui.item.object.conceptSourceId;
-			//display the name of the term
-			if(document.getElementById(nameInputId))
-				document.getElementById(nameInputId).value = ui.item.object.name;
-		},
-		placeholder:omsgs.referencTermSearchPlaceholder
-	});
-}
-
+ 
 document.onkeypress = hotkeys;

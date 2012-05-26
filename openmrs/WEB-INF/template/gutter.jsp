@@ -19,8 +19,7 @@
 		</li>
 	</openmrs:hasPrivilege>
 	
-	<openmrs:extensionPoint pointId="org.openmrs.gutter.tools" type="html" 
-		requiredClass="org.openmrs.module.web.extension.LinkExt">
+	<openmrs:extensionPoint pointId="org.openmrs.gutter.tools" type="html">
 		<openmrs:hasPrivilege privilege="${extension.requiredPrivilege}">
 			<li>
 			<a href="${pageContext.request.contextPath}/${extension.url}"><spring:message code="${extension.label}"/></a>

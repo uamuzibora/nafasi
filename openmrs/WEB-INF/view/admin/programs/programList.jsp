@@ -15,7 +15,7 @@
 <div class="box">
 	<c:if test="${fn:length(programList) == 0}">
 		<tr>
-			<td colspan="6"><spring:message code="general.none"/></td>
+			<td colspan="5"><spring:message code="general.none"/></td>
 		</tr>
 	</c:if>
 	<c:if test="${fn:length(programList) != 0}">
@@ -26,12 +26,11 @@
 				<th> <spring:message code="general.description"/> </th>
 				<th> <spring:message code="Concept.name"/> </th>
 				<th> <spring:message code="Program.workflows"/> </th>
-				<th> <spring:message code="Program.outcomes"/> </th>
 			</tr>
 			<c:forEach var="program" items="${programList}">
 				<tr>
 					<c:if test="${program.retired}">
-						<td colspan="6">
+						<td colspan="5">
 							<i><spring:message code="general.retired"/><strike>
 								<a href="program.form?programId=${program.programId}">${program.name}</a>
 							</strike></i>
@@ -56,13 +55,10 @@
 							<c:forEach var="workflow" items="${program.workflows}">
 								<a href="workflow.form?programWorkflowId=${workflow.programWorkflowId}">
 									<openmrs_tag:concept conceptId="${workflow.concept.conceptId}"/>
-									(${workflow.nonRetiredStateCount})
+									(${fn:length(workflow.states)})
 								</a>
 								<br/>
 							</c:forEach>
-						</td>
-                        <td valign="top">
-							<openmrs:format concept="${program.outcomesConcept}"/>
 						</td>
 					</c:if>
 				</tr>

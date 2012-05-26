@@ -54,24 +54,10 @@
 				</div>
 			</openmrs:hasPrivilege>
 			
-			<openmrs:hasPrivilege privilege="View Visit Types,Manage Visit Types">
-				<div class="adminMenuList">
-					<h4><spring:message code="Visit.header"/></h4>
-						<%@ include file="visits/localHeader.jsp" %>
-				</div>
-			</openmrs:hasPrivilege>
-			
 			<openmrs:hasPrivilege privilege="View Encounters,Manage Encounter Types">
 				<div class="adminMenuList">
 					<h4><spring:message code="Encounter.header"/></h4>
 						<%@ include file="encounters/localHeader.jsp" %>
-				</div>
-			</openmrs:hasPrivilege>
-			
-			<openmrs:hasPrivilege privilege="View Providers,Manage Providers,Manage Provider Attribute Types">
-				<div class="adminMenuList">
-					<h4><spring:message code="Provider.header"/></h4>
-						<%@ include file="provider/localHeader.jsp" %>
 				</div>
 			</openmrs:hasPrivilege>
 			
@@ -152,7 +138,7 @@
 				</div>
 			</openmrs:hasPrivilege>
 			
-			<openmrs:extensionPoint pointId="org.openmrs.admin.list" type="html" requiredClass="org.openmrs.module.web.extension.AdministrationSectionExt">
+			<openmrs:extensionPoint pointId="org.openmrs.admin.list" type="html">
 				<openmrs:hasPrivilege privilege="${extension.requiredPrivilege}">
 					<c:catch var="ex">
 						<div class="adminMenuList">

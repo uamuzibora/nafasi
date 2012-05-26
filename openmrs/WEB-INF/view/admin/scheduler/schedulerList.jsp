@@ -91,7 +91,8 @@
 						<td colspan="6">
 							<input type="submit" value="<spring:message code="Scheduler.taskList.start"/>" name="action">
 							<input type="submit" value="<spring:message code="Scheduler.taskList.stop"/>" name="action">
-							<input type="submit" value="<spring:message code="Scheduler.taskList.delete"/>" onclick="return confirm('<spring:message code="Scheduler.taskList.delete.warning"/>')" name="action">
+							<input type="submit" value="<spring:message code="Scheduler.taskList.delete"/>" name="action">
+							
 						</td>
 					</tr>
 				</table>

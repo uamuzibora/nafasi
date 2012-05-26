@@ -12,7 +12,6 @@
 
 <openmrs:htmlInclude file="/dwr/interface/DWRPatientService.js" />
 <openmrs:htmlInclude file="/scripts/jquery/autocomplete/OpenmrsAutoComplete.js" />
-<openmrs:htmlInclude file="/scripts/jquery/autocomplete/jquery.ui.autocomplete.autoSelect.js" />
 
 <c:if test="${empty formFieldId}">
 	<c:set var="formFieldId" value="${formFieldName}_id" />
@@ -31,28 +30,19 @@
 				<c:if test="${not empty callback}">
 				if (ui.item.object) {
 					// only call the callback if we got a true selection, not a click on an error field
-					${callback}("${formFieldName}", ui.item.object, false);
+					${callback}("${formFieldName}", ui.item.object);
 				}
 				</c:if>
-			},
-            placeholder:'<spring:message code="Patient.searchBox.placeholder" javaScriptEscape="true"/>' 
-		});
-
-		//Clear hidden value on losing focus with no valid entry
-		$j("#${displayNameInputId}").autocomplete().blur(function(event, ui) {
-			if (!event.target.value) {
-				jquerySelectEscaped('${formFieldId}').val('');
 			}
 		});
-		
+
 		// get the name of the person that they passed in the id for
 		<c:if test="${not empty initialValue}">
 			jquerySelectEscaped("${formFieldId}").val("${initialValue}");
 			DWRPatientService.getPatient("${initialValue}", function(patient) {
 				jquerySelectEscaped("${displayNameInputId}").val(patient.personName);
-				jquerySelectEscaped("${displayNameInputId}").autocomplete("option", "initialValue", patient.personName);
 				<c:if test="${not empty callback}">
-					${callback}("${formFieldName}", patient, true);
+					${callback}("${formFieldName}", patient);
 				</c:if>
 			});
 		</c:if>

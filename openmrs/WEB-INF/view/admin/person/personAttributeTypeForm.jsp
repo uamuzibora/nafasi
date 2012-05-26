@@ -15,11 +15,6 @@
 		}
 	}
 	
-	function confirmUnretire() {
-		var retVal = confirm('<spring:message code="PersonAttributeType.UnretirePersonAtrributeMessage"/>');
-		return retVal;
-	}
-	
 </script>
 
 <h2><spring:message code="PersonAttributeType.title"/></h2>
@@ -153,20 +148,6 @@
 </c:if>
 
 <br/>
-<c:if
-	test="${personAttributeType.retired == true && not empty personAttributeType.personAttributeTypeId}">
-	<openmrs:hasPrivilege privilege="Manage Person Attribute Types">
-		<form id="unretire" method="post" onsubmit="return confirmUnretire()">
-		<fieldset>
-		<h4><spring:message
-			code="PersonAttributeType.UnretirePersonAttributeType" /></h4>
-		<input type="submit"
-			value='<spring:message code="PersonAttributeType.UnretirePersonAttributeType"/>'
-			name="unretire" /></fieldset>
-		</form>
-	</openmrs:hasPrivilege>
-</c:if>
-<br />
 
 <c:if test="${not empty personAttributeType.personAttributeTypeId}">
 	<openmrs:hasPrivilege privilege="Purge Person Attribute Types">

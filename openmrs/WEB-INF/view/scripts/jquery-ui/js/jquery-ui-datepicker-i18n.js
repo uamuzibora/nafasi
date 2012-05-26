@@ -39,12 +39,13 @@ jQuery(function($){
 		yearSuffix: ''};
 	$j.datepicker.regional['fr'] = {
 		closeText: 'Fermer',
-		prevText: '&#x3c;PrÃ©c',
+		prevText: '&#x3c;Préc',
 		nextText: 'Suiv&#x3e;',
 		currentText: 'Courant',
-		monthNames: ['Janvier','FÃ©vrier','Mars','Avril','Mai','Juin',
-			'Juillet','AoÃ»t','Septembre','Octobre','Novembre','DÃ©cembre'],
-		monthNamesShort: ['Jan','FÃ©v','Mar','Avr','Mai','Jun','Jul','AoÃ»','Sep','Oct','Nov','DÃ©c'],
+		monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin',
+		    'Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+		monthNamesShort: ['Jan','Fév','Mar','Avr','Mai','Jun',
+		    'Jul','Aoû','Sep','Oct','Nov','Déc'],
 		dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
 		dayNamesShort: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
 		dayNamesMin: ['Di','Lu','Ma','Me','Je','Ve','Sa'],

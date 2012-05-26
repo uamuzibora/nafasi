@@ -19,23 +19,8 @@
  	padding-top: 0px;
  }
  #buttonsAtBottom {
-	border-color: black;
-	border-style: solid;
-	border-width: 1px;
-	padding: 5px;
-	top: 20em;
-	position: fixed;
-	left: 75em;
-	background-color: #FFFF66;
-	display: none;
-	text-align: center;
-  }
-  
-  td#message {
-  	background-color: #FFFFFF;
-  	text-align: center;
-  	font-style: bold;	
-  }
+ 	padding: 5px;
+ }
 </style>
 
 <h2><spring:message code="GlobalProperty.manage.title"/></h2>	
@@ -64,8 +49,7 @@
 							</c:otherwise>
 						</c:choose>
 					</td>
-					<td valign="top" rowspan="2"><input type="button" align="right" value='<spring:message code="general.remove" />' class="closeButton" onclick="edited(); remove(this)" /> </td> 
-					<td id="message" valign="top" rowspan="2"></td>
+					<td valign="top" rowspan="2"><input type="button" value='<spring:message code="general.remove" />' class="closeButton" onclick="edited(); remove(this)" /></td>
 				</tr>
 				<tr class="${status.index % 2 == 0 ? 'evenRow' : 'oddRow' }">
 					<td colspan="2" valign="top" class="description">
@@ -101,15 +85,14 @@
 		addProperty(true);
 		
 		function edited() {
-			document.getElementById('buttonsAtBottom').style.backgroundColor = '#FFFF66';
-			document.getElementById('buttonsAtBottom').style.display = 'block';
+			document.getElementById('buttonsAtBottom').style.backgroundColor = 'LemonChiffon';
 		}
 		
 		function removeHiddenRows() {
 			var rows = document.getElementsByTagName("TR");
 			var i = 0;
 			while (i < rows.length) {
-				if (rows[i].getAttribute('deleted') == "true") {
+				if (rows[i].style.display == "none") {
 					rows[i].parentNode.removeChild(rows[i]);
 				}
 				else {
@@ -119,46 +102,14 @@
 		}
 		
 		function remove(btn) {
-			if(btn.getAttribute("remove") == null){
-				var parent = btn.parentNode;
-				if(parent.tagName.toLowerCase() == "td"){
-					$j(parent).next().text("<spring:message code="GlobalProperty.toDelete" />");					
-				}
-				
-				while (parent.tagName.toLowerCase() != "tr")
-					parent = parent.parentNode;
-					var parentDesc = parent.nextSibling;
-					if (!parentDesc.tagName || parentDesc.tagName.toLowerCase() != "tr")
-						parentDesc = parentDesc.nextSibling;
-							
-						parentDesc.setAttribute("deleted","true");
-						parent.setAttribute("deleted","true");
-						parent.style.backgroundColor = parentDesc.style.backgroundColor = "#D2C5C8";
-						btn.value ="<spring:message code="general.restore" />";
-						btn.style.backgroundColor = '#4AA02C';
-							
-						btn.setAttribute("remove", "true");
-							
-			} else if(btn.getAttribute("remove") == "true"){
-				var parent = btn.parentNode;
-								
-					if(parent.tagName.toLowerCase() == "td"){
-						$j(parent).next().text("");
-					}			
-				while (parent.tagName.toLowerCase() != "tr")
-					parent = parent.parentNode;
-					var parentDesc = parent.nextSibling;
-						if (!parentDesc.tagName || parentDesc.tagName.toLowerCase() != "tr")
-							parentDesc = parentDesc.nextSibling;
-								
-					parentDesc.setAttribute("deleted","false");
-					parent.setAttribute("deleted","false");
-					btn.value ="<spring:message code="general.remove" />";
-					btn.style.backgroundColor = 'lightPink';
-					btn.removeAttribute("remove");	
-					parent.style.backgroundColor = parentDesc.style.backgroundColor = null;
-					
-			}
+			var parent = btn.parentNode;
+			while (parent.tagName.toLowerCase() != "tr")
+				parent = parent.parentNode;
+			var parentDesc = parent.nextSibling;
+			if (!parentDesc.tagName || parentDesc.tagName.toLowerCase() != "tr")
+				parentDesc = parentDesc.nextSibling;
+			
+			parent.style.display = parentDesc.style.display = "none";
 			updateRowColors();
 			edited();
 		}
@@ -199,7 +150,7 @@
 			var alternator = 1;
 			for (var i=0; i < tbody.rows.length; i++) {
 				var propsRow = tbody.rows[i++];
-				if (propsRow.style.backgroundColor != "#D2C5C8") { // skip deleted rows
+				if (propsRow.style.display != "none") { // skip deleted rows
 					var descRow = tbody.rows[i];
 					propsRow.className = descRow.className = alternator < 0 ? "oddRow" : "evenRow";
 					alternator = alternator * -1;
@@ -210,17 +161,11 @@
 		// end -->
 	</script>
 
-	<div id="buttonsAtBottom">
-	 <br/>
-	 <spring:message code="general.changes.toSave"/>
-	 <br/>
-	 <br/>
-		&nbsp;&nbsp;
+	<span id="buttonsAtBottom">
 		<input type="submit" name="action" value='<spring:message code="general.save"/>' />
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value='<spring:message code="general.cancel"/>' onclick="location.reload(true);"/>
-	</div>
-	<div style="clear:both"></div>
+		<input type="submit" name="action" value='<spring:message code="general.cancel"/>' />
+	</span>
 </form>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

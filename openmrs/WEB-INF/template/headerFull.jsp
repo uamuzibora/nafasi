@@ -26,13 +26,10 @@
 		<c:if test="${empty DO_NOT_INCLUDE_JQUERY}">
 			<openmrs:htmlInclude file="/scripts/jquery/jquery.min.js" />
 			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui.custom.min.js" />
-            <openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-timepicker-addon.js" />
 			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-datepicker-i18n.js" />
-			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-timepicker-i18n.js" />
 			<link href="<openmrs:contextPath/>/scripts/jquery-ui/css/<spring:theme code='jqueryui.theme.name' />/jquery-ui.custom.css" type="text/css" rel="stylesheet" />
 		</c:if>
-		<link rel="shortcut icon" type="image/ico" href="<openmrs:contextPath/><spring:theme code='favicon' />">
-		<link rel="icon" type="image/png" href="<openmrs:contextPath/><spring:theme code='favicon.png' />">
+		<link rel="icon" type="image/ico" href="<openmrs:contextPath/><spring:theme code='favicon' />">
 
 		<c:choose>
 			<c:when test="${!empty pageTitle}">
@@ -52,12 +49,11 @@
 			var openmrsContextPath = '${pageContext.request.contextPath}';
 			var dwrLoadingMessage = '<spring:message code="general.loading" />';
 			var jsDateFormat = '<openmrs:datePattern localize="false"/>';
-			var jsTimeFormat = '<openmrs:timePattern format="jquery" localize="false"/>';
 			var jsLocale = '<%= org.openmrs.api.context.Context.getLocale() %>';
 			
 			/* prevents users getting false dwr errors msgs when leaving pages */
 			var pageIsExiting = false;
-			if (typeof(jQuery) != "undefined")
+			if (jQuery)
 			    jQuery(window).bind('beforeunload', function () { pageIsExiting = true; } );
 			
 			var handler = function(msg, ex) {
@@ -165,4 +161,5 @@
 					<a href="#" onclick="this.parentNode.parentNode.style.display='none'"><spring:message code="error.dwr.hide"/></a>
 				</div>
 			</div>
+			
 			

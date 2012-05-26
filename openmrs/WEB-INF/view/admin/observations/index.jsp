@@ -6,10 +6,12 @@
 <%@ include file="localHeader.jsp" %>
 
 <h2><spring:message code="Obs.manage.title"/></h2>
-<openmrs:hasPrivilege privilege="Add Observations">
-	<a href="obs.form"><spring:message code="Obs.add"/></a>
-    <br/>
-    <br/>
+
+<openmrs:hasPrivilege  privilege="Add Observations">
+<a href="obs.form"><spring:message code="Obs.add"/></a>
+
+<br/>
+<br/>
 </openmrs:hasPrivilege>
 
 <openmrs:portlet url="findObservation" size="full" />

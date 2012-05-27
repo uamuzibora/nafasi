@@ -1,7 +1,7 @@
 nafasi
 ======
 
-Uamuzi Bora on OpenMRS 1.9.
+Uamuzi Bora on OpenMRS 1.8.3
 
 Contents
 --------

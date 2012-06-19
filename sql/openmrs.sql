@@ -19741,13 +19741,13 @@ INSERT INTO `global_property` VALUES ('newPatientForm.relationships','','Comma s
 INSERT INTO `global_property` VALUES ('new_patient_form.showRelationships','false','true/false whether or not to show the relationship editor on the addPatient.htm screen','13f79227-1ef1-4bf8-b113-ae781b6ac764');
 INSERT INTO `global_property` VALUES ('obs.complex_obs_dir','complex_obs','Default directory for storing complex obs.','7514bd0d-8cba-4ed0-b1ab-77d7440b98e2');
 INSERT INTO `global_property` VALUES ('patient.defaultPatientIdentifierValidator','org.openmrs.patient.impl.LuhnIdentifierValidator','This property sets the default patient identifier validator.  The default validator is only used in a handful of (mostly legacy) instances.  For example, it\'s used to generate the isValidCheckDigit calculated column and to append the string \"(default)\" to the name of the default validator on the editPatientIdentifierType form.','0f9c69c3-05b5-4729-9aef-b2bcdd40a7f7');
-INSERT INTO `global_property` VALUES ('patient.headerAttributeTypes','','A comma delimited list of PersonAttributeType names that will be shown on the patient dashboard','92d00b16-bc58-4170-9378-25affae3f445');
+INSERT INTO `global_property` VALUES ('patient.headerAttributeTypes','','','546385e2-d779-4e0d-abe5-aa2fcd51a87c');
 INSERT INTO `global_property` VALUES ('patient.identifierPrefix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','baf5fd97-2cef-4a8d-a9c6-2ece653f4278');
 INSERT INTO `global_property` VALUES ('patient.identifierRegex','','WARNING: Using this search property can cause a drop in mysql performance with large patient sets.  A MySQL regular expression for the patient identifier search strings.  The @SEARCH@ string is replaced at runtime with the user\'s search string.  An empty regex will cause a simply \'like\' sql search to be used. Example: ^0*@SEARCH@([A-Z]+-[0-9])?$','a5a0f9fa-2102-4908-816b-b1caa10f998f');
 INSERT INTO `global_property` VALUES ('patient.identifierSearchPattern','','If this is empty, the regex or suffix/prefix search is used.  Comma separated list of identifiers to check.  Allows for faster searching of multiple options rather than the slow regex. e.g. @SEARCH@,0@SEARCH@,@SEARCH-1@-@CHECKDIGIT@,0@SEARCH-1@-@CHECKDIGIT@ would turn a request for \"4127\" into a search for \"in (\'4127\',\'04127\',\'412-7\',\'0412-7\')\"','fac9cfa1-d0ae-452c-ad15-31df9255fdc8');
 INSERT INTO `global_property` VALUES ('patient.identifierSuffix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','d4e88b0b-9fcf-4b03-8bbe-8bd375ba97b1');
-INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for patients in _lists_','d4ae3d01-7f68-4fee-b947-7334612ee3ac');
-INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for patients when _viewing individually_','6bfeee82-c6b1-4664-80dc-a0b8169fb695');
+INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes','','','233422bd-8074-462b-a6c9-de08c3d9d581');
+INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','8','','6a48be94-bf09-482e-9612-3d39303f3783');
 INSERT INTO `global_property` VALUES ('patient_identifier.importantTypes','','A comma delimited list of PatientIdentifier names : PatientIdentifier locations that will be displayed on the patient dashboard.  E.g.: TRACnet ID:Rwanda,ELDID:Kenya','2721dc43-9f39-422e-96bf-33933829169e');
 INSERT INTO `global_property` VALUES ('person.searchMaxResults','1000','The maximum number of results returned by patient searches','4416394f-7506-4e81-88dd-50413341439d');
 INSERT INTO `global_property` VALUES ('report.deleteReportsAgeInHours','72','Reports that are not explicitly saved are deleted automatically when they are this many hours old. (Values less than or equal to zero means do not delete automatically)','41b31f7c-8b03-41ff-976f-d6b3a567dcfc');
@@ -19779,8 +19779,8 @@ INSERT INTO `global_property` VALUES ('serialization.xstream.started','true','DO
 INSERT INTO `global_property` VALUES ('use_patient_attribute.healthCenter','false','Indicates whether or not the \'health center\' attribute is shown when viewing/searching for patients','db01609f-8844-4244-821e-d33ca723e2fa');
 INSERT INTO `global_property` VALUES ('use_patient_attribute.mothersName','false','Indicates whether or not mother\'s name is able to be added/viewed for a patient','6c9bddd5-2959-4b02-bf8f-5b91c38eddb9');
 INSERT INTO `global_property` VALUES ('user.headerAttributeTypes','','A comma delimited list of PersonAttributeType names that will be shown on the user dashboard. (not used in v1.5)','c37a3ee0-3440-4fea-a320-4e38c832baec');
-INSERT INTO `global_property` VALUES ('user.listingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for users in _lists_','f85c4e9e-6bf4-4c8a-8cbb-f34d0d596213');
-INSERT INTO `global_property` VALUES ('user.viewingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for users when _viewing individually_','dff7563c-288e-4422-9160-bac3e1c8ab76');
+INSERT INTO `global_property` VALUES ('user.listingAttributeTypes','','','cb62b99a-752f-42f0-adda-d880c4b6a4b8');
+INSERT INTO `global_property` VALUES ('user.viewingAttributeTypes','','','57d0c908-6c4f-4cf7-9692-2bfa5a9e1c32');
 INSERT INTO `global_property` VALUES ('xforms.allowBindEdit','false','Set to true if you want to allow editing of question bindings when designing forms.','c530c3fd-1268-408d-9fa7-91e48a08d7b1');
 INSERT INTO `global_property` VALUES ('xforms.archive_dir','xforms/archive/%Y/%M','Directory containing the xforms archive items.  This will contain xform model xml files that have been processed and then submitted successfully into the formentry queue.','9d8d0ff1-7c52-4cb1-80ca-e730f48dd397');
 INSERT INTO `global_property` VALUES ('xforms.autoGeneratePatientIdentifier','false','Set to true if you want the idgen module to generate patient identifiers when creating new patients using the xforms module.','ca17191b-0ac4-4efb-8f60-d4a1bd49e282');
@@ -21266,7 +21266,7 @@ CREATE TABLE `person_attribute_type` (
   CONSTRAINT `attribute_type_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `privilege_which_can_edit` FOREIGN KEY (`edit_privilege`) REFERENCES `privilege` (`privilege`),
   CONSTRAINT `user_who_retired_person_attribute_type` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `person_attribute_type` VALUES (1,'Race','Group of persons related by common descent or heredity','java.lang.String',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d871386-c2cc-11de-8d13-0010c6dffd0f',6);
 INSERT INTO `person_attribute_type` VALUES (2,'Birthplace','Location of persons birth','java.lang.String',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d8718c2-c2cc-11de-8d13-0010c6dffd0f',0);
@@ -21275,6 +21275,7 @@ INSERT INTO `person_attribute_type` VALUES (4,'Mother\'s Name','First or last na
 INSERT INTO `person_attribute_type` VALUES (5,'Civil Status','Marriage status of this person','org.openmrs.Concept',1054,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d871f2a-c2cc-11de-8d13-0010c6dffd0f',2);
 INSERT INTO `person_attribute_type` VALUES (6,'Health District','District/region in which this patient\' home health center resides','java.lang.String',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d872150-c2cc-11de-8d13-0010c6dffd0f',4);
 INSERT INTO `person_attribute_type` VALUES (7,'Health Center','Specific Location of this person\'s home health center.','org.openmrs.Location',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d87236c-c2cc-11de-8d13-0010c6dffd0f',3);
+INSERT INTO `person_attribute_type` VALUES (8,'Telephone Number','Telephone number of this person','java.lang.String',NULL,0,1,'2012-06-19 22:36:58',NULL,NULL,0,NULL,NULL,NULL,'Edit Patients','78840a6f-ffa8-45be-954a-c471c3caee4d',7);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `person_name` (

@@ -1,10 +1,5 @@
-		<br/>
-		</div>
-	</div>
-
-	<div id="footer">
-		<div id="footerInner">
-		
+			
+			<footer>
 			<span id="localeOptions">
 				<%  //removes last instance of lang= from querystring and encodes the url to avoid xml problems
 					String qs = org.apache.commons.lang.StringEscapeUtils.escapeXml(request.getQueryString());
@@ -29,14 +24,16 @@
 					<c:if test="${fn:toLowerCase(locale) != fn:toLowerCase(loc)}"><a href="?${qs}&amp;lang=${loc}">${locDisplayName}</a></c:if> 
 				</c:forEach>
 			</span>	
-	
 			<span id="buildDate"><spring:message code="footer.lastBuild"/>: <%= org.openmrs.web.WebConstants.BUILD_TIMESTAMP %></span>
-			
 			<span id="codeVersion"><spring:message code="footer.version"/>: ${openmrsVersion}</span>
+			<span id="poweredBy"><a href="http://openmrs.org"><spring:message code="footer.poweredBy"/> OpenMRS</a></span>
+			</footer>
 			
-			<span id="poweredBy"><a href="http://openmrs.org"><spring:message code="footer.poweredBy"/> <img border="0" align="top" src="<%= request.getContextPath() %>/images/openmrs_logo_tiny.png"/></a></span>
 		</div>
-	</div>
-
-</body>
+		<!-- Le javascript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<openmrs:htmlInclude file="/js/jquery.js" />
+		<openmrs:htmlInclude file="/js/bootstrap.min.js" />
+	</body>
 </html>

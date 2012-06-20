@@ -19746,8 +19746,8 @@ INSERT INTO `global_property` VALUES ('patient.identifierPrefix','','This proper
 INSERT INTO `global_property` VALUES ('patient.identifierRegex','','WARNING: Using this search property can cause a drop in mysql performance with large patient sets.  A MySQL regular expression for the patient identifier search strings.  The @SEARCH@ string is replaced at runtime with the user\'s search string.  An empty regex will cause a simply \'like\' sql search to be used. Example: ^0*@SEARCH@([A-Z]+-[0-9])?$','a5a0f9fa-2102-4908-816b-b1caa10f998f');
 INSERT INTO `global_property` VALUES ('patient.identifierSearchPattern','','If this is empty, the regex or suffix/prefix search is used.  Comma separated list of identifiers to check.  Allows for faster searching of multiple options rather than the slow regex. e.g. @SEARCH@,0@SEARCH@,@SEARCH-1@-@CHECKDIGIT@,0@SEARCH-1@-@CHECKDIGIT@ would turn a request for \"4127\" into a search for \"in (\'4127\',\'04127\',\'412-7\',\'0412-7\')\"','fac9cfa1-d0ae-452c-ad15-31df9255fdc8');
 INSERT INTO `global_property` VALUES ('patient.identifierSuffix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','d4e88b0b-9fcf-4b03-8bbe-8bd375ba97b1');
-INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes','','','265554ab-78f6-49b5-bbd2-49676c2bbf27');
-INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','8,5','','aa32e3ad-431a-425d-92d6-d8952f260691');
+INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes','','','8752d390-97a3-4ce6-acd5-cc35848f5895');
+INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','8,5,9,10,11,12','','68589258-7151-4c94-ba1c-9ecc5945ceaa');
 INSERT INTO `global_property` VALUES ('patient_identifier.importantTypes','','A comma delimited list of PatientIdentifier names : PatientIdentifier locations that will be displayed on the patient dashboard.  E.g.: TRACnet ID:Rwanda,ELDID:Kenya','2721dc43-9f39-422e-96bf-33933829169e');
 INSERT INTO `global_property` VALUES ('person.searchMaxResults','1000','The maximum number of results returned by patient searches','4416394f-7506-4e81-88dd-50413341439d');
 INSERT INTO `global_property` VALUES ('report.deleteReportsAgeInHours','72','Reports that are not explicitly saved are deleted automatically when they are this many hours old. (Values less than or equal to zero means do not delete automatically)','41b31f7c-8b03-41ff-976f-d6b3a567dcfc');
@@ -21266,7 +21266,7 @@ CREATE TABLE `person_attribute_type` (
   CONSTRAINT `attribute_type_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `privilege_which_can_edit` FOREIGN KEY (`edit_privilege`) REFERENCES `privilege` (`privilege`),
   CONSTRAINT `user_who_retired_person_attribute_type` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `person_attribute_type` VALUES (1,'Race','Group of persons related by common descent or heredity','java.lang.String',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d871386-c2cc-11de-8d13-0010c6dffd0f',6);
 INSERT INTO `person_attribute_type` VALUES (2,'Birthplace','Location of persons birth','java.lang.String',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d8718c2-c2cc-11de-8d13-0010c6dffd0f',0);
@@ -21275,7 +21275,11 @@ INSERT INTO `person_attribute_type` VALUES (4,'Mother\'s Name','First or last na
 INSERT INTO `person_attribute_type` VALUES (5,'Marital Status','Marriage status of this person','org.openmrs.Concept',1054,0,1,'2007-05-04 00:00:00',1,'2012-06-19 22:54:26',0,NULL,NULL,NULL,'Edit Patients','8d871f2a-c2cc-11de-8d13-0010c6dffd0f',2);
 INSERT INTO `person_attribute_type` VALUES (6,'Health District','District/region in which this patient\' home health center resides','java.lang.String',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d872150-c2cc-11de-8d13-0010c6dffd0f',4);
 INSERT INTO `person_attribute_type` VALUES (7,'Health Center','Specific Location of this person\'s home health center.','org.openmrs.Location',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d87236c-c2cc-11de-8d13-0010c6dffd0f',3);
-INSERT INTO `person_attribute_type` VALUES (8,'Telephone Number','Telephone number of this person','java.lang.String',NULL,0,1,'2012-06-19 22:36:58',NULL,NULL,0,NULL,NULL,NULL,'Edit Patients','78840a6f-ffa8-45be-954a-c471c3caee4d',7);
+INSERT INTO `person_attribute_type` VALUES (8,'Telephone Number','Telephone number of this person','java.lang.String',0,0,1,'2012-06-19 22:36:58',1,'2012-06-20 21:18:40',0,NULL,NULL,NULL,'Edit Patients','78840a6f-ffa8-45be-954a-c471c3caee4d',7);
+INSERT INTO `person_attribute_type` VALUES (9,'Treatment Supporter','Name of the patients treatment supporter','java.lang.String',0,0,1,'2012-06-20 20:56:20',1,'2012-06-20 21:19:31',0,NULL,NULL,NULL,'Edit Patients','f9773e3c-a58e-4aae-ae1d-f267b98a6971',8);
+INSERT INTO `person_attribute_type` VALUES (10,'Treatment Supporter Relationship','Type of relationship between the patient and treatment supporter','java.lang.String',0,0,1,'2012-06-20 20:58:00',1,'2012-06-20 21:50:45',0,NULL,NULL,NULL,'Edit Patients','8340965a-6fa5-45ea-bcef-c8ee5e36da3b',9);
+INSERT INTO `person_attribute_type` VALUES (11,'Treatment Supporter Address','Address of the patients treatment supporter','java.lang.String',0,0,1,'2012-06-20 20:58:52',1,'2012-06-20 21:19:19',0,NULL,NULL,NULL,'Edit Patients','f7d7d91a-7729-4be6-bb57-94559e5f85e3',10);
+INSERT INTO `person_attribute_type` VALUES (12,'Treatment Supporter Telephone Number','Telephone number of the patients treatment supporter','java.lang.String',0,0,1,'2012-06-20 21:00:00',1,'2012-06-20 21:19:52',0,NULL,NULL,NULL,'Edit Patients','de91c2c7-45a3-41f0-9a4d-1e3624ef6b37',11);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `person_name` (

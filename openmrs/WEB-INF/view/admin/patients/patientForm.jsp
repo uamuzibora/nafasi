@@ -9,6 +9,11 @@
 <openmrs:htmlInclude file="/scripts/validation.js" />
 
 <script>
+	var si = ${fn:length(identifiers)};
+	var idTypeLocationRequired = {};
+	<c:forEach items="${identifierTypes}" var="idType">
+		idTypeLocationRequired[${idType.patientIdentifierTypeId}] = ${idType.locationBehavior == null || idType.locationBehavior == "REQUIRED"};
+	</c:forEach>
 	// Saves the last tab clicked on (aka "current" or "selected" tab)
 	var lastTab = new Array();
 	lastTab["identifier"] = null;
@@ -68,6 +73,33 @@
 			dataClone.id = type + numObjs[type] + "Data";
 			parent = newData.parentNode;
 			parent.insertBefore(dataClone, newData);
+			
+			if (type == 'identifier') {
+				si++;
+				$j(dataClone).find("#identifierTypeBox0").attr("id", "identifierTypeBox"+si);
+				$j(dataClone).find("#locationBox0").attr("id", "locationBox"+si);
+				$j(dataClone).find("#locationNABox0").attr("id", "locationNABox"+si);
+			}
+			
+			//find the active checkbox and add an onclick listener to it
+			//and assign names and ids to the start and end input fields
+			var inputs = dataClone.getElementsByTagName("input");
+			for (var i in inputs) {
+				var input = inputs[i];
+				if (input && input.name == "activeCheckbox") {
+					var addressIndex = numObjs[type];
+					input.checked = true;
+					input.onclick = function(){
+						updateEndDate(this, 'addresses[' + addressIndex + '].endDate');
+					};
+				}
+				else if (input && input.name == "startDate")
+					input.id = 'addresses[' + numObjs[type] + '].startDate';
+				else if (input && input.name == "endDate"){
+					input.id = 'addresses[' + numObjs[type] + '].endDate';
+					input.disabled = 'disabled';
+				}
+			}
 
 			numObjs[type] = numObjs[type] + 1;
 		}
@@ -159,6 +191,22 @@
 		}
 	}
 	
+	function toggleLocationBox(identifierType,location) {
+		var boxId = 'location' + location.substring(14,18);
+		var naBoxId = 'locationNA' + location.substring(14,18);
+		if (identifierType == '') {
+			$j('#'+naBoxId).hide();
+			$j('#'+boxId).hide();
+		}
+		else if (idTypeLocationRequired[identifierType]) {
+			$j('#'+naBoxId).hide();
+			$j('#'+boxId).show();
+		} 
+		else {
+			$j('#'+boxId).hide();
+			$j('#'+naBoxId).show();
+		}
+	}
 </script>
 
 <style>
@@ -221,6 +269,21 @@
 	|
 	<a href="${pageContext.request.contextPath}/admin/patients/mergePatients.form?patientId=${patient.patientId}"><spring:message code="Patient.mergeThis"/></a><br/><br/>
 </c:if>
+
+<openmrs:hasPrivilege privilege="Delete Patients">
+<c:if test="${patient.voided}">
+	<div id="patientFormVoided" class="retiredMessage">
+	<div><spring:message code="Patient.voidedMessage"/></div>
+    <div>
+    	<c:if test="${patient.voidedBy.personName != null}"><spring:message code="general.byPerson"/> ${patient.voidedBy.personName}</c:if> 
+    	<c:if test="${patient.dateVoided != null}"> <spring:message code="general.onDate"/> <openmrs:formatDate date="${patient.dateVoided}" type="long" /> </c:if> 
+   		<c:if test="${patient.voidReason != ''}"> - ${patient.voidReason} </c:if>
+    </div>
+	<div>
+		<form action="" method="post" ><input type="submit" name="action" value="<spring:message code="Patient.unvoid"/>" /></form></div> 
+	</div>
+</c:if>
+</openmrs:hasPrivilege>
 
 <spring:hasBindErrors name="patient">
 	<spring:message code="fix.error"/>
@@ -367,7 +430,21 @@
 </c:if>
 	
 </form>
-
+<br/>
+<openmrs:hasPrivilege privilege="Delete Patients">
+	<c:if test="${patient.patientId != null && patient.voided == false}">
+	<form action="" method="post">
+		<fieldset>
+			<legend><h4><spring:message code="Patient.void"/></h4></legend>
+			<b><spring:message code="general.reason"/></b>
+			<input type="text" value="" size="50" name="voidReason" />
+			<br/><br/>
+			<input type="submit" value='<spring:message code="Patient.void"/>' name="action"/>
+		</fieldset>
+	</form>	
+	</c:if>
+</openmrs:hasPrivilege>
+	
 <script>
 	
 	var array = new Array(3);

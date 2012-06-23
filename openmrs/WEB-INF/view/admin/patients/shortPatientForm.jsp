@@ -1,4 +1,4 @@
-    <%@ include file="/WEB-INF/template/include.jsp" %>
+<%@ include file="/WEB-INF/template/include.jsp" %>
 
 <openmrs:require privilege="Add Patients" otherwise="/login.htm" redirect="/admin/patients/shortPatientForm.form" />
 
@@ -10,11 +10,18 @@
 	//variable to cache the id of the checkbox of the selected preferred patientIdentifier
 	var prefIdentifierElementId = null;
 	var numberOfClonedElements = 0;
+	var idTypeLocationRequired = {};
+	var currentIdentifierCount = ${fn:length(patientModel.identifiers)};
+	<c:forEach items="${identifierTypes}" var="idType">
+		idTypeLocationRequired[${idType.patientIdentifierTypeId}] = ${idType.locationBehavior == null || idType.locationBehavior == "REQUIRED"};
+	</c:forEach>
+	
 	function addIdentifier(initialIdentifierSize) {
 		var index = initialIdentifierSize+numberOfClonedElements;
 		var tbody = document.getElementById('identifiersTbody');
 		var row = document.getElementById('newIdentifierRow');
 		var newrow = row.cloneNode(true);
+		
 		newrow.style.display = "";		
 		newrow.id = 'identifiers[' + index + ']';
 		tbody.appendChild(newrow);
@@ -24,11 +31,16 @@
 			var select = selects[i];
 			if (select && selects[i].name == "identifierType") {					
 				select.name = 'identifiers[' + index + '].identifierType';
+				$j(select).change(function(){
+					toggleLocationBox(this.options[this.selectedIndex].value,'identifiers'+ index +'_location');
+				});
 			}
 			else if (select && selects[i].name == "location") {					
 				select.name = 'identifiers[' + index + '].location';
+				select.id = 'identifiers'+ index +'_location';
 			}
 		}
+		$j(newrow).find('.locationNotApplicableClass').attr('id', 'identifiers'+ index +'_location_NA')
 
 		for (var x = 0; x < inputs.length; x++) {
 			var input = inputs[x];
@@ -51,7 +63,12 @@
 				});
 			}
 		}
-			
+
+		currentIdentifierCount++;
+		if(currentIdentifierCount > 1){
+			$j("#identifiersTbody > tr:visible > td:last-child > input.closeButton").show();
+		}
+		
 		numberOfClonedElements++;
 	}
 	
@@ -106,6 +123,11 @@
 		if(checkBoxId && document.getElementById(checkBoxId)){
 			document.getElementById(checkBoxId).checked = true;
 			document.getElementById(checkBoxId).value = true;
+		}
+		
+		currentIdentifierCount --;
+		if(currentIdentifierCount < 2){
+			$j("#identifiersTbody > tr:visible > td:last-child > input.closeButton").hide();
 		}
 	}
 	
@@ -162,6 +184,21 @@
 	function preferredBoxClick(obj) {
 		//do nothing
 	}
+	
+	function toggleLocationBox(identifierType,location) {
+		if (identifierType == '') {
+			$j('#'+location + '_NA').hide();
+			$j('#'+location).hide();
+		}
+		else if (idTypeLocationRequired[identifierType]) {
+			$j('#'+location + '_NA').hide();
+			$j('#'+location).show();
+		} 
+		else {
+			$j('#'+location).hide();
+			$j('#'+location + '_NA').show();
+		}
+	}
 </script>
 
 <style>
@@ -207,7 +244,7 @@
 	
 	<table cellspacing="0" cellpadding="7">
 	<tr>
-		<th class="headerCell"><spring:message code="Person.name"/></th>
+		<th class="headerCell" valign="top"><spring:message code="Person.name"/></th>
 		<td class="inputCell">
 			<table cellspacing="2">				
 				<thead>
@@ -220,23 +257,26 @@
 		</td>		
 	</tr>
 	<tr>
-		<th class="headerCell"><spring:message code="PatientIdentifier.title.endUser"/></th>
+		<th class="headerCell" valign="top"><spring:message code="PatientIdentifier.title.endUser"/></th>
 		<td class="inputCell">
 			<table id="identifiers" cellspacing="2">
 				<tr>
 					<td><spring:message code="PatientIdentifier.identifier"/></td>
 					<openmrs:extensionPoint pointId="newPatientForm.identifierHeader" />
 					<td><spring:message code="PatientIdentifier.identifierType"/></td>
-					<td><spring:message code="PatientIdentifier.location.identifier"/></td>
+					<td>
+						<c:if test="${identifierLocationUsed}">
+							<spring:message code="PatientIdentifier.location.identifier"/>
+						</c:if>
+					</td>
 					<td><spring:message code="general.preferred"/></td>
 					<td></td>
 				</tr>
 				<tbody id="identifiersTbody">
 					<c:forEach var="id" items="${patientModel.identifiers}" varStatus="varStatus">
 					<%-- Don't display new identifiers that have been removed from the UI in previous submits that had errors--%>
-					<c:if test="${!id.voided}">
 					<spring:nestedPath path="identifiers[${varStatus.index}]">
-					<tr id="existingIdentifiersRow[${varStatus.index}]">					
+					<tr id="existingIdentifiersRow[${varStatus.index}]" <c:if test="${id.voided}">style='display: none'</c:if>>					
 					<td valign="top">						
 						<spring:bind path="identifier">
 						<input type="text" size="30" name="${status.expression}" value="${status.value}" />					
@@ -244,16 +284,24 @@
 					</td>
 					<openmrs:extensionPoint pointId="newPatientForm.identifierBody" />
 					<td valign="top">						
-						<form:select path="identifierType">
+						<form:select path="identifierType" onchange="toggleLocationBox(this.options[this.selectedIndex].value,'initialLocationBox${varStatus.index}');" >
 							<form:option value=""></form:option>
 							<form:options items="${identifierTypes}" itemValue="patientIdentifierTypeId" itemLabel="name" />
 						</form:select>						
 					</td>
 					<td valign="top">
-						<form:select path="location">
-							<form:option value=""></form:option>
-							<form:options items="${locations}" itemValue="locationId" itemLabel="name" />
-						</form:select>
+						<c:set var="behavior" value="${id.identifierType.locationBehavior}"/>
+						<div id="initialLocationBox${varStatus.index}" style="${(behavior == 'NOT_USED' || empty id.identifierType) ? 'display:none;' : ''}">
+							<form:select path="location">
+								<form:option value=""></form:option>
+								<form:options items="${locations}" itemValue="locationId" itemLabel="name" />
+							</form:select>
+						</div>
+						<div id="initialLocationBox${varStatus.index}_NA" style="${behavior == 'NOT_USED' ? '' : 'display:none;'}">
+							<c:if test="${identifierLocationUsed}">
+								<spring:message code="PatientIdentifier.location.notApplicable"/>
+							</c:if>
+						</div>
 					</td>
 					<td valign="middle" align="center">
 						<spring:bind path="preferred">
@@ -269,13 +317,12 @@
 					<td valign="middle">
 						<spring:bind path="voided">
 						<input type="hidden" name="_${status.expression}" value=""/>		
-						<input id="identifiers[${varStatus.index}].isVoided" type="checkbox" name="${status.expression}" value="false" style="display:none"/>						
-						<input type="button" name="closeButton" onClick="removeRow(this, 'identifiers[${varStatus.index}].isVoided');" class="closeButton" value='<spring:message code="general.remove"/>'/>
+						<input id="identifiers[${varStatus.index}].isVoided" type="checkbox" name="${status.expression}" value="${status.value}" <c:if test="${id.voided}">checked='checked'</c:if> style="display:none"/>						
+						<input type="button" name="closeButton" onClick="removeRow(this, 'identifiers[${varStatus.index}].isVoided');" class="closeButton" value='<spring:message code="general.remove"/>' <c:if test="${(varStatus.first && varStatus.last)}">style="display: none;"</c:if> />
 						</spring:bind>
 					</td>
 					</tr>
 					</spring:nestedPath>
-					</c:if>
 					</c:forEach>
 					
 					<%-- The row from which to clone new identifiers --%>
@@ -295,14 +342,19 @@
 						</select>						
 					</td>
 					<td valign="top">
-						<select name="location">
+						<select name="location" style="display: none;">
 							<option value=""></option>
 							<openmrs:forEachRecord name="location">
-								<option value="${record.locationId}"<c:if test="${record == defaultLocation}"> selected="selected"</c:if>>
+								<option value="${record.locationId}"<c:if test="${identifierLocationUsed && record == defaultLocation}"> selected="selected"</c:if>>
 									${record.name}
 								</option>
 							</openmrs:forEachRecord>
 						</select>
+						<span class="locationNotApplicableClass" style="display:none;">
+							<c:if test="${identifierLocationUsed}">
+								<spring:message code="PatientIdentifier.location.notApplicable"/>
+							</c:if>
+						</span>
 					</td>
 					<td valign="middle" align="center">
 						<input type="radio" name="preferred" value="true" onclick="updatePreferred(this)" />
@@ -318,7 +370,7 @@
 		</td>
 	</tr>
 	<tr>
-		<th class="headerCell"><spring:message code="patientDashboard.demographics"/></th>
+		<th class="headerCell" valign="top"><spring:message code="patientDashboard.demographics"/></th>
 		<td class="inputCell">
 			<table>
 				<tr>
@@ -356,7 +408,7 @@
 									name="${status.expression}" size="10" id="birthdate"
 									value="${status.value}"
 									onChange="updateAge(); updateEstimated(this);"
-									onClick="showCalendar(this,60)" />
+									onfocus="showCalendar(this,60)" />
 							<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if> 
 						</spring:bind>
 						
@@ -384,7 +436,7 @@
 	</tr>
 
 	<tr>
-		<th class="headerCell"><spring:message code="Person.address"/></th>
+		<th class="headerCell" valign="top"><spring:message code="Person.address"/></th>
 		<td class="inputCell">
 			<spring:nestedPath path="personAddress">
 				<openmrs:portlet url="addressLayout" id="addressPortlet" size="full" parameters="layoutShowTable=true|layoutShowExtended=false" />
@@ -484,7 +536,7 @@
 
 				<spring:bind path="patient.deathDate">
 					<input type="text" name="${status.expression}" size="10" 
-						   value="${status.value}" onClick="showCalendar(this)" 
+						   value="${status.value}" onFocus="showCalendar(this)"
 						   id="deathDate" />
 					<i style="font-weight: normal; font-size: 0.8em;">(<spring:message code="general.format"/>: <openmrs:datePattern />)</i>
 					<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>

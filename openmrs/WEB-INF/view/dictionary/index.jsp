@@ -17,11 +17,14 @@
 	$j(document).ready(function() {
 		new OpenmrsSearch("findConcept", true, doConceptSearch, doSelectionHandler, 
 				[{fieldName:"name", header:" "}, {fieldName:"preferredName", header:" "}],
-				{searchLabel: '<spring:message code="Concept.search" javaScriptEscape="true"/>:', 
+				{searchLabel: '<spring:message code="Concept.search" javaScriptEscape="true"/>:',
+                    searchPlaceholder:'<spring:message code="Concept.search.placeholder" javaScriptEscape="true"/>',
 					includeVoidedLabel: '<spring:message code="SearchResults.includeRetired" javaScriptEscape="true"/>', 
 					columnRenderers: [nameColumnRenderer, null], 
 					columnVisibility: [true, false],
-					searchPhrase:'<request:parameter name="phrase"/>'
+					searchPhrase:'<request:parameter name="phrase"/>',
+					showIncludeVerbose: true,
+					verboseHandler: doGetVerbose
 				});
 	});
 	
@@ -41,6 +44,13 @@
 		
 		return "<span>"+oObj.aData[0]+"</span>";
 	}
+	
+	//generates and returns the verbose text
+	function doGetVerbose(index, data){
+		if(!data)
+			return "";
+		return "#"+data.conceptId+": "+data.description;
+	}
 </script>
 
 <h2><spring:message code="dictionary.title" /></h2>
@@ -48,15 +58,17 @@
 <a href="<%= request.getContextPath() %>/downloadDictionary.csv"><spring:message code="dictionary.download.link"/></a> <spring:message code="dictionary.download.description"/><br />
 <br />
 
-<c:choose>
-	<c:when test="${conceptsLocked != 'true'}"> 
-		<a href="concept.form"><spring:message code="Concept.add"/></a>
-	</c:when>
-	<c:otherwise>
-		(<spring:message code="Concept.concepts.locked" />)
-	</c:otherwise>
-</c:choose>
-<br /><br />
+<openmrs:hasPrivilege privilege="Manage Concepts">
+	<c:choose>
+		<c:when test="${conceptsLocked != 'true'}"> 
+			<a href="concept.form"><spring:message code="Concept.add"/></a>
+		</c:when>
+		<c:otherwise>
+			(<spring:message code="Concept.concepts.locked" />)
+		</c:otherwise>
+	</c:choose>
+	<br /><br />
+</openmrs:hasPrivilege>
 
 <div>
 	<b class="boxHeader"><spring:message code="Concept.find"/></b>

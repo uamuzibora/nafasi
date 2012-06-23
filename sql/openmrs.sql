@@ -20005,10 +20005,14 @@ INSERT INTO `global_property` VALUES ('gzip.enabled','false','Set to \'true\' to
 INSERT INTO `global_property` VALUES ('hl7_archive.dir','hl7_archives','The default name or absolute path for the folder where to write the hl7_in_archives.','d4c80730-acd0-43ce-9a9b-8b0fc453f29c',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('hl7_processor.ignore_missing_patient_non_local','false','If true, hl7 messages for patients that are not found and are non-local will silently be dropped/ignored','e9671fcd-61cf-49c9-bf13-c31c65866834','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('htmlformentry.database_version','1.2.0','DO NOT MODIFY.  Current database version number for the htmlformentry module.','097511b3-87f3-4eb4-ae49-80969c842600',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry.dateFormat',NULL,'Always display dates in HTML Forms in this (Java) date format. E.g. \"dd/MMM/yyyy\" for 31/Jan/2012.','56370720-3111-48ee-b575-8035267c9e1e',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('htmlformentry.mandatory','false','true/false whether or not the htmlformentry module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','0f1edc04-65df-4d79-a4eb-f54090ab3abe',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('htmlformentry.started','false','DO NOT MODIFY. true/false whether or not the htmlformentry module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3f7f22c7-d137-4800-90c6-39da2fde9e58',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry.showDateFormat','true','Set to true if you want static text for the date format to be displayed next to date widgets, else set to false.','84fb1cf7-d006-449d-8104-29ebc4a1db6a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry.started','true','DO NOT MODIFY. true/false whether or not the htmlformentry module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3f7f22c7-d137-4800-90c6-39da2fde9e58',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry19ext.mandatory','false','true/false whether or not the htmlformentry19ext module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','572e1f8f-de46-4fe2-a15c-054caf7a7fe5',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry19ext.started','true','DO NOT MODIFY. true/false whether or not the htmlformentry19ext module has been started.  This is used to make sure modules that were running  prior to a restart are started again','758260b0-ef5b-4feb-bd0c-aa6adea0ce34',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('htmlwidgets.mandatory','false','true/false whether or not the htmlwidgets module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','44bc8668-f757-4915-bb76-d78663da9a86',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('htmlwidgets.started','false','DO NOT MODIFY. true/false whether or not the htmlwidgets module has been started.  This is used to make sure modules that were running  prior to a restart are started again','dc36fe8b-cae4-436a-8274-528afd6f6538',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlwidgets.started','true','DO NOT MODIFY. true/false whether or not the htmlwidgets module has been started.  This is used to make sure modules that were running  prior to a restart are started again','dc36fe8b-cae4-436a-8274-528afd6f6538',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('layout.address.format','<org.openmrs.layout.web.address.AddressTemplate>\n    <nameMappings class=\"properties\">\n      <property name=\"postalCode\" value=\"Location.postalCode\"/>\n      <property name=\"longitude\" value=\"Location.longitude\"/>\n      <property name=\"address2\" value=\"Location.address2\"/>\n      <property name=\"address1\" value=\"Location.address1\"/>\n      <property name=\"startDate\" value=\"PersonAddress.startDate\"/>\n      <property name=\"country\" value=\"Location.country\"/>\n      <property name=\"endDate\" value=\"personAddress.endDate\"/>\n      <property name=\"stateProvince\" value=\"Location.stateProvince\"/>\n      <property name=\"latitude\" value=\"Location.latitude\"/>\n      <property name=\"cityVillage\" value=\"Location.cityVillage\"/>\n    </nameMappings>\n    <sizeMappings class=\"properties\">\n      <property name=\"postalCode\" value=\"10\"/>\n      <property name=\"longitude\" value=\"10\"/>\n      <property name=\"address2\" value=\"40\"/>\n      <property name=\"address1\" value=\"40\"/>\n      <property name=\"startDate\" value=\"10\"/>\n      <property name=\"country\" value=\"10\"/>\n      <property name=\"endDate\" value=\"10\"/>\n      <property name=\"stateProvince\" value=\"10\"/>\n      <property name=\"latitude\" value=\"10\"/>\n      <property name=\"cityVillage\" value=\"10\"/>\n    </sizeMappings>\n    <lineByLineFormat>\n      <string>address1</string>\n      <string>address2</string>\n      <string>cityVillage stateProvince country postalCode</string>\n      <string>latitude longitude</string>\n      <string>startDate endDate</string>\n    </lineByLineFormat>\n     </org.openmrs.layout.web.address.AddressTemplate>','XML description of address formats','c92ad15b-7fa9-4526-a40b-68d1d9428dd2',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('layout.name.format','short','Format in which to display the person names.  Valid values are short, long','22f3c425-d38d-4401-8794-af5bd00319e1',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('locale.allowed.list','en, es, fr, it, pt','Comma delimited list of locales allowed for use on system','400a5bdb-fa48-4506-b8c4-2402c1a965be',NULL,NULL,NULL,NULL);
@@ -20054,16 +20058,18 @@ INSERT INTO `global_property` VALUES ('patient_identifier.importantTypes','','A 
 INSERT INTO `global_property` VALUES ('person.searchMaxResults','1000','The maximum number of results returned by patient searches','4416394f-7506-4e81-88dd-50413341439d',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('report.deleteReportsAgeInHours','72','Reports that are not explicitly saved are deleted automatically when they are this many hours old. (Values less than or equal to zero means do not delete automatically)','41b31f7c-8b03-41ff-976f-d6b3a567dcfc',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('report.xmlMacros','','Macros that will be applied to Report Schema XMLs when they are interpreted. This should be java.util.properties format.','f28c0122-ad6e-4b7f-b231-05f9446f5c9b',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('reporting.database_version','0.2.0','DO NOT MODIFY.  Current database version number for the reporting module.','6e6efbeb-1073-4d21-9e51-eb78448bd202',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.database_version','0.4.1','DO NOT MODIFY.  Current database version number for the reporting module.','6e6efbeb-1073-4d21-9e51-eb78448bd202',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.includeDataExportsAsDataSetDefinitions','false','If reportingcompatibility is installed, this indicates whether data exports should be exposed as Dataset Definitions','14e9cfac-e1d7-45bd-8c68-3c106124e647',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reporting.mandatory','false','true/false whether or not the reporting module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','e0e10930-e96c-48de-a886-afc57c1116a3',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reporting.maxCachedReports','10','The maximum number of reports whose underlying data and output should be kept in the cache at any one time','a398cd59-60fb-4afe-bf55-8141d100dbd7',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reporting.maxReportsToRun','1','The maximum number of reports that should be processed at any one time','19e67315-3b57-4421-812a-464b5c6f0449',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reporting.preferredIdentifierTypes','','Pipe-separated list of patient identifier type names, which should be displayed on default patient datasets','eb9c152b-e3ac-4bdb-992e-1446464bdd1f',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reporting.runReportCohortFilterMode','showIfNull','Supports the values hide,showIfNull,show which determine whether the cohort selector should be available in the run report page','7bc44ce3-ef75-451d-8126-3923ee11d99a',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('reporting.started','false','DO NOT MODIFY. true/false whether or not the reporting module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3aecc96d-c1cf-4081-8f09-53ba5e7b8c6c',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.started','true','DO NOT MODIFY. true/false whether or not the reporting module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3aecc96d-c1cf-4081-8f09-53ba5e7b8c6c',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reportingcompatibility.data_export_batch_size','7500','The number of patients to export at a time in a data export.  The larger this number the faster and more memory that is used.  The smaller this number the slower and less memory is used.','6b6d014e-1faf-4086-b050-65ce2b5b21ec',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reportingcompatibility.mandatory','false','true/false whether or not the reportingcompatibility module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','28c4fc2f-b23a-4645-9b2e-115b742a8dbc',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('reportingcompatibility.started','false','DO NOT MODIFY. true/false whether or not the reportingcompatibility module has been started.  This is used to make sure modules that were running  prior to a restart are started again','33928aa4-b782-4813-8c15-5e0845414adb',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reportingcompatibility.patientLinkUrl','patientDashboard.form','The link url for a particular patient to view from the cohort builder','c27ef8ea-637c-4cb0-982e-a9bfa7d5c9e5',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reportingcompatibility.started','true','DO NOT MODIFY. true/false whether or not the reportingcompatibility module has been started.  This is used to make sure modules that were running  prior to a restart are started again','33928aa4-b782-4813-8c15-5e0845414adb',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('reportProblem.url','http://errors.openmrs.org/scrap','The openmrs url where to submit bug reports','5b6c9061-97a4-4a66-9268-d1e9b5d78efb',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('scheduler.password','test','Password for the OpenMRS user that will perform the scheduler activities','0b995ab5-d1b6-45d1-9550-9cfe6540c296',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('scheduler.username','admin','Username for the OpenMRS user that will perform the scheduler activities','5b91e674-6e24-47d3-9f0f-bfcac4775dd8',NULL,NULL,NULL,NULL);
@@ -20092,7 +20098,7 @@ INSERT INTO `global_property` VALUES ('xforms.archive_dir','xforms/archive/%Y/%M
 INSERT INTO `global_property` VALUES ('xforms.autoGeneratePatientIdentifier','false','Set to true if you want the idgen module to generate patient identifiers when creating new patients using the xforms module.','ca17191b-0ac4-4efb-8f60-d4a1bd49e282',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.cohortSerializer','org.openmrs.module.xforms.serialization.DefaultCohortSerializer','The patient cohort (cohort_id and name) serializer','186e8681-4f49-4b84-927e-539c5bc2d11a',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.complexobs_dir','xforms/complexobs','Directory for storing complex obs used by the xforms module.','4f5febda-c50d-4847-96ff-7aad30c1a629',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('xforms.database_version','3.7.7','DO NOT MODIFY.  Current database version number for the xforms module.','389f1021-8ae1-4ae0-b9c8-bab2984e59c4',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.database_version','3.7.9','DO NOT MODIFY.  Current database version number for the xforms module.','389f1021-8ae1-4ae0-b9c8-bab2984e59c4',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.dateDisplayFormat','dd/MM/yyyy','The display format of dates used by the xforms module.','8ffb2a8f-d636-474a-b482-1c4cff28f0f9',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.dateSubmitFormat','yyyy-MM-dd','The format of the dates passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong dates on the server.','e89338f7-4d24-450f-ac6b-e01b5f873a23',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.dateTimeDisplayFormat','dd/MM/yyyy hh:mm a','The display format of datetime used by the xforms module.','25cadae0-4764-4beb-8827-31292f812e11',NULL,NULL,NULL,NULL);
@@ -20116,25 +20122,29 @@ INSERT INTO `global_property` VALUES ('xforms.patientSerializer','org.openmrs.mo
 INSERT INTO `global_property` VALUES ('xforms.preferredConceptSource','','The name for preferred concept source to be used for forms that can be shared with other OpenMRS installations.','94c1bec3-4483-4356-a089-3daf8e530777',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.queue_dir','xforms/queue','Directory containing the xforms queue items. This will contain xforms xml model files submitted and awaiting processing to be submitted into the formentry queue.','2639a8a3-820d-410a-a013-b2271f71c50a',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.rejectExistingPatientCreation','true','Set to true to Reject forms for patients considered new when they already exist, by virture of patient identifier. Else set to false to allow them.','1d5d7a91-c5cb-4e3a-b398-1444105ccb82',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.savedSearchSerializer','org.openmrs.module.xforms.serialization.DefaultSavedSearchSerializer','The patient saved search serializer','09d0b8a3-77fa-41b3-b897-8f45b0a0aa1f',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.saveFormat','purcforms','The format in which the xforms will be saved. For now we support two formats: purcforms and javarosa','7a32cbe5-26c2-4b9a-b6b9-cbb678dd9969',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.searchNewPatientAfterFormSubmission','true','Set to true if you want to search for a new patient after submitting a form, else set to false if you want to go back to the same patient.','4f37fd88-d812-4300-81fc-00866210d280',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.setDefaultLocation','false','Set to true if you want to set the default location to that of the logged on user.','a1d647b0-b3af-465b-a754-b0b0094a5135',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.setDefaultProvider','false','Set to true if you want to set the default provider to the logged on user, if he or she has the provider role.','c678aea3-08d4-4c9b-8ba2-099469db1608',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showDesignSurfaceTab','true','Set to true if you want to display the Design Surface tab of the form designer.','5e9ef0e2-7d2c-4a31-965b-b1f87efc3a08',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showJavaScriptTab','false','Set to true if you want to display the JavaScript tab of the form designer.','ec95fa36-18b9-48eb-97be-598889c1e34f',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showLanguageTab','false','Set to true if you want to display the language xml tab of the form designer.','7fdc8353-7d5c-4ae5-b6d0-da709fc9c78d',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showLayoutXmlTab','false','Set to true if you want to display the layout xml tab of the form designer.','2a15765d-8edb-4396-b88d-a4bb138e1e76',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showModelXmlTab','false','Set to true if you want to display the model xml tab of the form designer.','4631e0c3-c809-405c-b8dd-175a9886d0d4',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showOfflineFormDesigner','false','Set to true if you want to show the form designer in off line mode.','8d1d4bbe-a6d0-4a38-af05-63c4ec607205',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showPreviewTab','true','Set to true if you want to display the Preview tab of the form designer.','c555b7d3-1df4-4650-95a7-d930adce6c32',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showSubmitSuccessMsg','false','Set to true if you want to display the form submitted successfully message every time a form is submitted successfully.','8fed3dfd-fb8b-4f79-a54d-28df9566a6a9',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.showXformsSourceTab','false','Set to true if you want to display the xforms source tab of the form designer.','ebef4870-bcc9-467d-ba5c-09fd214008d7',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.singleSelectAppearance','minimal','The appearance of single select input fields. Allowed values are: {full,minimal,compact}','03faabf9-d0e4-47b8-bd04-fdbd1e774c70',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.smsFieldSepChar','=','The separator between questions and answers in the sms text.','1f79532d-a1e1-46ae-97e9-c9ff57310ed0',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.smsSendFailureReports','true','Set to true if you want sms sender to get failure reports, else set to false.','ba625b78-81cc-42d6-b297-987dae1aa959',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.smsSendSuccessReports','true','Set to true if you want sms sender to get success reports, else set to false.','4c85e2d3-a259-4ae6-8ba1-12bb31f6824d',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('xforms.started','false','DO NOT MODIFY. true/false whether or not the xforms module has been started.  This is used to make sure modules that were running  prior to a restart are started again','19db2851-f791-4537-a36b-d3de8439b16a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.started','true','DO NOT MODIFY. true/false whether or not the xforms module has been started.  This is used to make sure modules that were running  prior to a restart are started again','19db2851-f791-4537-a36b-d3de8439b16a',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.timeDisplayFormat','hh:mm a','The display format of time used by the xforms module.','488c36b5-717f-41f9-a71c-aa077f67e9c7',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.timeSubmitFormat','HH:mm:ss','The format of the time passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong times on the server.','c6668d85-135e-4c18-94cc-055ee5968ff8',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.undoRedoBufferSize','-1','Set to the maximum number of actions you can undo or redo. The bigger the size, the more memory your browser needs. Default value is 100. Set to -1 if you do not want any limit.','49d7bc0c-c048-41b0-8285-f62fca0a4cc9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.useConceptIdAsHint','false','Set to true if you want to display the concept Id as the default field description.','28776c58-4257-4ad8-bc5c-44a8554d7e5e',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.useEncounterXform','true','Set to true if you want to use XForms to edit encounters instead of the default openmrs edit encounter screen, else set to false.','ed61d33b-9e65-42fc-b5d2-f8ea31324809',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.usePatientXform','false','Set to true if you want to use XForms to create new patients instead of the default openmrs create patient form, else set to false.','c6699b07-edf9-488a-aa0b-9fbe8100fbc1',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.userSerializer','org.openmrs.module.xforms.serialization.DefaultUserSerializer','The user set serializer','04ba1cb5-25cb-4c5b-aac7-04588098982b',NULL,NULL,NULL,NULL);
@@ -22095,6 +22105,7 @@ INSERT INTO `privilege` VALUES ('Manage Report Designs','Add/Edit/Remove Report 
 INSERT INTO `privilege` VALUES ('Manage Reports','Base privilege for add/edit/delete reporting definitions. This gives access to the administrative menus, but you need to grant additional privileges to manage each specific type of reporting definition','19379cce-8f0d-4bdb-8bef-448d043c756d');
 INSERT INTO `privilege` VALUES ('Manage Roles','Able to add/edit/delete user roles','76c9efe2-2502-4df3-a5d8-f147c9b2e375');
 INSERT INTO `privilege` VALUES ('Manage Rule Definitions','Allows creation and editing of user-defined rules','9e699bf4-bfb3-4710-9a8d-643c57445070');
+INSERT INTO `privilege` VALUES ('Manage Scheduled Report Tasks','Manage Task Scheduling in Reporting Module','55b9d704-22ac-4260-8f11-c248ef499fc8');
 INSERT INTO `privilege` VALUES ('Manage Scheduler','Able to add/edit/remove scheduled tasks','291c2bb7-f362-4c93-998b-03e36ef0f1ff');
 INSERT INTO `privilege` VALUES ('Manage Tokens','Allows registering and removal of tokens','cfb92cc7-f2ce-415a-8bef-55e8397c6801');
 INSERT INTO `privilege` VALUES ('Manage Visit Attribute Types','Able to add/edit/retire visit attribute types','b4847277-9df1-447a-9d70-4a59c2adaaa1');
@@ -22492,6 +22503,34 @@ CREATE TABLE `reporting_report_design_resource` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reporting_report_processor` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` char(38) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `processor_type` varchar(255) NOT NULL,
+  `configuration` mediumtext,
+  `run_on_success` tinyint(1) NOT NULL DEFAULT '1',
+  `run_on_error` tinyint(1) NOT NULL DEFAULT '0',
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `creator for reporting_report_processor` (`creator`),
+  KEY `changed_by for reporting_report_processor` (`changed_by`),
+  KEY `retired_by for reporting_report_processor` (`retired_by`),
+  CONSTRAINT `creator for reporting_report_processor` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `changed_by for reporting_report_processor` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `retired_by for reporting_report_processor` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `reporting_report_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uuid` char(38) NOT NULL,
@@ -22509,9 +22548,23 @@ CREATE TABLE `reporting_report_request` (
   `evaluation_complete_datetime` datetime DEFAULT NULL,
   `render_complete_datetime` datetime DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,
+  `schedule` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `requested_by for reporting_report_request` (`requested_by`),
   CONSTRAINT `requested_by for reporting_report_request` FOREIGN KEY (`requested_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reporting_report_request_processor` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `report_request_id` int(11) DEFAULT NULL,
+  `report_processor_configuration_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `report_request_id for reporting_report_request_processor` (`report_request_id`),
+  KEY `report_processor_configuration_id for reporting_report_processor` (`report_processor_configuration_id`),
+  CONSTRAINT `report_request_id for reporting_report_processor` FOREIGN KEY (`report_request_id`) REFERENCES `reporting_report_request` (`id`),
+  CONSTRAINT `report_processor_configuration_id for reporting_report_processor` FOREIGN KEY (`report_processor_configuration_id`) REFERENCES `reporting_report_processor` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -22874,6 +22927,7 @@ CREATE TABLE `xforms_xform` (
   `date_changed` datetime DEFAULT NULL,
   `locale_xml` longtext,
   `javascript_src` longtext,
+  `uuid` char(38) DEFAULT NULL,
   PRIMARY KEY (`form_id`),
   KEY `user_who_created_xform` (`creator`),
   KEY `form_with_which_xform_is_related` (`form_id`),

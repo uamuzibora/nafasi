@@ -26,14 +26,15 @@
 					<tr>
 						<td><spring:message code="Person.name"/></td>
 						<td>
-							<input type="text" name="addName" id="personName" size="40" onKeyUp="clearError('name')" />
+							<input type="text" name="addName" id="personName" size="40" onKeyUp="clearError('name'); clearError('invalidName');" />
 							<span class="error" id="nameError"><spring:message code="Person.name.required"/></span>
+							<span class="error" id="invalidNameError"><spring:message code="Person.name.invalid"/></span>
 						</td>
 					</tr>
 					<tr>
 						<td><spring:message code="Person.birthdate"/><br/><i style="font-weight: normal; font-size: 0.8em;">(<spring:message code="general.format"/>: <openmrs:datePattern />)</i></td>
 						<td valign="top">
-							<input type="text" name="addBirthdate" id="birthdate" size="11" value="" onClick="showCalendar(this,60)" onChange="clearError('birthdate')" />
+							<input type="text" name="addBirthdate" id="birthdate" size="11" value="" onfocus="showCalendar(this,60)" onChange="clearError('birthdate')" />
 							<spring:message code="Person.age.or"/>
 							<input type="text" name="addAge" id="age" size="5" value="" onKeyUp="clearError('birthdate')" />
 							<span class="error" id="birthdateError"><spring:message code="Person.birthdate.required"/></span>
@@ -62,6 +63,7 @@
 		
 		<script type="text/javascript"><!--
 			clearError("name");
+			clearError("invalidName");
 			clearError("birthdate");
 			clearError("gender");
 			
@@ -73,11 +75,21 @@
 				var male = document.getElementById("gender-M");
 				var female = document.getElementById("gender-F");
 				var year = new Date().getFullYear();
+				var nameValidatorRegexGP = "<openmrs:globalProperty key='patient.nameValidationRegex' defaultValue='.*'/>";
+				if (nameValidatorRegexGP == "")
+					nameValidatorRegexGP = ".*";
+				var nameValidatorRegex = new RegExp(nameValidatorRegexGP);
 				
 				var result = true;
 				if (name.value == "") {
-					document.getElementById("nameError").style.display = "";
+					document.getElementById("nameError").style.display = ""; 
 					result = false;
+				}
+				else {
+					if (!(name.value.match(nameValidatorRegex))) {
+						document.getElementById("invalidNameError").style.display = "";
+						result = false;	
+					}
 				}
 				
 				if (birthdate.value == "" && age.value == "") {

@@ -12,7 +12,7 @@ CREATE TABLE `active_list` (
   `comments` varchar(255) DEFAULT NULL,
   `creator` int(11) NOT NULL,
   `date_created` datetime NOT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -25,11 +25,11 @@ CREATE TABLE `active_list` (
   KEY `concept_active_list` (`concept_id`),
   KEY `start_obs_active_list` (`start_obs_id`),
   KEY `stop_obs_active_list` (`stop_obs_id`),
-  CONSTRAINT `stop_obs_active_list` FOREIGN KEY (`stop_obs_id`) REFERENCES `obs` (`obs_id`),
   CONSTRAINT `active_list_type_of_active_list` FOREIGN KEY (`active_list_type_id`) REFERENCES `active_list_type` (`active_list_type_id`),
   CONSTRAINT `concept_active_list` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `person_of_active_list` FOREIGN KEY (`person_id`) REFERENCES `person` (`person_id`),
   CONSTRAINT `start_obs_active_list` FOREIGN KEY (`start_obs_id`) REFERENCES `obs` (`obs_id`),
+  CONSTRAINT `stop_obs_active_list` FOREIGN KEY (`stop_obs_id`) REFERENCES `obs` (`obs_id`),
   CONSTRAINT `user_who_created_active_list` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_voided_active_list` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -63,7 +63,7 @@ CREATE TABLE `active_list_type` (
   `description` varchar(255) DEFAULT NULL,
   `creator` int(11) NOT NULL,
   `date_created` datetime NOT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -79,13 +79,24 @@ INSERT INTO `active_list_type` VALUES (1,'Allergy','An Allergy the Patient may h
 INSERT INTO `active_list_type` VALUES (2,'Problem','A Problem the Patient may have',1,'2010-05-28 00:00:00',0,NULL,NULL,NULL,'a0c7422b-6a99-11df-a648-37a07f9c90fb');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `clob_datatype_storage` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` char(38) NOT NULL,
+  `value` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  UNIQUE KEY `clob_datatype_storage_uuid_index` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `cohort` (
   `cohort_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `description` varchar(1000) DEFAULT NULL,
   `creator` int(11) NOT NULL,
   `date_created` datetime NOT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -117,13 +128,13 @@ CREATE TABLE `cohort_member` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept` (
   `concept_id` int(11) NOT NULL AUTO_INCREMENT,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `short_name` varchar(255) DEFAULT NULL,
   `description` text,
   `form_text` text,
   `datatype_id` int(11) NOT NULL DEFAULT '0',
   `class_id` int(11) NOT NULL DEFAULT '0',
-  `is_set` smallint(6) NOT NULL DEFAULT '0',
+  `is_set` tinyint(1) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `version` varchar(50) DEFAULT NULL,
@@ -2757,6 +2768,8 @@ CREATE TABLE `concept_answer` (
   KEY `answer` (`answer_concept`),
   KEY `answers_for_concept` (`concept_id`),
   KEY `answer_creator` (`creator`),
+  KEY `answer_answer_drug_fk` (`answer_drug`),
+  CONSTRAINT `answer_answer_drug_fk` FOREIGN KEY (`answer_drug`) REFERENCES `drug` (`drug_id`),
   CONSTRAINT `answer` FOREIGN KEY (`answer_concept`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `answers_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `answer_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
@@ -3803,7 +3816,7 @@ CREATE TABLE `concept_class` (
   `description` varchar(255) NOT NULL DEFAULT '',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -3850,7 +3863,7 @@ CREATE TABLE `concept_datatype` (
   `description` varchar(255) NOT NULL DEFAULT '',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -6413,25 +6426,101 @@ INSERT INTO `concept_description` VALUES (6190,6249,'A entry source for patients
 INSERT INTO `concept_description` VALUES (6191,6250,'A entry source for patients referred to CCC clinic.','en',1,'2012-04-27 15:17:51',NULL,NULL,'2e40900a-42cf-4f03-9c3a-51340e5c38fc');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `concept_map` (
-  `concept_map_id` int(11) NOT NULL AUTO_INCREMENT,
-  `source` int(11) DEFAULT NULL,
-  `source_code` varchar(255) DEFAULT NULL,
-  `comment` varchar(255) DEFAULT NULL,
-  `creator` int(11) NOT NULL DEFAULT '0',
-  `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `concept_id` int(11) NOT NULL DEFAULT '0',
+CREATE TABLE `concept_map_type` (
+  `concept_map_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `is_hidden` tinyint(1) DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
-  PRIMARY KEY (`concept_map_id`),
-  UNIQUE KEY `concept_map_uuid_index` (`uuid`),
-  KEY `map_for_concept` (`concept_id`),
-  KEY `map_creator` (`creator`),
-  KEY `map_source` (`source`),
-  CONSTRAINT `map_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `map_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
-  CONSTRAINT `map_source` FOREIGN KEY (`source`) REFERENCES `concept_source` (`concept_source_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`concept_map_type_id`),
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `mapped_user_creator_concept_map_type` (`creator`),
+  KEY `mapped_user_changed_concept_map_type` (`changed_by`),
+  KEY `mapped_user_retired_concept_map_type` (`retired_by`),
+  CONSTRAINT `mapped_user_changed_concept_map_type` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `mapped_user_creator_concept_map_type` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `mapped_user_retired_concept_map_type` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `concept_map_type` VALUES (1,'SAME-AS',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'35543629-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (2,'NARROWER-THAN',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'43ac5109-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (3,'BROADER-THAN',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'4b9d9421-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (4,'Associated finding',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'55e02065-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (5,'Associated morphology',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'605f4a61-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (6,'Associated procedure',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'6eb1bfce-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (7,'Associated with',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'781bdc8f-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (8,'Causative agent',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'808f9e19-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (9,'Finding site',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'889c3013-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (10,'Has specimen',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'929600b9-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (11,'Laterality',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'999c6fc0-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (12,'Severity',NULL,1,'2012-06-23 00:00:00',NULL,NULL,0,0,NULL,NULL,NULL,'a0e52281-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (13,'Access',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'f9e90b29-7d8c-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (14,'After',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'01b60e29-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (15,'Clinical course',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'5f7c3702-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (16,'Component',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'67debecc-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (17,'Direct device',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'718c00da-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (18,'Direct morphology',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'7b9509cb-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (19,'Direct substance',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'82bb495d-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (20,'Due to',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'8b77f7d3-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (21,'Episodicity',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'94a81179-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (22,'Finding context',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'9d23c22e-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (23,'Finding informer',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'a4524368-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (24,'Finding method',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'af089254-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (25,'Has active ingredient',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'b65aa605-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (26,'Has definitional manifestation',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'c2b7b2fa-7d8d-11e1-909d-c80aa9edcf4');
+INSERT INTO `concept_map_type` VALUES (27,'Has dose form',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'cc3878e6-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (28,'Has focus',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'d67c5840-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (29,'Has intent',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'de2fb2c5-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (30,'Has interpretation',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'e758838b-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (31,'Indirect device',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'ee63c142-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (32,'Indirect morphology',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'f4f36681-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (33,'Interprets',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'fc7f5fed-7d8d-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (34,'Measurement method',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'06b11d79-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (35,'Method',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'0efb4753-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (36,'Occurrence',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'16e7b617-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (37,'Part of',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'1e82007b-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (38,'Pathological process',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'2969915e-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (39,'Priority',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'32d57796-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (40,'Procedure context',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'3f11904c-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (41,'Procedure device',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'468c4aa3-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (42,'Procedure morphology',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'5383e889-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (43,'Procedure site',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'5ad2655d-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (44,'Procedure site - Direct',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'66085196-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (45,'Procedure site - Indirect',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'7080e843-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (46,'Property',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'76bfb796-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (47,'Recipient category',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'7e7d00e4-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (48,'Revision status',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'851e14c1-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (49,'Route of administration',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'8ee5b13d-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (50,'Scale type',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'986acf48-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (51,'Specimen procedure',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'a6937642-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (52,'Specimen source identity',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'b1d6941e-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (53,'Specimen source morphology',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'b7c793c1-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (54,'Specimen source topography',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'be9f9eb8-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (55,'Specimen substance',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'c8f2bacb-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (56,'Subject of information',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'d0664c4f-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (57,'Subject relationship context',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'dace9d13-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (58,'Surgical approach',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'e3cd666d-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (59,'Temporal context',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'ed96447d-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (60,'Time aspect',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'f415bcce-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (61,'Using access device',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'fa9538a9-7d8e-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (62,'Using device',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'06588655-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (63,'Using energy',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'0c2ae0bc-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (64,'Using substance',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'13d2c607-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (65,'IS A',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'1ce7a784-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (66,'MAY BE A',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'267812a3-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (67,'MOVED FROM',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'2de3168e-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (68,'MOVED TO',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'32f0fd99-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (69,'REPLACED BY',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'3b3b9a7d-7d8f-11e1-909d-c80aa9edcf4e');
+INSERT INTO `concept_map_type` VALUES (70,'WAS A',NULL,1,'2012-06-23 00:00:00',NULL,NULL,1,0,NULL,NULL,NULL,'41a034da-7d8f-11e1-909d-c80aa9edcf4e');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_name` (
@@ -6441,13 +6530,13 @@ CREATE TABLE `concept_name` (
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `concept_name_id` int(11) NOT NULL AUTO_INCREMENT,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
   `concept_name_type` varchar(50) DEFAULT NULL,
-  `locale_preferred` smallint(6) DEFAULT '0',
+  `locale_preferred` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`concept_name_id`),
   UNIQUE KEY `concept_name_uuid_index` (`uuid`),
   KEY `name_of_concept` (`name`),
@@ -10111,7 +10200,7 @@ CREATE TABLE `concept_name_tag` (
   `description` text NOT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -10145,7 +10234,7 @@ CREATE TABLE `concept_numeric` (
   `low_critical` double DEFAULT NULL,
   `low_normal` double DEFAULT NULL,
   `units` varchar(50) DEFAULT NULL,
-  `precise` smallint(6) NOT NULL DEFAULT '0',
+  `precise` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`concept_id`),
   CONSTRAINT `numeric_attributes` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -10948,6 +11037,112 @@ CREATE TABLE `concept_proposal_tag_map` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `concept_reference_map` (
+  `concept_map_id` int(11) NOT NULL AUTO_INCREMENT,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
+  `concept_id` int(11) NOT NULL DEFAULT '0',
+  `uuid` char(38) NOT NULL,
+  `concept_reference_term_id` int(11) NOT NULL,
+  `concept_map_type_id` int(11) NOT NULL DEFAULT '1',
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  PRIMARY KEY (`concept_map_id`),
+  UNIQUE KEY `concept_map_uuid_index` (`uuid`),
+  KEY `map_for_concept` (`concept_id`),
+  KEY `map_creator` (`creator`),
+  KEY `mapped_concept_map_type` (`concept_map_type_id`),
+  KEY `mapped_user_changed_ref_term` (`changed_by`),
+  KEY `mapped_concept_reference_term` (`concept_reference_term_id`),
+  CONSTRAINT `mapped_concept_map_type` FOREIGN KEY (`concept_map_type_id`) REFERENCES `concept_map_type` (`concept_map_type_id`),
+  CONSTRAINT `mapped_concept_reference_term` FOREIGN KEY (`concept_reference_term_id`) REFERENCES `concept_reference_term` (`concept_reference_term_id`),
+  CONSTRAINT `mapped_user_changed_ref_term` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `map_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `map_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `concept_reference_source` (
+  `concept_source_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL DEFAULT '',
+  `description` text NOT NULL,
+  `hl7_code` varchar(50) DEFAULT NULL,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`concept_source_id`),
+  UNIQUE KEY `concept_source_uuid_index` (`uuid`),
+  UNIQUE KEY `concept_source_unique_hl7_codes` (`hl7_code`),
+  KEY `unique_hl7_code` (`hl7_code`,`retired`),
+  KEY `concept_source_creator` (`creator`),
+  KEY `user_who_retired_concept_source` (`retired_by`),
+  CONSTRAINT `concept_source_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `user_who_retired_concept_source` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `concept_reference_term` (
+  `concept_reference_term_id` int(11) NOT NULL AUTO_INCREMENT,
+  `concept_source_id` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `code` varchar(255) NOT NULL,
+  `version` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`concept_reference_term_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `mapped_user_creator` (`creator`),
+  KEY `mapped_user_changed` (`changed_by`),
+  KEY `mapped_user_retired` (`retired_by`),
+  KEY `mapped_concept_source` (`concept_source_id`),
+  CONSTRAINT `mapped_concept_source` FOREIGN KEY (`concept_source_id`) REFERENCES `concept_reference_source` (`concept_source_id`),
+  CONSTRAINT `mapped_user_changed` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `mapped_user_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `mapped_user_retired` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `concept_reference_term_map` (
+  `concept_reference_term_map_id` int(11) NOT NULL AUTO_INCREMENT,
+  `term_a_id` int(11) NOT NULL,
+  `term_b_id` int(11) NOT NULL,
+  `a_is_to_b_id` int(11) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`concept_reference_term_map_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `mapped_term_a` (`term_a_id`),
+  KEY `mapped_term_b` (`term_b_id`),
+  KEY `mapped_concept_map_type_ref_term_map` (`a_is_to_b_id`),
+  KEY `mapped_user_creator_ref_term_map` (`creator`),
+  KEY `mapped_user_changed_ref_term_map` (`changed_by`),
+  CONSTRAINT `mapped_user_changed_ref_term_map` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `mapped_concept_map_type_ref_term_map` FOREIGN KEY (`a_is_to_b_id`) REFERENCES `concept_map_type` (`concept_map_type_id`),
+  CONSTRAINT `mapped_term_a` FOREIGN KEY (`term_a_id`) REFERENCES `concept_reference_term` (`concept_reference_term_id`),
+  CONSTRAINT `mapped_term_b` FOREIGN KEY (`term_b_id`) REFERENCES `concept_reference_term` (`concept_reference_term_id`),
+  CONSTRAINT `mapped_user_creator_ref_term_map` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_set` (
   `concept_set_id` int(11) NOT NULL AUTO_INCREMENT,
   `concept_id` int(11) NOT NULL DEFAULT '0',
@@ -11451,29 +11646,6 @@ INSERT INTO `concept_set_derived` VALUES (5864,1197,6);
 INSERT INTO `concept_set_derived` VALUES (5973,1239,17);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `concept_source` (
-  `concept_source_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL DEFAULT '',
-  `description` text NOT NULL,
-  `hl7_code` varchar(50) DEFAULT NULL,
-  `creator` int(11) NOT NULL DEFAULT '0',
-  `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` tinyint(1) NOT NULL,
-  `retired_by` int(11) DEFAULT NULL,
-  `date_retired` datetime DEFAULT NULL,
-  `retire_reason` varchar(255) DEFAULT NULL,
-  `uuid` char(38) NOT NULL,
-  PRIMARY KEY (`concept_source_id`),
-  UNIQUE KEY `concept_source_uuid_index` (`uuid`),
-  KEY `unique_hl7_code` (`hl7_code`,`retired`),
-  KEY `concept_source_creator` (`creator`),
-  KEY `user_who_retired_concept_source` (`retired_by`),
-  CONSTRAINT `concept_source_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `user_who_retired_concept_source` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_state_conversion` (
   `concept_state_conversion_id` int(11) NOT NULL AUTO_INCREMENT,
   `concept_id` int(11) DEFAULT '0',
@@ -11490,6 +11662,28 @@ CREATE TABLE `concept_state_conversion` (
   CONSTRAINT `conversion_to_state` FOREIGN KEY (`program_workflow_state_id`) REFERENCES `program_workflow_state` (`program_workflow_state_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `concept_stop_word` (
+  `concept_stop_word_id` int(11) NOT NULL AUTO_INCREMENT,
+  `word` varchar(50) NOT NULL,
+  `locale` varchar(20) NOT NULL DEFAULT 'en',
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`concept_stop_word_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  UNIQUE KEY `Unique_StopWord_Key` (`word`,`locale`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `concept_stop_word` VALUES (1,'A','en','f5f45540-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (2,'AND','en','f5f469ae-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (3,'AT','en','f5f47070-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (4,'BUT','en','f5f476c4-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (5,'BY','en','f5f47d04-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (6,'FOR','en','f5f4834e-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (7,'HAS','en','f5f48a24-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (8,'OF','en','f5f49064-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (9,'THE','en','f5f496ae-e2a7-11df-87ae-18a905e044dc');
+INSERT INTO `concept_stop_word` VALUES (10,'TO','en','f5f49cda-e2a7-11df-87ae-18a905e044dc');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_word` (
@@ -19320,8 +19514,8 @@ INSERT INTO `concept_word` VALUES (14631,6245,'POINT','en',6284,1.41883116883116
 CREATE TABLE `drug` (
   `drug_id` int(11) NOT NULL AUTO_INCREMENT,
   `concept_id` int(11) NOT NULL DEFAULT '0',
-  `name` varchar(50) DEFAULT NULL,
-  `combination` smallint(6) NOT NULL DEFAULT '0',
+  `name` varchar(255) DEFAULT NULL,
+  `combination` tinyint(1) NOT NULL DEFAULT '0',
   `dosage_form` int(11) DEFAULT NULL,
   `dose_strength` double DEFAULT NULL,
   `maximum_daily_dose` double DEFAULT NULL,
@@ -19330,11 +19524,13 @@ CREATE TABLE `drug` (
   `units` varchar(50) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
   PRIMARY KEY (`drug_id`),
   UNIQUE KEY `drug_uuid_index` (`uuid`),
   KEY `primary_drug_concept` (`concept_id`),
@@ -19342,27 +19538,29 @@ CREATE TABLE `drug` (
   KEY `dosage_form_concept` (`dosage_form`),
   KEY `drug_retired_by` (`retired_by`),
   KEY `route_concept` (`route`),
+  KEY `drug_changed_by` (`changed_by`),
   CONSTRAINT `dosage_form_concept` FOREIGN KEY (`dosage_form`) REFERENCES `concept` (`concept_id`),
+  CONSTRAINT `drug_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `drug_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `drug_retired_by` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `primary_drug_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `route_concept` FOREIGN KEY (`route`) REFERENCES `concept` (`concept_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `drug` VALUES (2,792,'1A (d4T30/3TC/NVP)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',0,NULL,NULL,NULL,'4221ed2e-8dd8-11e1-be2c-e1d7904ed235');
-INSERT INTO `drug` VALUES (3,792,'1A (d4T40/3TC/NVP)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',0,NULL,NULL,NULL,'4221f04e-8dd8-11e1-be2c-e1d7904ed235');
-INSERT INTO `drug` VALUES (5,625,'d4T-30',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:19','not used','4221f1b6-8dd8-11e1-be2c-e1d7904ed235');
-INSERT INTO `drug` VALUES (6,625,'d4T-40',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:25','not used','4221f300-8dd8-11e1-be2c-e1d7904ed235');
-INSERT INTO `drug` VALUES (9,796,'DDI 125',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:30','not used','4221f454-8dd8-11e1-be2c-e1d7904ed235');
-INSERT INTO `drug` VALUES (10,796,'DDI 200',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:33','not used','4221f59e-8dd8-11e1-be2c-e1d7904ed235');
-INSERT INTO `drug` VALUES (11,6143,'2A (d4T30/3TC/EFZ)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:49:32',0,NULL,NULL,NULL,'b9c9e12b-3f5c-40e6-8874-e42410ca9ccc');
-INSERT INTO `drug` VALUES (12,6143,'2A (d4T40/3TC/EFZ)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:49:52',0,NULL,NULL,NULL,'269d514f-eba7-47af-b1cf-c16aa0e71486');
-INSERT INTO `drug` VALUES (13,6144,'3A (AZT/3TC/EFV)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:54:04',0,NULL,NULL,NULL,'a05f84b2-110c-40a3-a5e2-fd01530e5d86');
-INSERT INTO `drug` VALUES (14,6145,'3B (AZT/3TC/NVP)',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:55:04',0,NULL,NULL,NULL,'affb3256-163f-43f6-98ac-ac595ffb70a5');
-INSERT INTO `drug` VALUES (15,6146,'R67 (ABC/DDI/LPVR)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:57:13',0,NULL,NULL,NULL,'c5ea1619-ef6e-4f7b-8f7a-8cb18426351c');
-INSERT INTO `drug` VALUES (16,6146,'R68 (ABC/DDI/LPVR-200/50)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:57:41',0,NULL,NULL,NULL,'189a6bb8-ec42-43a3-bd40-1b1d9335689f');
-INSERT INTO `drug` VALUES (17,6148,'R69 (AZT/DDI/LPVR)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:59:57',0,NULL,NULL,NULL,'e5cd6682-51c6-4d99-9db8-19bbd2a53c79');
-INSERT INTO `drug` VALUES (18,630,'PEP1 (AZT/3TC)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 15:12:07',0,NULL,NULL,NULL,'fc1b3199-d503-463c-af26-884f61b423d0');
+INSERT INTO `drug` VALUES (2,792,'1A (d4T30/3TC/NVP)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',0,NULL,NULL,NULL,'4221ed2e-8dd8-11e1-be2c-e1d7904ed235',NULL,NULL);
+INSERT INTO `drug` VALUES (3,792,'1A (d4T40/3TC/NVP)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',0,NULL,NULL,NULL,'4221f04e-8dd8-11e1-be2c-e1d7904ed235',NULL,NULL);
+INSERT INTO `drug` VALUES (5,625,'d4T-30',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:19','not used','4221f1b6-8dd8-11e1-be2c-e1d7904ed235',NULL,NULL);
+INSERT INTO `drug` VALUES (6,625,'d4T-40',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:25','not used','4221f300-8dd8-11e1-be2c-e1d7904ed235',NULL,NULL);
+INSERT INTO `drug` VALUES (9,796,'DDI 125',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:30','not used','4221f454-8dd8-11e1-be2c-e1d7904ed235',NULL,NULL);
+INSERT INTO `drug` VALUES (10,796,'DDI 200',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2005-02-24 00:00:00',1,1,'2012-04-24 14:58:33','not used','4221f59e-8dd8-11e1-be2c-e1d7904ed235',NULL,NULL);
+INSERT INTO `drug` VALUES (11,6143,'2A (d4T30/3TC/EFZ)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:49:32',0,NULL,NULL,NULL,'b9c9e12b-3f5c-40e6-8874-e42410ca9ccc',NULL,NULL);
+INSERT INTO `drug` VALUES (12,6143,'2A (d4T40/3TC/EFZ)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:49:52',0,NULL,NULL,NULL,'269d514f-eba7-47af-b1cf-c16aa0e71486',NULL,NULL);
+INSERT INTO `drug` VALUES (13,6144,'3A (AZT/3TC/EFV)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:54:04',0,NULL,NULL,NULL,'a05f84b2-110c-40a3-a5e2-fd01530e5d86',NULL,NULL);
+INSERT INTO `drug` VALUES (14,6145,'3B (AZT/3TC/NVP)',0,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:55:04',0,NULL,NULL,NULL,'affb3256-163f-43f6-98ac-ac595ffb70a5',NULL,NULL);
+INSERT INTO `drug` VALUES (15,6146,'R67 (ABC/DDI/LPVR)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:57:13',0,NULL,NULL,NULL,'c5ea1619-ef6e-4f7b-8f7a-8cb18426351c',NULL,NULL);
+INSERT INTO `drug` VALUES (16,6146,'R68 (ABC/DDI/LPVR-200/50)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:57:41',0,NULL,NULL,NULL,'189a6bb8-ec42-43a3-bd40-1b1d9335689f',NULL,NULL);
+INSERT INTO `drug` VALUES (17,6148,'R69 (AZT/DDI/LPVR)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 14:59:57',0,NULL,NULL,NULL,'e5cd6682-51c6-4d99-9db8-19bbd2a53c79',NULL,NULL);
+INSERT INTO `drug` VALUES (18,630,'PEP1 (AZT/3TC)',1,NULL,NULL,NULL,NULL,NULL,'mg',1,'2012-04-24 15:12:07',0,NULL,NULL,NULL,'fc1b3199-d503-463c-af26-884f61b423d0',NULL,NULL);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `drug_ingredient` (
@@ -19383,8 +19581,8 @@ CREATE TABLE `drug_order` (
   `equivalent_daily_dose` double DEFAULT NULL,
   `units` varchar(255) DEFAULT NULL,
   `frequency` varchar(255) DEFAULT NULL,
-  `prn` smallint(6) NOT NULL DEFAULT '0',
-  `complex` smallint(6) NOT NULL DEFAULT '0',
+  `prn` tinyint(1) NOT NULL DEFAULT '0',
+  `complex` tinyint(1) NOT NULL DEFAULT '0',
   `quantity` int(11) DEFAULT NULL,
   PRIMARY KEY (`order_id`),
   KEY `inventory_item` (`drug_inventory_id`),
@@ -19398,19 +19596,19 @@ CREATE TABLE `encounter` (
   `encounter_id` int(11) NOT NULL AUTO_INCREMENT,
   `encounter_type` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL DEFAULT '0',
-  `provider_id` int(11) NOT NULL DEFAULT '0',
   `location_id` int(11) DEFAULT NULL,
   `form_id` int(11) DEFAULT NULL,
   `encounter_datetime` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
+  `visit_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`encounter_id`),
   UNIQUE KEY `encounter_uuid_index` (`uuid`),
   KEY `encounter_ibfk_1` (`creator`),
@@ -19420,18 +19618,70 @@ CREATE TABLE `encounter` (
   KEY `encounter_patient` (`patient_id`),
   KEY `user_who_voided_encounter` (`voided_by`),
   KEY `encounter_changed_by` (`changed_by`),
-  KEY `encounter_provider` (`provider_id`),
   KEY `encounter_datetime_idx` (`encounter_datetime`),
+  KEY `encounter_visit_id_fk` (`visit_id`),
   CONSTRAINT `encounter_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `encounter_form` FOREIGN KEY (`form_id`) REFERENCES `form` (`form_id`),
   CONSTRAINT `encounter_ibfk_1` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `encounter_location` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`),
   CONSTRAINT `encounter_patient` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`) ON UPDATE CASCADE,
-  CONSTRAINT `encounter_provider` FOREIGN KEY (`provider_id`) REFERENCES `person` (`person_id`),
   CONSTRAINT `encounter_type_id` FOREIGN KEY (`encounter_type`) REFERENCES `encounter_type` (`encounter_type_id`),
+  CONSTRAINT `encounter_visit_id_fk` FOREIGN KEY (`visit_id`) REFERENCES `visit` (`visit_id`),
   CONSTRAINT `user_who_voided_encounter` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `encounter_provider` (
+  `encounter_provider_id` int(11) NOT NULL AUTO_INCREMENT,
+  `encounter_id` int(11) NOT NULL,
+  `provider_id` int(11) NOT NULL,
+  `encounter_role_id` int(11) NOT NULL,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
+  `date_voided` datetime DEFAULT NULL,
+  `voided_by` int(11) DEFAULT NULL,
+  `void_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`encounter_provider_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `encounter_id_fk` (`encounter_id`),
+  KEY `provider_id_fk` (`provider_id`),
+  KEY `encounter_role_id_fk` (`encounter_role_id`),
+  CONSTRAINT `encounter_role_id_fk` FOREIGN KEY (`encounter_role_id`) REFERENCES `encounter_role` (`encounter_role_id`),
+  CONSTRAINT `encounter_id_fk` FOREIGN KEY (`encounter_id`) REFERENCES `encounter` (`encounter_id`),
+  CONSTRAINT `provider_id_fk` FOREIGN KEY (`provider_id`) REFERENCES `provider` (`provider_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `encounter_role` (
+  `encounter_role_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`encounter_role_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `encounter_role_creator_fk` (`creator`),
+  KEY `encounter_role_changed_by_fk` (`changed_by`),
+  KEY `encounter_role_retired_by_fk` (`retired_by`),
+  CONSTRAINT `encounter_role_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `encounter_role_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `encounter_role_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `encounter_role` VALUES (1,'Unknown','Unknown encounter role for legacy providers with no encounter role set',1,'2011-08-18 14:00:00',NULL,NULL,0,NULL,NULL,NULL,'a0b03050-c99b-11e0-9572-0800200c9a66');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `encounter_type` (
@@ -19440,7 +19690,7 @@ CREATE TABLE `encounter_type` (
   `description` text,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -19469,12 +19719,12 @@ CREATE TABLE `field` (
   `table_name` varchar(50) DEFAULT NULL,
   `attribute_name` varchar(50) DEFAULT NULL,
   `default_value` text,
-  `select_multiple` smallint(6) NOT NULL DEFAULT '0',
+  `select_multiple` tinyint(1) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -19517,7 +19767,7 @@ CREATE TABLE `field_type` (
   `field_type_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   `description` longtext,
-  `is_set` smallint(6) NOT NULL DEFAULT '0',
+  `is_set` tinyint(1) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `uuid` char(38) NOT NULL,
@@ -19539,7 +19789,7 @@ CREATE TABLE `form` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `version` varchar(50) NOT NULL DEFAULT '',
   `build` int(11) DEFAULT NULL,
-  `published` smallint(6) NOT NULL DEFAULT '0',
+  `published` tinyint(1) NOT NULL DEFAULT '0',
   `description` text,
   `encounter_type` int(11) DEFAULT NULL,
   `template` mediumtext,
@@ -19548,7 +19798,7 @@ CREATE TABLE `form` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retired_reason` varchar(255) DEFAULT NULL,
@@ -19580,7 +19830,7 @@ CREATE TABLE `form_field` (
   `parent_form_field` int(11) DEFAULT NULL,
   `min_occurs` int(11) DEFAULT NULL,
   `max_occurs` int(11) DEFAULT NULL,
-  `required` smallint(6) NOT NULL DEFAULT '0',
+  `required` tinyint(1) NOT NULL DEFAULT '0',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
@@ -19599,6 +19849,24 @@ CREATE TABLE `form_field` (
   CONSTRAINT `form_field_hierarchy` FOREIGN KEY (`parent_form_field`) REFERENCES `form_field` (`form_field_id`),
   CONSTRAINT `user_who_created_form_field` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_last_changed_form_field` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `form_resource` (
+  `form_resource_id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `value_reference` text NOT NULL,
+  `datatype` varchar(255) DEFAULT NULL,
+  `datatype_config` text,
+  `preferred_handler` varchar(255) DEFAULT NULL,
+  `handler_config` text,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`form_resource_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  UNIQUE KEY `unique_form_and_name` (`form_id`,`name`),
+  CONSTRAINT `form_resource_form_fk` FOREIGN KEY (`form_id`) REFERENCES `form` (`form_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -19666,190 +19934,214 @@ CREATE TABLE `formentry_xsn` (
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `global_property` (
-  `property` varbinary(255) NOT NULL DEFAULT '',
+  `property` varchar(255) NOT NULL DEFAULT '',
   `property_value` mediumtext,
   `description` text,
   `uuid` char(38) NOT NULL,
+  `datatype` varchar(255) DEFAULT NULL,
+  `datatype_config` text,
+  `preferred_handler` varchar(255) DEFAULT NULL,
+  `handler_config` text,
   PRIMARY KEY (`property`),
   UNIQUE KEY `global_property_uuid_index` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `global_property` VALUES ('FormEntry.enableDashboardTab','true','true/false whether or not to show a Form Entry tab on the patient dashboard','8d4b7162-4e5a-4939-9e09-bcc7f01f6ffd');
-INSERT INTO `global_property` VALUES ('FormEntry.enableOnEncounterTab','false','true/false whether or not to show a Enter Form button on the encounters tab of the patient dashboard','c878b013-403f-477a-8197-b5062101da5a');
-INSERT INTO `global_property` VALUES ('concept.causeOfDeath','5002','Concept id of the concept defining the CAUSE OF DEATH concept','19b31af9-5949-4610-806f-94e8450e646e');
-INSERT INTO `global_property` VALUES ('concept.cd4_count','5497','Concept id of the concept defining the CD4 count concept','48f4d7c9-e9ca-4284-9bca-82da0b84a44d');
-INSERT INTO `global_property` VALUES ('concept.false','2','Concept id of the concept defining the FALSE boolean concept','e7858b6a-f309-49c2-8688-2fd392f55b12');
-INSERT INTO `global_property` VALUES ('concept.height','5090','Concept id of the concept defining the HEIGHT concept','7dafc7a1-7bbc-4bc4-9f90-d58c357dcf70');
-INSERT INTO `global_property` VALUES ('concept.medicalRecordObservations','1238','The concept id of the MEDICAL_RECORD_OBSERVATIONS concept.  This concept_id is presumed to be the generic grouping (obr) concept in hl7 messages.  An obs_group row is not created for this concept.','66091829-8782-4262-830d-4c9121917027');
-INSERT INTO `global_property` VALUES ('concept.none','1107','Concept id of the concept defining the NONE concept','9494cb83-60c5-453c-9687-f9e8fd8ceb8d');
-INSERT INTO `global_property` VALUES ('concept.otherNonCoded','5622','Concept id of the concept defining the OTHER NON-CODED concept','692a8a8f-4596-4f26-af27-271016416d08');
-INSERT INTO `global_property` VALUES ('concept.patientDied','1742','Concept id of the concept defining the PATIENT DIED concept','b08e068e-baf5-4f31-8f42-551dbbde12d8');
-INSERT INTO `global_property` VALUES ('concept.problemList','1284','The concept id of the PROBLEM LIST concept.  This concept_id is presumed to be the generic grouping (obr) concept in hl7 messages.  An obs_group row is not created for this concept.','6c19d285-ac80-40a7-9f12-0b1c58df09fe');
-INSERT INTO `global_property` VALUES ('concept.reasonExitedCare','','Concept id of the concept defining the REASON EXITED CARE concept','aba0483d-e08c-470b-a834-cf1a2d801849');
-INSERT INTO `global_property` VALUES ('concept.reasonOrderStopped','1812','Concept id of the concept defining the REASON ORDER STOPPED concept','3c80e6ce-0aba-46e8-a084-deef0f4ad413');
-INSERT INTO `global_property` VALUES ('concept.true','1','Concept id of the concept defining the TRUE boolean concept','70d0dc4b-44e7-40a9-a4f6-c89311a32376');
-INSERT INTO `global_property` VALUES ('concept.weight','5089','Concept id of the concept defining the WEIGHT concept','4504134f-cde8-4ba4-884b-1d38a021bc66');
-INSERT INTO `global_property` VALUES ('concepts.locked','false','true/false whether or not concepts can be edited in this database.','281afa08-5275-462c-8cea-346f5831a89a');
-INSERT INTO `global_property` VALUES ('dashboard.encounters.showEditLink','true','true/false whether or not to show the \'Edit Encounter\' link on the patient dashboard','e3d219a1-b043-4bee-a93a-0e7e6189b634');
-INSERT INTO `global_property` VALUES ('dashboard.encounters.showEmptyFields','true','true/false whether or not to show empty fields on the \'View Encounter\' window','367f214b-bd30-460f-8e94-04d24f5ffb1a');
-INSERT INTO `global_property` VALUES ('dashboard.encounters.showViewLink','true','true/false whether or not to show the \'View Encounter\' link on the patient dashboard','3f1c4092-cd7e-45f3-bad8-140ac25359d7');
-INSERT INTO `global_property` VALUES ('dashboard.encounters.usePages','smart','true/false/smart on how to show the pages on the \'View Encounter\' window.  \'smart\' means that if > 50% of the fields have page numbers defined, show data in pages','b891a22d-bae1-46f1-a379-9d716be80101');
-INSERT INTO `global_property` VALUES ('dashboard.header.programs_to_show','','List of programs to show Enrollment details of in the patient header. (Should be an ordered comma-separated list of program_ids or names.)','da628b42-885c-4bd7-907c-2cdee9276b61');
-INSERT INTO `global_property` VALUES ('dashboard.header.workflows_to_show','','List of programs to show Enrollment details of in the patient header. List of workflows to show current status of in the patient header. These will only be displayed if they belong to a program listed above. (Should be a comma-separated list of program_workflow_ids.)','e5ef99d6-cbbb-411c-85a0-6b52ebfb6ee8');
-INSERT INTO `global_property` VALUES ('dashboard.overview.showConcepts','','Comma delimited list of concepts ids to show on the patient dashboard overview tab','c507c79d-9ada-4290-b48e-bc679dd05b1e');
-INSERT INTO `global_property` VALUES ('dashboard.regimen.displayDrugSetIds','ANTIRETROVIRAL DRUGS,TUBERCULOSIS TREATMENT DRUGS','Drug sets that appear on the Patient Dashboard Regimen tab. Comma separated list of name of concepts that are defined as drug sets.','27409ce3-6925-417b-b4b5-e283881a418a');
-INSERT INTO `global_property` VALUES ('dashboard.regimen.displayFrequencies','7 days/week,6 days/week,5 days/week,4 days/week,3 days/week,2 days/week,1 days/week','Frequency of a drug order that appear on the Patient Dashboard. Comma separated list of name of concepts that are defined as drug frequencies.','06a5fa69-557c-4ba0-baec-42381f2303eb');
-INSERT INTO `global_property` VALUES ('dashboard.regimen.standardRegimens','<list>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>2</drugId>        <dose>1</dose>        <units>tab(s)</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>3TC + d4T(30) + NVP (Triomune-30)</displayName>    <codeName>standardTri30</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>3</drugId>        <dose>1</dose>        <units>tab(s)</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>3TC + d4T(40) + NVP (Triomune-40)</displayName>    <codeName>standardTri40</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>39</drugId>        <dose>1</dose>        <units>tab(s)</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion>        <drugId>22</drugId>        <dose>200</dose>        <units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>AZT + 3TC + NVP</displayName>    <codeName>standardAztNvp</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion reference=\"../../../regimenSuggestion[3]/drugComponents/drugSuggestion\"/>      <drugSuggestion>        <drugId>11</drugId>        <dose>600</dose>        <units>mg</units>        <frequency>1/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>AZT + 3TC + EFV(600)</displayName>    <codeName>standardAztEfv</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>5</drugId>        <dose>30</dose>        <units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion>        <drugId>42</drugId>        <dose>150</dose>        		<units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion reference=\"../../../regimenSuggestion[4]/drugComponents/drugSuggestion[2]\"/>    </drugComponents>    <displayName>d4T(30) + 3TC + EFV(600)</displayName>    <codeName>standardD4t30Efv</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>6</drugId>        <dose>40</dose>        <units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion reference=\"../../../regimenSuggestion[5]/drugComponents/drugSuggestion[2]\"/>      <drugSuggestion reference=\"../../../regimenSuggestion[4]/drugComponents/drugSuggestion[2]\"/>    </drugComponents>    <displayName>d4T(40) + 3TC + EFV(600)</displayName>    <codeName>standardD4t40Efv</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion></list>','XML description of standard drug regimens, to be shown as shortcuts on the dashboard regimen entry tab','90dbbbda-a2cf-4caf-ac1f-109d845fbc10');
-INSERT INTO `global_property` VALUES ('dashboard.relationships.show_types','','Types of relationships separated by commas.  Doctor/Patient,Parent/Child','21cce583-772e-49f2-ab1b-ae45fa9f3994');
-INSERT INTO `global_property` VALUES ('dashboard.showPatientName','false','Whether or not to display the patient name in the patient dashboard title. Note that enabling this could be security risk if multiple users operate on the same computer.','404b7ef2-8804-43e5-8e75-6219e133b48d');
-INSERT INTO `global_property` VALUES ('default_locale','en_GB','Specifies the default locale. You can specify both the language code(ISO-639) and the country code(ISO-3166), e.g. \'en_GB\' or just country: e.g. \'en\'','5cfb72f0-e1ef-40fa-bdad-ebfffb98eda5');
-INSERT INTO `global_property` VALUES ('default_location','Unknown Location','The name of the location to use as a system default','091ec991-fcb3-4021-925c-120a43ef92de');
-INSERT INTO `global_property` VALUES ('default_theme','','Default theme for users.  OpenMRS ships with themes of \'green\', \'orange\', \'purple\', and \'legacy\'','ac2ca6b8-a71a-4cbf-a8f0-cc14513fe737');
-INSERT INTO `global_property` VALUES ('encounterForm.obsSortOrder','number','The sort order for the obs listed on the encounter edit form.  \'number\' sorts on the associated numbering from the form schema.  \'weight\' sorts on the order displayed in the form schema.','7baf0708-83cf-499d-b480-1d9fc8c41314');
-INSERT INTO `global_property` VALUES ('formentry.database_version','2.8','DO NOT MODIFY.  Current database version number for the formentry module.','5aa4c5aa-2579-48d4-a4f2-2120672d81d9');
-INSERT INTO `global_property` VALUES ('formentry.infopath_server_url','','When uploading an XSN, this url is used as the \"base path\".  (Should be something like http://localhost:8080/openmrs)','6b5e2f91-f293-4cfc-a59c-65c192d516be');
-INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane.relationship_sort_order','','A comma-separated sorted list of relationship sides that should appear\nfirst in the InfoPath taskpane widget. Relationship sides should be\nspelled exactly as shown in the system; i.e. Parent,\nDoctor, Child','9744fde4-b87f-4476-869d-0f5b69873a02');
-INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane.showAllUsersOnLoad','true','When you view the \'users.htm\' page in the taskpane, i.e. by clicking on the Choose a Provider\nbutton, should the system automatically preload a list of all users?','d52fdc5d-5898-489b-afed-7079caf33a08');
-INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane_caption','Welcome!','The text seen in the infopath taskpane upon first logging in','b7e86d2a-9c29-4d38-8462-020da9ff98e3');
-INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane_keepalive_min','','The number of minutes to keep refreshing the taskpane before allowing \nthe login to lapse','46195bb0-e0f0-4b56-aca5-6e9e0a1f9d53');
-INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane_refresh_sec','','The number of seconds between taskpane refreshes.  This keeps the taskpane from\nlogging people out on longer forms','34856d7b-873b-423f-a299-cd3e9aa0f343');
-INSERT INTO `global_property` VALUES ('formentry.mandatory','false','true/false whether or not the formentry module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','9d87d18d-b67b-4511-a4a9-6f1b39b24748');
-INSERT INTO `global_property` VALUES ('formentry.patientForms.goBackOnEntry','false','\'true\' means have the browser go back to the find patient page after picking a form\nfrom the patientForms tab on the patient dashboard page','9c920131-a63a-4e5c-bcbd-6cf47c97c220');
-INSERT INTO `global_property` VALUES ('formentry.queue_archive_dir','formentry/archive/%Y/%M','Directory containing the formentry archive items.  This will contain xml files that have\nbeen submitted by infopath and then processed sucessfully into hl7.\nCertain date parameters will be replaced with the current date:\n%Y = four digit year\n%M = two digit month\n%D = two digit date of the month\n%w = week of the year\n     %W = week of the month','5547bf19-68a7-4164-bbd9-9b3a59428de7');
-INSERT INTO `global_property` VALUES ('formentry.queue_dir','formentry/queue','Directory containing the formentry queue items. This will contain xml files submitted by\ninfopath.  These items are awaiting processing to be turned into hl7 queue items','76a1ff76-6fa1-440c-8d05-d668380f1d5d');
-INSERT INTO `global_property` VALUES ('formentry.started','false','DO NOT MODIFY. true/false whether or not the formentry module has been started.  This is used to make sure modules that were running  prior to a restart are started again','6244f5fa-6785-42e5-993b-211c85820db2');
-INSERT INTO `global_property` VALUES ('graph.color.absolute','rgb(20,20,20)','Color of the \'invalid\' section of numeric graphs on the patient dashboard.','da0a0417-1f60-4f46-9957-2b8606894150');
-INSERT INTO `global_property` VALUES ('graph.color.critical','rgb(200,0,0)','Color of the \'critical\' section of numeric graphs on the patient dashboard.','8b53dbb5-750b-4190-9c8d-1f9b8cc6a661');
-INSERT INTO `global_property` VALUES ('graph.color.normal','rgb(255,126,0)','Color of the \'normal\' section of numeric graphs on the patient dashboard.','7c36e00f-eda8-4cb6-8442-445239689bd2');
-INSERT INTO `global_property` VALUES ('gzip.enabled','false','Set to \'true\' to turn on OpenMRS\'s gzip filter, and have the webapp compress data before sending it to any client that supports it. Generally use this if you are running Tomcat standalone. If you are running Tomcat behind Apache, then you\'d want to use Apache to do gzip compression.','47ac2f21-6c05-4653-9b70-941b47bda0aa');
-INSERT INTO `global_property` VALUES ('hl7_archive.dir','hl7_archives','The default name or absolute path for the folder where to write the hl7_in_archives.','d4c80730-acd0-43ce-9a9b-8b0fc453f29c');
-INSERT INTO `global_property` VALUES ('hl7_processor.ignore_missing_patient_non_local','false','If true, hl7 messages for patients that are not found and are non-local will silently be dropped/ignored','e9671fcd-61cf-49c9-bf13-c31c65866834');
-INSERT INTO `global_property` VALUES ('htmlformentry.database_version','1.2.0','DO NOT MODIFY.  Current database version number for the htmlformentry module.','097511b3-87f3-4eb4-ae49-80969c842600');
-INSERT INTO `global_property` VALUES ('htmlformentry.mandatory','false','true/false whether or not the htmlformentry module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','0f1edc04-65df-4d79-a4eb-f54090ab3abe');
-INSERT INTO `global_property` VALUES ('htmlformentry.started','false','DO NOT MODIFY. true/false whether or not the htmlformentry module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3f7f22c7-d137-4800-90c6-39da2fde9e58');
-INSERT INTO `global_property` VALUES ('htmlwidgets.mandatory','false','true/false whether or not the htmlwidgets module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','44bc8668-f757-4915-bb76-d78663da9a86');
-INSERT INTO `global_property` VALUES ('htmlwidgets.started','false','DO NOT MODIFY. true/false whether or not the htmlwidgets module has been started.  This is used to make sure modules that were running  prior to a restart are started again','dc36fe8b-cae4-436a-8274-528afd6f6538');
-INSERT INTO `global_property` VALUES ('layout.address.format','general','Format in which to display the person addresses.  Valid values are general, kenya, rwanda, usa, and lesotho','c92ad15b-7fa9-4526-a40b-68d1d9428dd2');
-INSERT INTO `global_property` VALUES ('layout.name.format','short','Format in which to display the person names.  Valid values are short, long','22f3c425-d38d-4401-8794-af5bd00319e1');
-INSERT INTO `global_property` VALUES ('locale.allowed.list','en, es, fr, it, pt','Comma delimited list of locales allowed for use on system','400a5bdb-fa48-4506-b8c4-2402c1a965be');
-INSERT INTO `global_property` VALUES ('location.field.style','default','Type of widget to use for location fields','a5e42e36-ca59-4dd0-80fc-ff6e98f40045');
-INSERT INTO `global_property` VALUES ('log.level.openmrs','info','log level used by the logger \'org.openmrs\'. This value will override the log4j.xml value. Valid values are trace, debug, info, warn, error or fatal','da166b69-af40-4824-80d2-48a0f63e124a');
-INSERT INTO `global_property` VALUES ('logic.database_version','1.4','DO NOT MODIFY.  Current database version number for the logic module.','2ca4b83b-050b-4c3d-a2b8-389db2a87e3f');
-INSERT INTO `global_property` VALUES ('logic.default.ruleClassDirectory','logic/class','Default folder where compiled rule will be stored','79e93ef9-d6dd-4273-b7fb-02d04d101e7c');
-INSERT INTO `global_property` VALUES ('logic.default.ruleJavaDirectory','logic/sources','Default folder where rule\'s java file will be stored','8079bacf-2308-450d-bbb0-c6f928d360ce');
-INSERT INTO `global_property` VALUES ('logic.defaultTokens.conceptClasses','','When registering default tokens for logic, if you specify a comma-separated list of concept class names here, only concepts of those classes will have tokens registered. If you leave this blank, all classes will have tokens registered for their concepts.','99c9d5ce-d655-4bdd-8191-601ab4125910');
-INSERT INTO `global_property` VALUES ('logic.mandatory','false','true/false whether or not the logic module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','75286f07-d04e-4d6e-a791-a5fc878d42dd');
-INSERT INTO `global_property` VALUES ('logic.started','true','DO NOT MODIFY. true/false whether or not the logic module has been started.  This is used to make sure modules that were running  prior to a restart are started again','9ae3c1f4-d947-4e9b-950f-8639247b4fb1');
-INSERT INTO `global_property` VALUES ('mail.debug','false','true/false whether to print debugging information during mailing','6616059b-7a70-43fd-a028-42d8523922da');
-INSERT INTO `global_property` VALUES ('mail.default_content_type','text/plain','Content type to append to the mail messages','9d18e8cc-84fe-42cd-bc31-88b5f1aa843d');
-INSERT INTO `global_property` VALUES ('mail.from','info@openmrs.org','Email address to use as the default from address','7c2ed90e-cf9a-46df-b68c-40afb260b81f');
-INSERT INTO `global_property` VALUES ('mail.password','test','Password for the SMTP user (if smtp_auth is enabled)','b61acb8d-972f-45b0-850f-e3ecc37b7a3a');
-INSERT INTO `global_property` VALUES ('mail.smtp_auth','false','true/false whether the smtp host requires authentication','86d7306b-72d9-44be-8609-d77a1a5add82');
-INSERT INTO `global_property` VALUES ('mail.smtp_host','localhost','SMTP host name','c9596ca3-b666-4a7e-b65b-19c9b41eb64c');
-INSERT INTO `global_property` VALUES ('mail.smtp_port','25','SMTP port','58109db8-0e4f-4337-b587-416c63ceeb64');
-INSERT INTO `global_property` VALUES ('mail.transport_protocol','smtp','Transport protocol for the messaging engine. Valid values: smtp','b31a5a7b-6dee-49a3-8795-c4640b3383a3');
-INSERT INTO `global_property` VALUES ('mail.user','test','Username of the SMTP user (if smtp_auth is enabled)','d9cd3b9f-7ff5-4846-ac37-cf1ebee6f2ab');
-INSERT INTO `global_property` VALUES ('minSearchCharacters','3','Number of characters user must input before searching is started.','0882b5e5-8986-4442-b445-d1a989f4c00b');
-INSERT INTO `global_property` VALUES ('module_repository_folder','modules','Name of the folder in which to store the modules','06bdd99b-e2df-41b6-8aa6-00b1e67df42b');
-INSERT INTO `global_property` VALUES ('newPatientForm.relationships','','Comma separated list of the RelationshipTypes to show on the new/short patient form.  The list is defined like \'3a, 4b, 7a\'.  The number is the RelationshipTypeId and the \'a\' vs \'b\' part is which side of the relationship is filled in by the user.','13b026ac-edc4-436a-b7de-d9264a6bd801');
-INSERT INTO `global_property` VALUES ('new_patient_form.showRelationships','false','true/false whether or not to show the relationship editor on the addPatient.htm screen','13f79227-1ef1-4bf8-b113-ae781b6ac764');
-INSERT INTO `global_property` VALUES ('obs.complex_obs_dir','complex_obs','Default directory for storing complex obs.','7514bd0d-8cba-4ed0-b1ab-77d7440b98e2');
-INSERT INTO `global_property` VALUES ('patient.defaultPatientIdentifierValidator','org.openmrs.patient.impl.LuhnIdentifierValidator','This property sets the default patient identifier validator.  The default validator is only used in a handful of (mostly legacy) instances.  For example, it\'s used to generate the isValidCheckDigit calculated column and to append the string \"(default)\" to the name of the default validator on the editPatientIdentifierType form.','0f9c69c3-05b5-4729-9aef-b2bcdd40a7f7');
-INSERT INTO `global_property` VALUES ('patient.headerAttributeTypes','','A comma delimited list of PersonAttributeType names that will be shown on the patient dashboard','92d00b16-bc58-4170-9378-25affae3f445');
-INSERT INTO `global_property` VALUES ('patient.identifierPrefix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','baf5fd97-2cef-4a8d-a9c6-2ece653f4278');
-INSERT INTO `global_property` VALUES ('patient.identifierRegex','','WARNING: Using this search property can cause a drop in mysql performance with large patient sets.  A MySQL regular expression for the patient identifier search strings.  The @SEARCH@ string is replaced at runtime with the user\'s search string.  An empty regex will cause a simply \'like\' sql search to be used. Example: ^0*@SEARCH@([A-Z]+-[0-9])?$','a5a0f9fa-2102-4908-816b-b1caa10f998f');
-INSERT INTO `global_property` VALUES ('patient.identifierSearchPattern','','If this is empty, the regex or suffix/prefix search is used.  Comma separated list of identifiers to check.  Allows for faster searching of multiple options rather than the slow regex. e.g. @SEARCH@,0@SEARCH@,@SEARCH-1@-@CHECKDIGIT@,0@SEARCH-1@-@CHECKDIGIT@ would turn a request for \"4127\" into a search for \"in (\'4127\',\'04127\',\'412-7\',\'0412-7\')\"','fac9cfa1-d0ae-452c-ad15-31df9255fdc8');
-INSERT INTO `global_property` VALUES ('patient.identifierSuffix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','d4e88b0b-9fcf-4b03-8bbe-8bd375ba97b1');
-INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for patients in _lists_','d4ae3d01-7f68-4fee-b947-7334612ee3ac');
-INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for patients when _viewing individually_','6bfeee82-c6b1-4664-80dc-a0b8169fb695');
-INSERT INTO `global_property` VALUES ('patient_identifier.importantTypes','','A comma delimited list of PatientIdentifier names : PatientIdentifier locations that will be displayed on the patient dashboard.  E.g.: TRACnet ID:Rwanda,ELDID:Kenya','2721dc43-9f39-422e-96bf-33933829169e');
-INSERT INTO `global_property` VALUES ('person.searchMaxResults','1000','The maximum number of results returned by patient searches','4416394f-7506-4e81-88dd-50413341439d');
-INSERT INTO `global_property` VALUES ('report.deleteReportsAgeInHours','72','Reports that are not explicitly saved are deleted automatically when they are this many hours old. (Values less than or equal to zero means do not delete automatically)','41b31f7c-8b03-41ff-976f-d6b3a567dcfc');
-INSERT INTO `global_property` VALUES ('report.xmlMacros','','Macros that will be applied to Report Schema XMLs when they are interpreted. This should be java.util.properties format.','f28c0122-ad6e-4b7f-b231-05f9446f5c9b');
-INSERT INTO `global_property` VALUES ('reportProblem.url','http://errors.openmrs.org/scrap','The openmrs url where to submit bug reports','5b6c9061-97a4-4a66-9268-d1e9b5d78efb');
-INSERT INTO `global_property` VALUES ('reporting.database_version','0.2.0','DO NOT MODIFY.  Current database version number for the reporting module.','6e6efbeb-1073-4d21-9e51-eb78448bd202');
-INSERT INTO `global_property` VALUES ('reporting.mandatory','false','true/false whether or not the reporting module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','e0e10930-e96c-48de-a886-afc57c1116a3');
-INSERT INTO `global_property` VALUES ('reporting.maxCachedReports','10','The maximum number of reports whose underlying data and output should be kept in the cache at any one time','a398cd59-60fb-4afe-bf55-8141d100dbd7');
-INSERT INTO `global_property` VALUES ('reporting.maxReportsToRun','1','The maximum number of reports that should be processed at any one time','19e67315-3b57-4421-812a-464b5c6f0449');
-INSERT INTO `global_property` VALUES ('reporting.preferredIdentifierTypes','','Pipe-separated list of patient identifier type names, which should be displayed on default patient datasets','eb9c152b-e3ac-4bdb-992e-1446464bdd1f');
-INSERT INTO `global_property` VALUES ('reporting.runReportCohortFilterMode','showIfNull','Supports the values hide,showIfNull,show which determine whether the cohort selector should be available in the run report page','7bc44ce3-ef75-451d-8126-3923ee11d99a');
-INSERT INTO `global_property` VALUES ('reporting.started','false','DO NOT MODIFY. true/false whether or not the reporting module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3aecc96d-c1cf-4081-8f09-53ba5e7b8c6c');
-INSERT INTO `global_property` VALUES ('reportingcompatibility.data_export_batch_size','7500','The number of patients to export at a time in a data export.  The larger this number the faster and more memory that is used.  The smaller this number the slower and less memory is used.','6b6d014e-1faf-4086-b050-65ce2b5b21ec');
-INSERT INTO `global_property` VALUES ('reportingcompatibility.mandatory','false','true/false whether or not the reportingcompatibility module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','28c4fc2f-b23a-4645-9b2e-115b742a8dbc');
-INSERT INTO `global_property` VALUES ('reportingcompatibility.started','false','DO NOT MODIFY. true/false whether or not the reportingcompatibility module has been started.  This is used to make sure modules that were running  prior to a restart are started again','33928aa4-b782-4813-8c15-5e0845414adb');
-INSERT INTO `global_property` VALUES ('scheduler.password','test','Password for the OpenMRS user that will perform the scheduler activities','0b995ab5-d1b6-45d1-9550-9cfe6540c296');
-INSERT INTO `global_property` VALUES ('scheduler.username','admin','Username for the OpenMRS user that will perform the scheduler activities','5b91e674-6e24-47d3-9f0f-bfcac4775dd8');
-INSERT INTO `global_property` VALUES ('searchWidget.batchSize','200','The maximum number of search results that are returned by an ajax call','a36c0fd6-6ded-4a12-aa5c-709d42c77c33');
-INSERT INTO `global_property` VALUES ('searchWidget.runInSerialMode','true','Specifies whether the search widgets should make ajax requests in serial or parallel order, a value of true is appropriate for implementations running on a slow network connection and vice versa','13b1bf09-0fe1-4a48-bafb-f654d38b7fe3');
-INSERT INTO `global_property` VALUES ('searchWidget.searchDelayInterval','400','Specifies time interval in milliseconds when searching, between keyboard keyup event and triggering the search off, should be higher if most users are slow when typing so as to minimise the load on the server','79994b34-a113-4926-95b1-e21b2f78c349');
-INSERT INTO `global_property` VALUES ('security.passwordCannotMatchUsername','true','Configure whether passwords must not match user\'s username or system id','1223083c-8efe-43cf-abae-2c61071f8f5f');
-INSERT INTO `global_property` VALUES ('security.passwordCustomRegex','','Configure a custom regular expression that a password must match','96576f8a-133d-459d-b4ea-9746b96afd91');
-INSERT INTO `global_property` VALUES ('security.passwordMinimumLength','8','Configure the minimum length required of all passwords','b283b9f7-a860-47c5-b762-a470429e7dc2');
-INSERT INTO `global_property` VALUES ('security.passwordRequiresDigit','true','Configure whether passwords must contain at least one digit','a076fa5e-91d5-4b61-b46c-3b4a73037e5c');
-INSERT INTO `global_property` VALUES ('security.passwordRequiresNonDigit','true','Configure whether passwords must contain at least one non-digit','e602ee0b-5277-4bd4-aa4b-cb4e188cc796');
-INSERT INTO `global_property` VALUES ('security.passwordRequiresUpperAndLowerCase','true','Configure whether passwords must contain both upper and lower case characters','a974b916-b545-4155-b765-8b83dffe6b09');
-INSERT INTO `global_property` VALUES ('serialization.xstream.mandatory','false','true/false whether or not the serialization.xstream module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','8690ab3a-45cb-4474-ab8b-8386650eee84');
-INSERT INTO `global_property` VALUES ('serialization.xstream.started','false','DO NOT MODIFY. true/false whether or not the serialization.xstream module has been started.  This is used to make sure modules that were running  prior to a restart are started again','625b7753-69aa-43aa-a33b-27da62bba7a9');
-INSERT INTO `global_property` VALUES ('use_patient_attribute.healthCenter','false','Indicates whether or not the \'health center\' attribute is shown when viewing/searching for patients','db01609f-8844-4244-821e-d33ca723e2fa');
-INSERT INTO `global_property` VALUES ('use_patient_attribute.mothersName','false','Indicates whether or not mother\'s name is able to be added/viewed for a patient','6c9bddd5-2959-4b02-bf8f-5b91c38eddb9');
-INSERT INTO `global_property` VALUES ('user.headerAttributeTypes','','A comma delimited list of PersonAttributeType names that will be shown on the user dashboard. (not used in v1.5)','c37a3ee0-3440-4fea-a320-4e38c832baec');
-INSERT INTO `global_property` VALUES ('user.listingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for users in _lists_','f85c4e9e-6bf4-4c8a-8cbb-f34d0d596213');
-INSERT INTO `global_property` VALUES ('user.viewingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for users when _viewing individually_','dff7563c-288e-4422-9160-bac3e1c8ab76');
-INSERT INTO `global_property` VALUES ('xforms.allowBindEdit','false','Set to true if you want to allow editing of question bindings when designing forms.','c530c3fd-1268-408d-9fa7-91e48a08d7b1');
-INSERT INTO `global_property` VALUES ('xforms.archive_dir','xforms/archive/%Y/%M','Directory containing the xforms archive items.  This will contain xform model xml files that have been processed and then submitted successfully into the formentry queue.','9d8d0ff1-7c52-4cb1-80ca-e730f48dd397');
-INSERT INTO `global_property` VALUES ('xforms.autoGeneratePatientIdentifier','false','Set to true if you want the idgen module to generate patient identifiers when creating new patients using the xforms module.','ca17191b-0ac4-4efb-8f60-d4a1bd49e282');
-INSERT INTO `global_property` VALUES ('xforms.cohortSerializer','org.openmrs.module.xforms.serialization.DefaultCohortSerializer','The patient cohort (cohort_id and name) serializer','186e8681-4f49-4b84-927e-539c5bc2d11a');
-INSERT INTO `global_property` VALUES ('xforms.complexobs_dir','xforms/complexobs','Directory for storing complex obs used by the xforms module.','4f5febda-c50d-4847-96ff-7aad30c1a629');
-INSERT INTO `global_property` VALUES ('xforms.database_version','3.7.7','DO NOT MODIFY.  Current database version number for the xforms module.','389f1021-8ae1-4ae0-b9c8-bab2984e59c4');
-INSERT INTO `global_property` VALUES ('xforms.dateDisplayFormat','dd/MM/yyyy','The display format of dates used by the xforms module.','8ffb2a8f-d636-474a-b482-1c4cff28f0f9');
-INSERT INTO `global_property` VALUES ('xforms.dateSubmitFormat','yyyy-MM-dd','The format of the dates passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong dates on the server.','e89338f7-4d24-450f-ac6b-e01b5f873a23');
-INSERT INTO `global_property` VALUES ('xforms.dateTimeDisplayFormat','dd/MM/yyyy hh:mm a','The display format of datetime used by the xforms module.','25cadae0-4764-4beb-8827-31292f812e11');
-INSERT INTO `global_property` VALUES ('xforms.dateTimeSubmitFormat','yyyy-MM-dd\'T\'HH:mm:ssZ','The format of the datetime passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong dates on the server.','5a711d3f-bee5-4179-b812-4f3829f7018b');
-INSERT INTO `global_property` VALUES ('xforms.decimalSeparators','en:.;fr:.;es:,;it:.;pt:.','The decimal separators for each locale. e.g:  en:.;fr:.;es:,;it:.;pt:.','e0a001ee-950e-44c1-bdb6-e9f5110c1aee');
-INSERT INTO `global_property` VALUES ('xforms.defaultFontFamily','Verdana, \'Lucida Grande\', \'Trebuchet MS\', Arial, Sans-Serif','The default font family used by the form designer.','b7bcb296-0ea1-48ec-b0e0-4a91a379a6a9');
-INSERT INTO `global_property` VALUES ('xforms.defaultFontSize','16','The default font size used by the form designer.','88b79936-8893-4cec-a596-d6429f385dc6');
-INSERT INTO `global_property` VALUES ('xforms.encounterDateIncludesTime','false','Set to true if the encounter date should include time.','2493fea6-d5f7-4aed-8df9-6a7ed7c505ed');
-INSERT INTO `global_property` VALUES ('xforms.error_dir','xforms/error','Directory containing the xforms error items.  This will contain xform model xml files that have not been submitted into the formentry queue because of processing errors.','cce5988b-ac7c-499f-b41b-4930f9602a62');
-INSERT INTO `global_property` VALUES ('xforms.includeUsersInXformsDownload','true','Set to true if you want to include users when downloading xforms, else set to false if you want to always load the users list separately.','caba3301-fcba-46b1-b308-f05da872698b');
-INSERT INTO `global_property` VALUES ('xforms.isRemoteFormEntry','false','Set to true if this is a remote form entry server (Not the main server).','98561944-7991-4006-9766-c0520e10f5cb');
-INSERT INTO `global_property` VALUES ('xforms.localeList','en:English','The list of locales supported by the form designer. e.g:  en:English,fr:French,es:Spanish,it:Italian,pt:Portuguese','0df44a76-1083-4c8d-8045-a1584ab5cdc8');
-INSERT INTO `global_property` VALUES ('xforms.mandatory','false','true/false whether or not the xforms module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','6d77301e-5267-4d15-8853-0b01cd9e3301');
-INSERT INTO `global_property` VALUES ('xforms.multiSelectAppearance','full','The appearance of multi select input fields. Allowed values are: {full,minimal,compact}','8f899456-645f-4ab8-b061-5455d2dda974');
-INSERT INTO `global_property` VALUES ('xforms.newPatientFormId','','The id of the form for creating new patients','cbc15af2-90f4-4cce-9e8e-e3cbd80aabed');
-INSERT INTO `global_property` VALUES ('xforms.new_patient_identifier_type_id','1','The id of the patient identifier type which will be used when creating new patients from forms which do not have a patient_identifier.identifier_type_id field.','027a195e-cd71-46a3-bd0a-12c512819c9a');
-INSERT INTO `global_property` VALUES ('xforms.overwriteValidationsOnRefresh','false','Set to true if, on refresh, you want custom validations to be replaced by those from the database concepts.','1360e41c-ca39-4eb0-b378-0fb3386e7480');
-INSERT INTO `global_property` VALUES ('xforms.patientDownloadCohort','','The cohort for patients to download','34d21026-cf58-447c-992e-d244019d4dbb');
-INSERT INTO `global_property` VALUES ('xforms.patientRegEncounterFormId','0','The id of the encounter form which will be combined with the patient registration form.','1061468e-7e94-4a9e-ab83-2883fbdcc758');
-INSERT INTO `global_property` VALUES ('xforms.patientSerializer','org.openmrs.module.xforms.serialization.DefaultPatientSerializer','The patient set serializer','10e1ea99-2efe-4b6a-8e2c-2155e5be94f8');
-INSERT INTO `global_property` VALUES ('xforms.preferredConceptSource','','The name for preferred concept source to be used for forms that can be shared with other OpenMRS installations.','94c1bec3-4483-4356-a089-3daf8e530777');
-INSERT INTO `global_property` VALUES ('xforms.queue_dir','xforms/queue','Directory containing the xforms queue items. This will contain xforms xml model files submitted and awaiting processing to be submitted into the formentry queue.','2639a8a3-820d-410a-a013-b2271f71c50a');
-INSERT INTO `global_property` VALUES ('xforms.rejectExistingPatientCreation','true','Set to true to Reject forms for patients considered new when they already exist, by virture of patient identifier. Else set to false to allow them.','1d5d7a91-c5cb-4e3a-b398-1444105ccb82');
-INSERT INTO `global_property` VALUES ('xforms.saveFormat','purcforms','The format in which the xforms will be saved. For now we support two formats: purcforms and javarosa','7a32cbe5-26c2-4b9a-b6b9-cbb678dd9969');
-INSERT INTO `global_property` VALUES ('xforms.searchNewPatientAfterFormSubmission','true','Set to true if you want to search for a new patient after submitting a form, else set to false if you want to go back to the same patient.','4f37fd88-d812-4300-81fc-00866210d280');
-INSERT INTO `global_property` VALUES ('xforms.setDefaultLocation','false','Set to true if you want to set the default location to that of the logged on user.','a1d647b0-b3af-465b-a754-b0b0094a5135');
-INSERT INTO `global_property` VALUES ('xforms.setDefaultProvider','false','Set to true if you want to set the default provider to the logged on user, if he or she has the provider role.','c678aea3-08d4-4c9b-8ba2-099469db1608');
-INSERT INTO `global_property` VALUES ('xforms.showJavaScriptTab','false','Set to true if you want to display the JavaScript tab of the form designer.','ec95fa36-18b9-48eb-97be-598889c1e34f');
-INSERT INTO `global_property` VALUES ('xforms.showLanguageTab','false','Set to true if you want to display the language xml tab of the form designer.','7fdc8353-7d5c-4ae5-b6d0-da709fc9c78d');
-INSERT INTO `global_property` VALUES ('xforms.showLayoutXmlTab','false','Set to true if you want to display the layout xml tab of the form designer.','2a15765d-8edb-4396-b88d-a4bb138e1e76');
-INSERT INTO `global_property` VALUES ('xforms.showModelXmlTab','false','Set to true if you want to display the model xml tab of the form designer.','4631e0c3-c809-405c-b8dd-175a9886d0d4');
-INSERT INTO `global_property` VALUES ('xforms.showOfflineFormDesigner','false','Set to true if you want to show the form designer in off line mode.','8d1d4bbe-a6d0-4a38-af05-63c4ec607205');
-INSERT INTO `global_property` VALUES ('xforms.showSubmitSuccessMsg','false','Set to true if you want to display the form submitted successfully message every time a form is submitted successfully.','8fed3dfd-fb8b-4f79-a54d-28df9566a6a9');
-INSERT INTO `global_property` VALUES ('xforms.showXformsSourceTab','false','Set to true if you want to display the xforms source tab of the form designer.','ebef4870-bcc9-467d-ba5c-09fd214008d7');
-INSERT INTO `global_property` VALUES ('xforms.singleSelectAppearance','minimal','The appearance of single select input fields. Allowed values are: {full,minimal,compact}','03faabf9-d0e4-47b8-bd04-fdbd1e774c70');
-INSERT INTO `global_property` VALUES ('xforms.smsFieldSepChar','=','The separator between questions and answers in the sms text.','1f79532d-a1e1-46ae-97e9-c9ff57310ed0');
-INSERT INTO `global_property` VALUES ('xforms.smsSendFailureReports','true','Set to true if you want sms sender to get failure reports, else set to false.','ba625b78-81cc-42d6-b297-987dae1aa959');
-INSERT INTO `global_property` VALUES ('xforms.smsSendSuccessReports','true','Set to true if you want sms sender to get success reports, else set to false.','4c85e2d3-a259-4ae6-8ba1-12bb31f6824d');
-INSERT INTO `global_property` VALUES ('xforms.started','false','DO NOT MODIFY. true/false whether or not the xforms module has been started.  This is used to make sure modules that were running  prior to a restart are started again','19db2851-f791-4537-a36b-d3de8439b16a');
-INSERT INTO `global_property` VALUES ('xforms.timeDisplayFormat','hh:mm a','The display format of time used by the xforms module.','488c36b5-717f-41f9-a71c-aa077f67e9c7');
-INSERT INTO `global_property` VALUES ('xforms.timeSubmitFormat','HH:mm:ss','The format of the time passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong times on the server.','c6668d85-135e-4c18-94cc-055ee5968ff8');
-INSERT INTO `global_property` VALUES ('xforms.undoRedoBufferSize','-1','Set to the maximum number of actions you can undo or redo. The bigger the size, the more memory your browser needs. Default value is 100. Set to -1 if you do not want any limit.','49d7bc0c-c048-41b0-8285-f62fca0a4cc9');
-INSERT INTO `global_property` VALUES ('xforms.useEncounterXform','true','Set to true if you want to use XForms to edit encounters instead of the default openmrs edit encounter screen, else set to false.','ed61d33b-9e65-42fc-b5d2-f8ea31324809');
-INSERT INTO `global_property` VALUES ('xforms.usePatientXform','false','Set to true if you want to use XForms to create new patients instead of the default openmrs create patient form, else set to false.','c6699b07-edf9-488a-aa0b-9fbe8100fbc1');
-INSERT INTO `global_property` VALUES ('xforms.useStoredXform','true','Set to true if you want to use XForms uploaded into the database, else set to false if you want to always build an XForm on the fly from the current form definition.','80184a02-92d5-4314-a3f7-ad6e0082a370');
-INSERT INTO `global_property` VALUES ('xforms.userSerializer','org.openmrs.module.xforms.serialization.DefaultUserSerializer','The user set serializer','04ba1cb5-25cb-4c5b-aac7-04588098982b');
-INSERT INTO `global_property` VALUES ('xforms.xformDownloadFolder','','Folder to which XForms are download','866731dc-bf54-4067-bb1c-657393bcd0ce');
-INSERT INTO `global_property` VALUES ('xforms.xformSerializer','org.fcitmuk.epihandy.EpihandyXformSerializer','The XForms serializer','6e4ef44f-577a-4981-a80f-5b794e52a056');
-INSERT INTO `global_property` VALUES ('xforms.xformUploadFolder','','Folder from which XForms data is uploaded','b187c0fa-488c-4130-8b07-39228eecfece');
+INSERT INTO `global_property` VALUES ('application.name','OpenMRS','The name of this application, as presented to the user, for example on the login and welcome pages.','284ed970-9103-4dd8-bcb1-c0bf1132b515',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('autoCloseVisits.visitType',NULL,'comma-separated list of the visit type(s) to automatically close','a6536c47-523e-4174-a160-23fe9fb745aa',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.causeOfDeath','5002','Concept id of the concept defining the CAUSE OF DEATH concept','19b31af9-5949-4610-806f-94e8450e646e',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.cd4_count','5497','Concept id of the concept defining the CD4 count concept','48f4d7c9-e9ca-4284-9bca-82da0b84a44d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.defaultConceptMapType','NARROWER-THAN','Default concept map type which is used when no other is set','180ca0fd-c41c-46de-b177-acbdd1fadbc0',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.false','2','Concept id of the concept defining the FALSE boolean concept','e7858b6a-f309-49c2-8688-2fd392f55b12',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.height','5090','Concept id of the concept defining the HEIGHT concept','7dafc7a1-7bbc-4bc4-9f90-d58c357dcf70',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.medicalRecordObservations','1238','The concept id of the MEDICAL_RECORD_OBSERVATIONS concept.  This concept_id is presumed to be the generic grouping (obr) concept in hl7 messages.  An obs_group row is not created for this concept.','66091829-8782-4262-830d-4c9121917027',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.none','1107','Concept id of the concept defining the NONE concept','9494cb83-60c5-453c-9687-f9e8fd8ceb8d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.otherNonCoded','5622','Concept id of the concept defining the OTHER NON-CODED concept','692a8a8f-4596-4f26-af27-271016416d08',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.patientDied','1742','Concept id of the concept defining the PATIENT DIED concept','b08e068e-baf5-4f31-8f42-551dbbde12d8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.problemList','1284','The concept id of the PROBLEM LIST concept.  This concept_id is presumed to be the generic grouping (obr) concept in hl7 messages.  An obs_group row is not created for this concept.','6c19d285-ac80-40a7-9f12-0b1c58df09fe',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.reasonExitedCare','','Concept id of the concept defining the REASON EXITED CARE concept','aba0483d-e08c-470b-a834-cf1a2d801849',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.reasonOrderStopped','1812','Concept id of the concept defining the REASON ORDER STOPPED concept','3c80e6ce-0aba-46e8-a084-deef0f4ad413',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.true','1','Concept id of the concept defining the TRUE boolean concept','70d0dc4b-44e7-40a9-a4f6-c89311a32376',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.weight','5089','Concept id of the concept defining the WEIGHT concept','4504134f-cde8-4ba4-884b-1d38a021bc66',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('conceptDrug.dosageForm.conceptClasses',NULL,'A comma-separated list of the allowed concept classes for the dosage form field of the concept drug management form.','a68c1e8c-ec67-49a0-a533-86f4b7b749d3',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('conceptDrug.route.conceptClasses',NULL,'A comma-separated list of the allowed concept classes for the route field of the concept drug management form.','34a52721-55c4-4ff6-893b-55698f30df09',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concepts.locked','false','true/false whether or not concepts can be edited in this database.','281afa08-5275-462c-8cea-346f5831a89a','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept_map_type_management.enable','false','Enables or disables management of concept map types','0d0ddd87-7acf-4215-b25a-8aa94f86805f','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.encounters.maximumNumberToShow',NULL,'An integer which, if specified, would determine the maximum number of encounters to display on the encounter tab of the patient dashboard.','afabfef8-6549-465d-8fd7-f8c911d7f4f0',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.encounters.providerDisplayRoles',NULL,'A comma-separated list of encounter roles (by name or id). Providers with these roles in an encounter will be displayed on the encounter tab of the patient dashboard.','103e761e-22d3-45b5-aab8-3e16f1b95ad5',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.encounters.showEditLink','true','true/false whether or not to show the \'Edit Encounter\' link on the patient dashboard','e3d219a1-b043-4bee-a93a-0e7e6189b634','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.encounters.showEmptyFields','true','true/false whether or not to show empty fields on the \'View Encounter\' window','367f214b-bd30-460f-8e94-04d24f5ffb1a','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.encounters.showViewLink','true','true/false whether or not to show the \'View Encounter\' link on the patient dashboard','3f1c4092-cd7e-45f3-bad8-140ac25359d7','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.encounters.usePages','smart','true/false/smart on how to show the pages on the \'View Encounter\' window.  \'smart\' means that if > 50% of the fields have page numbers defined, show data in pages','b891a22d-bae1-46f1-a379-9d716be80101',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.header.programs_to_show','','List of programs to show Enrollment details of in the patient header. (Should be an ordered comma-separated list of program_ids or names.)','da628b42-885c-4bd7-907c-2cdee9276b61',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.header.workflows_to_show','','List of programs to show Enrollment details of in the patient header. List of workflows to show current status of in the patient header. These will only be displayed if they belong to a program listed above. (Should be a comma-separated list of program_workflow_ids.)','e5ef99d6-cbbb-411c-85a0-6b52ebfb6ee8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.overview.showConcepts','','Comma delimited list of concepts ids to show on the patient dashboard overview tab','c507c79d-9ada-4290-b48e-bc679dd05b1e',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.regimen.displayDrugSetIds','ANTIRETROVIRAL DRUGS,TUBERCULOSIS TREATMENT DRUGS','Drug sets that appear on the Patient Dashboard Regimen tab. Comma separated list of name of concepts that are defined as drug sets.','27409ce3-6925-417b-b4b5-e283881a418a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.regimen.displayFrequencies','7 days/week,6 days/week,5 days/week,4 days/week,3 days/week,2 days/week,1 days/week','Frequency of a drug order that appear on the Patient Dashboard. Comma separated list of name of concepts that are defined as drug frequencies.','06a5fa69-557c-4ba0-baec-42381f2303eb',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.regimen.standardRegimens','<list>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>2</drugId>        <dose>1</dose>        <units>tab(s)</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>3TC + d4T(30) + NVP (Triomune-30)</displayName>    <codeName>standardTri30</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>3</drugId>        <dose>1</dose>        <units>tab(s)</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>3TC + d4T(40) + NVP (Triomune-40)</displayName>    <codeName>standardTri40</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>39</drugId>        <dose>1</dose>        <units>tab(s)</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion>        <drugId>22</drugId>        <dose>200</dose>        <units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>AZT + 3TC + NVP</displayName>    <codeName>standardAztNvp</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion reference=\"../../../regimenSuggestion[3]/drugComponents/drugSuggestion\"/>      <drugSuggestion>        <drugId>11</drugId>        <dose>600</dose>        <units>mg</units>        <frequency>1/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>    </drugComponents>    <displayName>AZT + 3TC + EFV(600)</displayName>    <codeName>standardAztEfv</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>5</drugId>        <dose>30</dose>        <units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion>        <drugId>42</drugId>        <dose>150</dose>        		<units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion reference=\"../../../regimenSuggestion[4]/drugComponents/drugSuggestion[2]\"/>    </drugComponents>    <displayName>d4T(30) + 3TC + EFV(600)</displayName>    <codeName>standardD4t30Efv</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion>  <regimenSuggestion>    <drugComponents>      <drugSuggestion>        <drugId>6</drugId>        <dose>40</dose>        <units>mg</units>        <frequency>2/day x 7 days/week</frequency>        <instructions></instructions>      </drugSuggestion>      <drugSuggestion reference=\"../../../regimenSuggestion[5]/drugComponents/drugSuggestion[2]\"/>      <drugSuggestion reference=\"../../../regimenSuggestion[4]/drugComponents/drugSuggestion[2]\"/>    </drugComponents>    <displayName>d4T(40) + 3TC + EFV(600)</displayName>    <codeName>standardD4t40Efv</codeName>    <canReplace>ANTIRETROVIRAL DRUGS</canReplace>  </regimenSuggestion></list>','XML description of standard drug regimens, to be shown as shortcuts on the dashboard regimen entry tab','90dbbbda-a2cf-4caf-ac1f-109d845fbc10',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.relationships.show_types','','Types of relationships separated by commas.  Doctor/Patient,Parent/Child','21cce583-772e-49f2-ab1b-ae45fa9f3994',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('dashboard.showPatientName','false','Whether or not to display the patient name in the patient dashboard title. Note that enabling this could be security risk if multiple users operate on the same computer.','404b7ef2-8804-43e5-8e75-6219e133b48d','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('default_locale','en_GB','Specifies the default locale. You can specify both the language code(ISO-639) and the country code(ISO-3166), e.g. \'en_GB\' or just country: e.g. \'en\'','5cfb72f0-e1ef-40fa-bdad-ebfffb98eda5',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('default_location','Unknown Location','The name of the location to use as a system default','091ec991-fcb3-4021-925c-120a43ef92de',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('default_theme','','Default theme for users.  OpenMRS ships with themes of \'green\', \'orange\', \'purple\', and \'legacy\'','ac2ca6b8-a71a-4cbf-a8f0-cc14513fe737',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('encounterForm.obsSortOrder','number','The sort order for the obs listed on the encounter edit form.  \'number\' sorts on the associated numbering from the form schema.  \'weight\' sorts on the order displayed in the form schema.','7baf0708-83cf-499d-b480-1d9fc8c41314',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.database_version','2.8','DO NOT MODIFY.  Current database version number for the formentry module.','5aa4c5aa-2579-48d4-a4f2-2120672d81d9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('FormEntry.enableDashboardTab','true','true/false whether or not to show a Form Entry tab on the patient dashboard','8d4b7162-4e5a-4939-9e09-bcc7f01f6ffd','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('FormEntry.enableOnEncounterTab','false','true/false whether or not to show a Enter Form button on the encounters tab of the patient dashboard','c878b013-403f-477a-8197-b5062101da5a','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.infopath_server_url','','When uploading an XSN, this url is used as the \"base path\".  (Should be something like http://localhost:8080/openmrs)','6b5e2f91-f293-4cfc-a59c-65c192d516be',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane.relationship_sort_order','','A comma-separated sorted list of relationship sides that should appear\nfirst in the InfoPath taskpane widget. Relationship sides should be\nspelled exactly as shown in the system; i.e. Parent,\nDoctor, Child','9744fde4-b87f-4476-869d-0f5b69873a02',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane.showAllUsersOnLoad','true','When you view the \'users.htm\' page in the taskpane, i.e. by clicking on the Choose a Provider\nbutton, should the system automatically preload a list of all users?','d52fdc5d-5898-489b-afed-7079caf33a08',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane_caption','Welcome!','The text seen in the infopath taskpane upon first logging in','b7e86d2a-9c29-4d38-8462-020da9ff98e3',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane_keepalive_min','','The number of minutes to keep refreshing the taskpane before allowing \nthe login to lapse','46195bb0-e0f0-4b56-aca5-6e9e0a1f9d53',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.infopath_taskpane_refresh_sec','','The number of seconds between taskpane refreshes.  This keeps the taskpane from\nlogging people out on longer forms','34856d7b-873b-423f-a299-cd3e9aa0f343',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.mandatory','false','true/false whether or not the formentry module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','9d87d18d-b67b-4511-a4a9-6f1b39b24748',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.patientForms.goBackOnEntry','false','\'true\' means have the browser go back to the find patient page after picking a form\nfrom the patientForms tab on the patient dashboard page','9c920131-a63a-4e5c-bcbd-6cf47c97c220',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.queue_archive_dir','formentry/archive/%Y/%M','Directory containing the formentry archive items.  This will contain xml files that have\nbeen submitted by infopath and then processed sucessfully into hl7.\nCertain date parameters will be replaced with the current date:\n%Y = four digit year\n%M = two digit month\n%D = two digit date of the month\n%w = week of the year\n     %W = week of the month','5547bf19-68a7-4164-bbd9-9b3a59428de7',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.queue_dir','formentry/queue','Directory containing the formentry queue items. This will contain xml files submitted by\ninfopath.  These items are awaiting processing to be turned into hl7 queue items','76a1ff76-6fa1-440c-8d05-d668380f1d5d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('formentry.started','false','DO NOT MODIFY. true/false whether or not the formentry module has been started.  This is used to make sure modules that were running  prior to a restart are started again','6244f5fa-6785-42e5-993b-211c85820db2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('graph.color.absolute','rgb(20,20,20)','Color of the \'invalid\' section of numeric graphs on the patient dashboard.','da0a0417-1f60-4f46-9957-2b8606894150',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('graph.color.critical','rgb(200,0,0)','Color of the \'critical\' section of numeric graphs on the patient dashboard.','8b53dbb5-750b-4190-9c8d-1f9b8cc6a661',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('graph.color.normal','rgb(255,126,0)','Color of the \'normal\' section of numeric graphs on the patient dashboard.','7c36e00f-eda8-4cb6-8442-445239689bd2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('gzip.enabled','false','Set to \'true\' to turn on OpenMRS\'s gzip filter, and have the webapp compress data before sending it to any client that supports it. Generally use this if you are running Tomcat standalone. If you are running Tomcat behind Apache, then you\'d want to use Apache to do gzip compression.','47ac2f21-6c05-4653-9b70-941b47bda0aa','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('hl7_archive.dir','hl7_archives','The default name or absolute path for the folder where to write the hl7_in_archives.','d4c80730-acd0-43ce-9a9b-8b0fc453f29c',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('hl7_processor.ignore_missing_patient_non_local','false','If true, hl7 messages for patients that are not found and are non-local will silently be dropped/ignored','e9671fcd-61cf-49c9-bf13-c31c65866834','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry.database_version','1.2.0','DO NOT MODIFY.  Current database version number for the htmlformentry module.','097511b3-87f3-4eb4-ae49-80969c842600',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry.mandatory','false','true/false whether or not the htmlformentry module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','0f1edc04-65df-4d79-a4eb-f54090ab3abe',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlformentry.started','false','DO NOT MODIFY. true/false whether or not the htmlformentry module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3f7f22c7-d137-4800-90c6-39da2fde9e58',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlwidgets.mandatory','false','true/false whether or not the htmlwidgets module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','44bc8668-f757-4915-bb76-d78663da9a86',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('htmlwidgets.started','false','DO NOT MODIFY. true/false whether or not the htmlwidgets module has been started.  This is used to make sure modules that were running  prior to a restart are started again','dc36fe8b-cae4-436a-8274-528afd6f6538',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('layout.address.format','<org.openmrs.layout.web.address.AddressTemplate>\n    <nameMappings class=\"properties\">\n      <property name=\"postalCode\" value=\"Location.postalCode\"/>\n      <property name=\"longitude\" value=\"Location.longitude\"/>\n      <property name=\"address2\" value=\"Location.address2\"/>\n      <property name=\"address1\" value=\"Location.address1\"/>\n      <property name=\"startDate\" value=\"PersonAddress.startDate\"/>\n      <property name=\"country\" value=\"Location.country\"/>\n      <property name=\"endDate\" value=\"personAddress.endDate\"/>\n      <property name=\"stateProvince\" value=\"Location.stateProvince\"/>\n      <property name=\"latitude\" value=\"Location.latitude\"/>\n      <property name=\"cityVillage\" value=\"Location.cityVillage\"/>\n    </nameMappings>\n    <sizeMappings class=\"properties\">\n      <property name=\"postalCode\" value=\"10\"/>\n      <property name=\"longitude\" value=\"10\"/>\n      <property name=\"address2\" value=\"40\"/>\n      <property name=\"address1\" value=\"40\"/>\n      <property name=\"startDate\" value=\"10\"/>\n      <property name=\"country\" value=\"10\"/>\n      <property name=\"endDate\" value=\"10\"/>\n      <property name=\"stateProvince\" value=\"10\"/>\n      <property name=\"latitude\" value=\"10\"/>\n      <property name=\"cityVillage\" value=\"10\"/>\n    </sizeMappings>\n    <lineByLineFormat>\n      <string>address1</string>\n      <string>address2</string>\n      <string>cityVillage stateProvince country postalCode</string>\n      <string>latitude longitude</string>\n      <string>startDate endDate</string>\n    </lineByLineFormat>\n     </org.openmrs.layout.web.address.AddressTemplate>','XML description of address formats','c92ad15b-7fa9-4526-a40b-68d1d9428dd2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('layout.name.format','short','Format in which to display the person names.  Valid values are short, long','22f3c425-d38d-4401-8794-af5bd00319e1',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('locale.allowed.list','en, es, fr, it, pt','Comma delimited list of locales allowed for use on system','400a5bdb-fa48-4506-b8c4-2402c1a965be',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('location.field.style','default','Type of widget to use for location fields','a5e42e36-ca59-4dd0-80fc-ff6e98f40045',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('log.level','info','log level used by the logger \'org.openmrs\'. This value will override the log4j.xml value. Valid values are trace, debug, info, warn, error or fatal','da166b69-af40-4824-80d2-48a0f63e124a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('logic.database_version','1.4','DO NOT MODIFY.  Current database version number for the logic module.','2ca4b83b-050b-4c3d-a2b8-389db2a87e3f',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('logic.default.ruleClassDirectory','logic/class','Default folder where compiled rule will be stored','79e93ef9-d6dd-4273-b7fb-02d04d101e7c',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('logic.default.ruleJavaDirectory','logic/sources','Default folder where rule\'s java file will be stored','8079bacf-2308-450d-bbb0-c6f928d360ce',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('logic.defaultTokens.conceptClasses','','When registering default tokens for logic, if you specify a comma-separated list of concept class names here, only concepts of those classes will have tokens registered. If you leave this blank, all classes will have tokens registered for their concepts.','99c9d5ce-d655-4bdd-8191-601ab4125910',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('logic.mandatory','false','true/false whether or not the logic module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','75286f07-d04e-4d6e-a791-a5fc878d42dd',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('logic.started','true','DO NOT MODIFY. true/false whether or not the logic module has been started.  This is used to make sure modules that were running  prior to a restart are started again','9ae3c1f4-d947-4e9b-950f-8639247b4fb1',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.debug','false','true/false whether to print debugging information during mailing','6616059b-7a70-43fd-a028-42d8523922da',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.default_content_type','text/plain','Content type to append to the mail messages','9d18e8cc-84fe-42cd-bc31-88b5f1aa843d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.from','info@openmrs.org','Email address to use as the default from address','7c2ed90e-cf9a-46df-b68c-40afb260b81f',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.password','test','Password for the SMTP user (if smtp_auth is enabled)','b61acb8d-972f-45b0-850f-e3ecc37b7a3a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.smtp_auth','false','true/false whether the smtp host requires authentication','86d7306b-72d9-44be-8609-d77a1a5add82',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.smtp_host','localhost','SMTP host name','c9596ca3-b666-4a7e-b65b-19c9b41eb64c',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.smtp_port','25','SMTP port','58109db8-0e4f-4337-b587-416c63ceeb64',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.transport_protocol','smtp','Transport protocol for the messaging engine. Valid values: smtp','b31a5a7b-6dee-49a3-8795-c4640b3383a3',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('mail.user','test','Username of the SMTP user (if smtp_auth is enabled)','d9cd3b9f-7ff5-4846-ac37-cf1ebee6f2ab',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('minSearchCharacters','3','Number of characters user must input before searching is started.','0882b5e5-8986-4442-b445-d1a989f4c00b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('module_repository_folder','modules','Name of the folder in which to store the modules','06bdd99b-e2df-41b6-8aa6-00b1e67df42b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('newPatientForm.relationships','','Comma separated list of the RelationshipTypes to show on the new/short patient form.  The list is defined like \'3a, 4b, 7a\'.  The number is the RelationshipTypeId and the \'a\' vs \'b\' part is which side of the relationship is filled in by the user.','13b026ac-edc4-436a-b7de-d9264a6bd801',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('new_patient_form.showRelationships','false','true/false whether or not to show the relationship editor on the addPatient.htm screen','13f79227-1ef1-4bf8-b113-ae781b6ac764','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('obs.complex_obs_dir','complex_obs','Default directory for storing complex obs.','7514bd0d-8cba-4ed0-b1ab-77d7440b98e2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.defaultPatientIdentifierValidator','org.openmrs.patient.impl.LuhnIdentifierValidator','This property sets the default patient identifier validator.  The default validator is only used in a handful of (mostly legacy) instances.  For example, it\'s used to generate the isValidCheckDigit calculated column and to append the string \"(default)\" to the name of the default validator on the editPatientIdentifierType form.','0f9c69c3-05b5-4729-9aef-b2bcdd40a7f7',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.headerAttributeTypes','','A comma delimited list of PersonAttributeType names that will be shown on the patient dashboard','92d00b16-bc58-4170-9378-25affae3f445',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.identifierPrefix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','baf5fd97-2cef-4a8d-a9c6-2ece653f4278',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.identifierRegex','','WARNING: Using this search property can cause a drop in mysql performance with large patient sets.  A MySQL regular expression for the patient identifier search strings.  The @SEARCH@ string is replaced at runtime with the user\'s search string.  An empty regex will cause a simply \'like\' sql search to be used. Example: ^0*@SEARCH@([A-Z]+-[0-9])?$','a5a0f9fa-2102-4908-816b-b1caa10f998f',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.identifierSearchPattern','','If this is empty, the regex or suffix/prefix search is used.  Comma separated list of identifiers to check.  Allows for faster searching of multiple options rather than the slow regex. e.g. @SEARCH@,0@SEARCH@,@SEARCH-1@-@CHECKDIGIT@,0@SEARCH-1@-@CHECKDIGIT@ would turn a request for \"4127\" into a search for \"in (\'4127\',\'04127\',\'412-7\',\'0412-7\')\"','fac9cfa1-d0ae-452c-ad15-31df9255fdc8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.identifierSuffix','','This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','d4e88b0b-9fcf-4b03-8bbe-8bd375ba97b1',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for patients in _lists_','d4ae3d01-7f68-4fee-b947-7334612ee3ac',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.nameValidationRegex','^[a-zA-Z \\-]+$','Names of the patients must pass this regex. Eg : ^[a-zA-Z \\-]+$ contains only english alphabet letters, spaces, and hyphens. A value of .* or the empty string means no validation is done.','d226fb6f-b965-44c3-8b39-2882ddf08500',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for patients when _viewing individually_','6bfeee82-c6b1-4664-80dc-a0b8169fb695',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientflags.database_version','1.2.10','DO NOT MODIFY.  Current database version number for the patientflags module.','9205e73c-9c08-4de8-aaa1-af2a3f1afbe4',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientflags.mandatory','false','true/false whether or not the patientflags module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','f95693f9-b3b6-485c-8cf2-8d0694dffb6d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientflags.patientHeaderDisplay','true','DO NOT MODIFY HERE: use \"manage flag global properties\" to modify; true/false whether or not to display flags in the Patient Dashboard overview','70a70abe-83a9-44df-81a4-f86ae3ac35de',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientflags.patientOverviewDisplay','true','DO NOT MODIFY HERE: use \"manage flag global properties\" to modify; true/false whether or not to display flags in the Patient Dashboard header','b6f2bda1-49af-4ecf-9a99-4ae3e8a2fb7a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientflags.started','true','DO NOT MODIFY. true/false whether or not the patientflags module has been started.  This is used to make sure modules that were running  prior to a restart are started again','7111485b-dfa3-439c-906d-829fa1545b8e',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientflags.username','admin','DO NOT MODIFY HERE: user \"manage flag global properties\" to modify; Username for the OpenMRS user that will evaluate Groovy flags','92f0caf9-cc55-4e24-986a-077e3765fb46',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patientSearch.matchMode','START','Specifies how patient names are matched while searching patient. Valid values are \'ANYWHERE\' or \'START\'. Defaults to start if missing or invalid value is present.','7cda1f4b-7d92-4db7-b1b1-415e2fea185d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient_identifier.importantTypes','','A comma delimited list of PatientIdentifier names : PatientIdentifier locations that will be displayed on the patient dashboard.  E.g.: TRACnet ID:Rwanda,ELDID:Kenya','2721dc43-9f39-422e-96bf-33933829169e',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('person.searchMaxResults','1000','The maximum number of results returned by patient searches','4416394f-7506-4e81-88dd-50413341439d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('report.deleteReportsAgeInHours','72','Reports that are not explicitly saved are deleted automatically when they are this many hours old. (Values less than or equal to zero means do not delete automatically)','41b31f7c-8b03-41ff-976f-d6b3a567dcfc',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('report.xmlMacros','','Macros that will be applied to Report Schema XMLs when they are interpreted. This should be java.util.properties format.','f28c0122-ad6e-4b7f-b231-05f9446f5c9b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.database_version','0.2.0','DO NOT MODIFY.  Current database version number for the reporting module.','6e6efbeb-1073-4d21-9e51-eb78448bd202',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.mandatory','false','true/false whether or not the reporting module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','e0e10930-e96c-48de-a886-afc57c1116a3',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.maxCachedReports','10','The maximum number of reports whose underlying data and output should be kept in the cache at any one time','a398cd59-60fb-4afe-bf55-8141d100dbd7',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.maxReportsToRun','1','The maximum number of reports that should be processed at any one time','19e67315-3b57-4421-812a-464b5c6f0449',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.preferredIdentifierTypes','','Pipe-separated list of patient identifier type names, which should be displayed on default patient datasets','eb9c152b-e3ac-4bdb-992e-1446464bdd1f',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.runReportCohortFilterMode','showIfNull','Supports the values hide,showIfNull,show which determine whether the cohort selector should be available in the run report page','7bc44ce3-ef75-451d-8126-3923ee11d99a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reporting.started','false','DO NOT MODIFY. true/false whether or not the reporting module has been started.  This is used to make sure modules that were running  prior to a restart are started again','3aecc96d-c1cf-4081-8f09-53ba5e7b8c6c',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reportingcompatibility.data_export_batch_size','7500','The number of patients to export at a time in a data export.  The larger this number the faster and more memory that is used.  The smaller this number the slower and less memory is used.','6b6d014e-1faf-4086-b050-65ce2b5b21ec',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reportingcompatibility.mandatory','false','true/false whether or not the reportingcompatibility module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','28c4fc2f-b23a-4645-9b2e-115b742a8dbc',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reportingcompatibility.started','false','DO NOT MODIFY. true/false whether or not the reportingcompatibility module has been started.  This is used to make sure modules that were running  prior to a restart are started again','33928aa4-b782-4813-8c15-5e0845414adb',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('reportProblem.url','http://errors.openmrs.org/scrap','The openmrs url where to submit bug reports','5b6c9061-97a4-4a66-9268-d1e9b5d78efb',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('scheduler.password','test','Password for the OpenMRS user that will perform the scheduler activities','0b995ab5-d1b6-45d1-9550-9cfe6540c296',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('scheduler.username','admin','Username for the OpenMRS user that will perform the scheduler activities','5b91e674-6e24-47d3-9f0f-bfcac4775dd8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('searchWidget.batchSize','200','The maximum number of search results that are returned by an ajax call','a36c0fd6-6ded-4a12-aa5c-709d42c77c33',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('searchWidget.maximumResults','2000','Specifies the maximum number of results to return from a single search in the search widgets','0f63f0a1-a30a-4991-99c7-761752e0e09b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('searchWidget.runInSerialMode','true','Specifies whether the search widgets should make ajax requests in serial or parallel order, a value of true is appropriate for implementations running on a slow network connection and vice versa','13b1bf09-0fe1-4a48-bafb-f654d38b7fe3','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('searchWidget.searchDelayInterval','400','Specifies time interval in milliseconds when searching, between keyboard keyup event and triggering the search off, should be higher if most users are slow when typing so as to minimise the load on the server','79994b34-a113-4926-95b1-e21b2f78c349',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('security.passwordCannotMatchUsername','true','Configure whether passwords must not match user\'s username or system id','1223083c-8efe-43cf-abae-2c61071f8f5f','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('security.passwordCustomRegex','','Configure a custom regular expression that a password must match','96576f8a-133d-459d-b4ea-9746b96afd91',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('security.passwordMinimumLength','8','Configure the minimum length required of all passwords','b283b9f7-a860-47c5-b762-a470429e7dc2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('security.passwordRequiresDigit','true','Configure whether passwords must contain at least one digit','a076fa5e-91d5-4b61-b46c-3b4a73037e5c','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('security.passwordRequiresNonDigit','true','Configure whether passwords must contain at least one non-digit','e602ee0b-5277-4bd4-aa4b-cb4e188cc796','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('security.passwordRequiresUpperAndLowerCase','true','Configure whether passwords must contain both upper and lower case characters','a974b916-b545-4155-b765-8b83dffe6b09','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('serialization.xstream.mandatory','false','true/false whether or not the serialization.xstream module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','8690ab3a-45cb-4474-ab8b-8386650eee84',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('serialization.xstream.started','true','DO NOT MODIFY. true/false whether or not the serialization.xstream module has been started.  This is used to make sure modules that were running  prior to a restart are started again','625b7753-69aa-43aa-a33b-27da62bba7a9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('user.headerAttributeTypes','','A comma delimited list of PersonAttributeType names that will be shown on the user dashboard. (not used in v1.5)','c37a3ee0-3440-4fea-a320-4e38c832baec',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('user.listingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for users in _lists_','f85c4e9e-6bf4-4c8a-8cbb-f34d0d596213',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('user.viewingAttributeTypes','','A comma delimited list of PersonAttributeType names that should be displayed for users when _viewing individually_','dff7563c-288e-4422-9160-bac3e1c8ab76',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('use_patient_attribute.healthCenter','false','Indicates whether or not the \'health center\' attribute is shown when viewing/searching for patients','db01609f-8844-4244-821e-d33ca723e2fa','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('use_patient_attribute.mothersName','false','Indicates whether or not mother\'s name is able to be added/viewed for a patient','6c9bddd5-2959-4b02-bf8f-5b91c38eddb9','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('visits.assignmentHandler','org.openmrs.api.handler.ExistingVisitAssignmentHandler','Set to the name of the class responsible for assigning encounters to visits.','0c51370d-77b6-4ade-905f-9b7508a143e2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('visits.enabled','true','Set to true to enable the Visits feature. This will replace the \'Encounters\' tab with a \'Visits\' tab on the dashboard.','b9e82415-96de-49d8-a06e-bb353f0b7a4b','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('visits.encounterTypeToVisitTypeMapping',NULL,'Specifies how encounter types are mapped to visit types when automatically assigning encounters to visits. e.g 1:1, 2:1, 3:2 in the format encounterTypeId:visitTypeId','04341a57-c9aa-4b30-b610-c0a4cc8daae4',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.allowBindEdit','false','Set to true if you want to allow editing of question bindings when designing forms.','c530c3fd-1268-408d-9fa7-91e48a08d7b1',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.archive_dir','xforms/archive/%Y/%M','Directory containing the xforms archive items.  This will contain xform model xml files that have been processed and then submitted successfully into the formentry queue.','9d8d0ff1-7c52-4cb1-80ca-e730f48dd397',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.autoGeneratePatientIdentifier','false','Set to true if you want the idgen module to generate patient identifiers when creating new patients using the xforms module.','ca17191b-0ac4-4efb-8f60-d4a1bd49e282',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.cohortSerializer','org.openmrs.module.xforms.serialization.DefaultCohortSerializer','The patient cohort (cohort_id and name) serializer','186e8681-4f49-4b84-927e-539c5bc2d11a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.complexobs_dir','xforms/complexobs','Directory for storing complex obs used by the xforms module.','4f5febda-c50d-4847-96ff-7aad30c1a629',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.database_version','3.7.7','DO NOT MODIFY.  Current database version number for the xforms module.','389f1021-8ae1-4ae0-b9c8-bab2984e59c4',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.dateDisplayFormat','dd/MM/yyyy','The display format of dates used by the xforms module.','8ffb2a8f-d636-474a-b482-1c4cff28f0f9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.dateSubmitFormat','yyyy-MM-dd','The format of the dates passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong dates on the server.','e89338f7-4d24-450f-ac6b-e01b5f873a23',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.dateTimeDisplayFormat','dd/MM/yyyy hh:mm a','The display format of datetime used by the xforms module.','25cadae0-4764-4beb-8827-31292f812e11',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.dateTimeSubmitFormat','yyyy-MM-dd\'T\'HH:mm:ssZ','The format of the datetime passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong dates on the server.','5a711d3f-bee5-4179-b812-4f3829f7018b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.decimalSeparators','en:.;fr:.;es:,;it:.;pt:.','The decimal separators for each locale. e.g:  en:.;fr:.;es:,;it:.;pt:.','e0a001ee-950e-44c1-bdb6-e9f5110c1aee',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.defaultFontFamily','Verdana, \'Lucida Grande\', \'Trebuchet MS\', Arial, Sans-Serif','The default font family used by the form designer.','b7bcb296-0ea1-48ec-b0e0-4a91a379a6a9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.defaultFontSize','16','The default font size used by the form designer.','88b79936-8893-4cec-a596-d6429f385dc6',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.encounterDateIncludesTime','false','Set to true if the encounter date should include time.','2493fea6-d5f7-4aed-8df9-6a7ed7c505ed',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.error_dir','xforms/error','Directory containing the xforms error items.  This will contain xform model xml files that have not been submitted into the formentry queue because of processing errors.','cce5988b-ac7c-499f-b41b-4930f9602a62',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.includeUsersInXformsDownload','true','Set to true if you want to include users when downloading xforms, else set to false if you want to always load the users list separately.','caba3301-fcba-46b1-b308-f05da872698b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.isRemoteFormEntry','false','Set to true if this is a remote form entry server (Not the main server).','98561944-7991-4006-9766-c0520e10f5cb',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.localeList','en:English','The list of locales supported by the form designer. e.g:  en:English,fr:French,es:Spanish,it:Italian,pt:Portuguese','0df44a76-1083-4c8d-8045-a1584ab5cdc8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.mandatory','false','true/false whether or not the xforms module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','6d77301e-5267-4d15-8853-0b01cd9e3301',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.multiSelectAppearance','full','The appearance of multi select input fields. Allowed values are: {full,minimal,compact}','8f899456-645f-4ab8-b061-5455d2dda974',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.newPatientFormId','','The id of the form for creating new patients','cbc15af2-90f4-4cce-9e8e-e3cbd80aabed',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.new_patient_identifier_type_id','1','The id of the patient identifier type which will be used when creating new patients from forms which do not have a patient_identifier.identifier_type_id field.','027a195e-cd71-46a3-bd0a-12c512819c9a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.overwriteValidationsOnRefresh','false','Set to true if, on refresh, you want custom validations to be replaced by those from the database concepts.','1360e41c-ca39-4eb0-b378-0fb3386e7480',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.patientDownloadCohort','','The cohort for patients to download','34d21026-cf58-447c-992e-d244019d4dbb',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.patientRegEncounterFormId','0','The id of the encounter form which will be combined with the patient registration form.','1061468e-7e94-4a9e-ab83-2883fbdcc758',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.patientSerializer','org.openmrs.module.xforms.serialization.DefaultPatientSerializer','The patient set serializer','10e1ea99-2efe-4b6a-8e2c-2155e5be94f8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.preferredConceptSource','','The name for preferred concept source to be used for forms that can be shared with other OpenMRS installations.','94c1bec3-4483-4356-a089-3daf8e530777',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.queue_dir','xforms/queue','Directory containing the xforms queue items. This will contain xforms xml model files submitted and awaiting processing to be submitted into the formentry queue.','2639a8a3-820d-410a-a013-b2271f71c50a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.rejectExistingPatientCreation','true','Set to true to Reject forms for patients considered new when they already exist, by virture of patient identifier. Else set to false to allow them.','1d5d7a91-c5cb-4e3a-b398-1444105ccb82',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.saveFormat','purcforms','The format in which the xforms will be saved. For now we support two formats: purcforms and javarosa','7a32cbe5-26c2-4b9a-b6b9-cbb678dd9969',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.searchNewPatientAfterFormSubmission','true','Set to true if you want to search for a new patient after submitting a form, else set to false if you want to go back to the same patient.','4f37fd88-d812-4300-81fc-00866210d280',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.setDefaultLocation','false','Set to true if you want to set the default location to that of the logged on user.','a1d647b0-b3af-465b-a754-b0b0094a5135',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.setDefaultProvider','false','Set to true if you want to set the default provider to the logged on user, if he or she has the provider role.','c678aea3-08d4-4c9b-8ba2-099469db1608',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showJavaScriptTab','false','Set to true if you want to display the JavaScript tab of the form designer.','ec95fa36-18b9-48eb-97be-598889c1e34f',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showLanguageTab','false','Set to true if you want to display the language xml tab of the form designer.','7fdc8353-7d5c-4ae5-b6d0-da709fc9c78d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showLayoutXmlTab','false','Set to true if you want to display the layout xml tab of the form designer.','2a15765d-8edb-4396-b88d-a4bb138e1e76',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showModelXmlTab','false','Set to true if you want to display the model xml tab of the form designer.','4631e0c3-c809-405c-b8dd-175a9886d0d4',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showOfflineFormDesigner','false','Set to true if you want to show the form designer in off line mode.','8d1d4bbe-a6d0-4a38-af05-63c4ec607205',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showSubmitSuccessMsg','false','Set to true if you want to display the form submitted successfully message every time a form is submitted successfully.','8fed3dfd-fb8b-4f79-a54d-28df9566a6a9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.showXformsSourceTab','false','Set to true if you want to display the xforms source tab of the form designer.','ebef4870-bcc9-467d-ba5c-09fd214008d7',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.singleSelectAppearance','minimal','The appearance of single select input fields. Allowed values are: {full,minimal,compact}','03faabf9-d0e4-47b8-bd04-fdbd1e774c70',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.smsFieldSepChar','=','The separator between questions and answers in the sms text.','1f79532d-a1e1-46ae-97e9-c9ff57310ed0',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.smsSendFailureReports','true','Set to true if you want sms sender to get failure reports, else set to false.','ba625b78-81cc-42d6-b297-987dae1aa959',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.smsSendSuccessReports','true','Set to true if you want sms sender to get success reports, else set to false.','4c85e2d3-a259-4ae6-8ba1-12bb31f6824d',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.started','false','DO NOT MODIFY. true/false whether or not the xforms module has been started.  This is used to make sure modules that were running  prior to a restart are started again','19db2851-f791-4537-a36b-d3de8439b16a',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.timeDisplayFormat','hh:mm a','The display format of time used by the xforms module.','488c36b5-717f-41f9-a71c-aa077f67e9c7',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.timeSubmitFormat','HH:mm:ss','The format of the time passed in the xml of the xforms model. Please make sure this matches with the date format of your data entry applications, else you will get wrong times on the server.','c6668d85-135e-4c18-94cc-055ee5968ff8',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.undoRedoBufferSize','-1','Set to the maximum number of actions you can undo or redo. The bigger the size, the more memory your browser needs. Default value is 100. Set to -1 if you do not want any limit.','49d7bc0c-c048-41b0-8285-f62fca0a4cc9',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.useEncounterXform','true','Set to true if you want to use XForms to edit encounters instead of the default openmrs edit encounter screen, else set to false.','ed61d33b-9e65-42fc-b5d2-f8ea31324809',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.usePatientXform','false','Set to true if you want to use XForms to create new patients instead of the default openmrs create patient form, else set to false.','c6699b07-edf9-488a-aa0b-9fbe8100fbc1',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.userSerializer','org.openmrs.module.xforms.serialization.DefaultUserSerializer','The user set serializer','04ba1cb5-25cb-4c5b-aac7-04588098982b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.useStoredXform','true','Set to true if you want to use XForms uploaded into the database, else set to false if you want to always build an XForm on the fly from the current form definition.','80184a02-92d5-4314-a3f7-ad6e0082a370',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.xformDownloadFolder','','Folder to which XForms are download','866731dc-bf54-4067-bb1c-657393bcd0ce',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.xformSerializer','org.fcitmuk.epihandy.EpihandyXformSerializer','The XForms serializer','6e4ef44f-577a-4981-a80f-5b794e52a056',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('xforms.xformUploadFolder','','Folder from which XForms data is uploaded','b187c0fa-488c-4130-8b07-39228eecfece',NULL,NULL,NULL,NULL);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `hl7_in_archive` (
@@ -19950,675 +20242,801 @@ CREATE TABLE `liquibasechangelog` (
   `AUTHOR` varchar(63) NOT NULL,
   `FILENAME` varchar(200) NOT NULL,
   `DATEEXECUTED` datetime NOT NULL,
-  `MD5SUM` varchar(32) DEFAULT NULL,
+  `MD5SUM` varchar(35) DEFAULT NULL,
   `DESCRIPTION` varchar(255) DEFAULT NULL,
   `COMMENTS` varchar(255) DEFAULT NULL,
   `TAG` varchar(255) DEFAULT NULL,
-  `LIQUIBASE` varchar(10) DEFAULT NULL,
+  `LIQUIBASE` varchar(20) DEFAULT NULL,
+  `ORDEREXECUTED` int(11) NOT NULL,
+  `EXECTYPE` varchar(10) NOT NULL,
   PRIMARY KEY (`ID`,`AUTHOR`,`FILENAME`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `liquibasechangelog` VALUES ('0','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:27','112fa925e7ce223f9dfc1c841176b4c','Custom Change','Run the old sqldiff file to get database up to the 1.4.0.20 version if needed. (Requires \'mysql\' to be on the PATH)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('02232009-1141','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:11:39','aa7af8d8a609c61fd504e6121b8feda','Modify Column','Modify the password column to fit the output of SHA-512 function',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1','upul','liquibase-update-to-latest.xml','2012-05-27 18:11:27','aeb2c081fe662e3375a02ea34696492','Add Column','Add the column to person_attribute type to connect each type to a privilege',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-12','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','1ef82a3a056d8fe77c51789ee3e270','Insert Row (x11)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-13','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','1fbe86152e13998b4e9dfa64f8f99e1','Insert Row (x2)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-14','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','37d7a09a3680241c2cd870bf875f7679','Insert Row (x4)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-15','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','6f5fdf6fe4573d335b764e8c3f6dec9','Insert Row (x15)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-16','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','e3fb7531421d36297f9b551aa14eed3','Insert Row','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-17','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','2c3a40aea75302fa5eda34e68f0b5a8','Insert Row (x2)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-18','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','a077f3e88c77b1bcfd024568ce97a57','Insert Row (x2)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-2','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:24','17915c6b808f125502a8832f191896a','Insert Row (x5)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-20','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','74d4c95919a87ad385f4678c05befeb','Insert Row','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-21','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','cad8f9efce142229ad5030139ae2ee62','Insert Row','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-22','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','98e8afcf7f83f1f2fe6ae566ae71b','Insert Row','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-23','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:26','877ae775e48051291b94467caebdbf9','Insert Row','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-5','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:24','e69c9cbc8e906c10b7b19ce95c6fbb','Insert Row','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-6','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','afbc17f0c1c778754be371db868719f','Insert Row (x14)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-8','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','52afbf2cc39cde1fed9c97b8886ef','Insert Row (x7)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226348923233-9','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25','f8de838176dd923fe06ff3346fd2e9c7','Insert Row (x4)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1226412230538-9a','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:26','d19735782014e65d28267d83a681fac','Insert Row (x4)','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-1','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:00','4b1d6f6458503aad8cf53c8583648d1','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-10','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','1ca890687d9198679930117b437bdcb8','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-100','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','c4f0efe639c65a0ca719a7672c9ae99','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-101','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','ec489290e24b9bc8e7cefa4cb193a5','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-102','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','3fffc270441f9846be7f6f15b9186fe','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-103','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','5bca419b6ce805277a7f1e853492965','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-104','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','f5921bfce0567fad9dbebf4a464b7b8','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-105','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','a8e830de2d9b5b30b5cee4f96e3d4f','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-106','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','7e434b23ab45109451cc494fc7b66831','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-107','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','347132fbd16c8712058e1f95765ce26','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-108','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','5b4184878459e4fc9341a43b4be64ef','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-109','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','c2bfb4e612aa1973f1c365ad7118f342','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-11','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','fa7989647192649dc172d64046eb90','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-110','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','d6659d52c5bcac8b59fb8ba1a37f86','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-111','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08','f995cd7d34245c41d575977cf271ccc6','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-112','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','83c9df4fa7c9a7d84cdd930ff59776','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-113','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','581e495dd2e0605b389c1d497388786f','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-114','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','833048d0b4aae48cec412ca39b7b742','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-115','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','a08b4c2b2cced32d89b1d4b31b97458','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-116','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','eeec2cd3e6dddfebf775011fb81bd94','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-117','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','9f80b1cfa564da653099bec7178a435','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-118','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','1e5f598cefabaaa8ef2b1bec0b95597','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-119','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','698c2d5e06fb51de417d1ed586129','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-12','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','9375592183aa2b5d4ad11a937595d9','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-120','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','d05ee670738deebde0131d30112ec4ae','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-121','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','b248338c8498759a3ea4de4e3b667793','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-122','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','f2636dd6c2704c55fb9747b3b8a2a','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-123','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09','307598cfdfdae399ad1ce3e7c4a8467','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-124','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','ce9674c37a991460aed032ad5cb7d89','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-125','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','dface46a9bf5a1250d143e868208865','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-126','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','de1299f5403e3360e1c2c53390a8b29c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-127','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','5e7f8e3b6bf0fc792f3f302d7cb2b3','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-128','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','2d81a031cf75efab818d6e71fd344c24','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-129','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','ad7b4d0e76518df21fff420664ea52','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-13','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','8a81103ce3bf6f96ae9a3cd5ea11da4','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-130','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','ca1a1a1be5462940b223815c43d43ee','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-131','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','1e994b0469d1759c69824fa79bb47e','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-132','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','71079c961b9b64fc0642ed69b944bef','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-133','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','b7f75569bbf9932631edb2ded9a412','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-134','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','bfdf173f27999984c8fef82bb496c880','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-135','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','fceb5cc5466c89f54fab47951181ead','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-136','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','05f6a40bc30fe272b4bd740ad7709f','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-137','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10','e4d42fbfe1248f205c9221b884c8e71','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-138','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','9ebf8d9bb9541ceba5a7ed25d55978','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-139','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','4ab8e4364cdb9f61f512845b537a5e33','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-14','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','2b11cd2e016b3967d4806872727ec7','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-140','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','48d01547623e48d3b4d11d547c28c28','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-141','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','1f2917f6f1523ca240c9dfd44ccdfa66','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-142','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','d826371493865456e85a06649e83a9d','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-143','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','669e47429cecc0ebe20c9e4724ad1b','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-144','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','fc622179fac4171f122cdbb217a5332','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-145','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','3ab7a04513262a248a1584ea9eb6342','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-146','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','9c9b88b77c842272ab95b913d2c45f1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-147','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','6d2f3c8fd1a6fd222cd9e64626ec2414','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-148','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','7f99bbffa5152188ccd74e889cc69344','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-149','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','2971495b795edfbc771618d9d178179','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-15','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','2b1462a7269e8d188326f9439ec1a0','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-150','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11','7453c6b2dc234075444921641f038cf','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-151','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','62bfd65133eb8649823b76e28f749ae4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-152','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','41f97398c21bcc4f3bbfa57ac36167','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-153','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','34a3388e508254798882f090113b91e9','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-154','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','cd1c528d9bbd8cd521f55f51507f2448','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-155','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','59169212323db3843f2d240afaab688','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-156','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','cb904d9071798e490aaf1a894777b','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-157','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','ec5e335c2d6ef840ba839d2d7cab26bf','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-158','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','edba928f8f3af2b720d1ae52c3da29','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-159','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','1d631d1b5585f307b5bba3e94104897','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-16','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','4a97582b5459ea8f1d718cc7044517b','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-160','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','5af7bfc7acbef7db5684ff3e662d7b1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-161','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12','d65716f46e431b417677fb5754f631cf','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-162','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','a823cf39649373bf762fc2ddc9a3b4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-163','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','8efed95ebdac55227fd711cb18c652a','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-164','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','f7cb86e864d7b259bb63c73cb4cf1e8','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-165','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','5da4fd35f568ae85de6274f6fb179dd','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-166','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','d6a910cfe97bc6aed5e54ec1cadd89b','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-167','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','adf31a2b3145f38cfc94632966dc0cf','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-168','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','d3984f9f372ff0df21db96aeae982cab','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-169','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','296119308b945663ddbd5b4b719e53','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-17','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','88a9a422647683aedba68c299823683d','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-170','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','be7a3bc89baac1b0b2e0fe51991bd015','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-171','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','ca59f633dbae6e045d58b4cca6cc7c5','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-172','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','6325d6535f7cf928fa84a37a72605dfb','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-173','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','351518f028727083f95bc8d54c295c2a','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-174','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13','3e888947a28e23f88510af9514767590','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-175','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','5fef7a2498f6d631e1228efc2bdef6c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-176','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','2bd625c243b7583c86a9bffd3215a741','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-177','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','426c4bccb537fb3f4c3d3e26fff73018','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-178','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','fc3d34e4c7f55660abad9d79fa9f19','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-179','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','41071cc7cfeec957e73ede6cec85063','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-18','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','44be2c894ba65ba6dff11859325ee1e7','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-180','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','17f13d77392855ff797b2ee5938150b','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-181','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','1e87e405f78834da8449c3dd538ea69','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-182','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','7e5895b2826c9b539643c2a52db136bd','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-183','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','1ed87f73bb22c85a678e7486ce316e4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-184','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','dd523eb3c0d47022fd3ccde778a7b21','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-185','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','bf22dffeb46511b2c54caa2edde81cf','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-186','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','bcd25ca2c2592b19d299b434d4e2b855','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-187','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14','c552885fe12d78ad9d9e902e85c2e','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-188','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','1be8a7c821c27ac5f24f37ea72dde4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-189','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','5ebe66c9ad8928b9dd571fbf2e684342','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-19','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','8fea50c3c68aa5e3caa8a29ac1ed2bc2','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-190','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','765abd819360e17b449b349e3c6fb4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-191','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','eefbf72ce449dfa6d87903b9d48fc14','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-192','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','c49e3e3ef4748a6d227822ba9d9db75','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-193','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','8734c3bf33d23c5167926fde1c2497b1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-194','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','acf63f4166b9efbeec94a33b9873b6','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-195','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','a6893ed94b1c673064e64f31e76922e3','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-196','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','4d10fc7df1588142908dfe1ecab77983','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-197','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','77df8c771bcafcdc69e0f036fa297e56','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-198','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','37bb62897883da1e2833a1ab2088edb','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-199','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','4dc522cef2d9e8f6679f1ad05d5e971e','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-2','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:00','484d95d2ffed12fa0ee8aee8974b567','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-20','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','7faf5302b18d5ce205b723bca1542c','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-200','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15','939ac86f57297fc01f80b129247630f5','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-201','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','9bf8c421b14fa2c8e5784f89c3d8d65','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-202','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','309ecd6871c152c8c2f87a80f520a68a','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-203','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','c8ac825ea236dd980f088849eb6e974','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-204','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','3094b038b0f828dbe7d0296b28eb3f73','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-205','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','5a12d2856974981835ba499d73ac1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-206','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','c1abccf6ee7c67d4471cc292fa878aa','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-207','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','ef6b7d9cb53938c0e8682daeb5af97e','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-208','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','a8a7f2b6ac8fa17b814ab859b4532fd','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-209','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','137480e6ed47c390e98547b0551d39f4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-21','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','ea3ef386b2dfb64cb9df5c1fbc6378','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-210','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','fa37aa2bf95f6b24806ad4fab3b16e26','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-211','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','e3cfdbbc639a13bb42471dbecdc2d88','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-212','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','6eee35721da53ff117ababbae33bd5','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-213','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16','c591a16e2a8fcc25ef4aa858692dfef','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-214','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','56c3ba4cfa55218d3aa0238ec2275f0','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-215','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','48563ec0b8762dce6bf94e068b27cb5','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-216','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','396121d768871a53120935cf19420d7','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-217','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','ebfbd07cd866453255b3532893163562','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-218','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','1530c85467d1b6d6980c794dbfd33f','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-219','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','5061bae5afea383d93b6f8b118253d','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-22','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','4b9fbcceb5de1c20b8338e96328198','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-220','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','e4ccb7132533b42c47f77abf5ef26','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-221','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','ff49796922743ca6aec19ec3a4ee2d8','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-222','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','b6a54d3e4d64fd39ef72efb98dfc936','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-223','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','a4de4db8a76fd815c83b53fd5f67fee1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-224','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','22ea56d2224297e8252864e90466c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-225','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17','dfccc3b975a9f5b8ec5b27164c2d6d','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-226','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','e34f2fe84f1222d6aa5eb652f8d17f44','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-227','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','6bf6811bac713b4761afbba7756e1a61','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-228','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','4732be71b8c8fbf39bc1df446af78751','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-229','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','73d11a5ae7bf33aa516119311cbc16f6','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-23','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','88e233ad3125c41ed528a721cfe2345f','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-230','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','ee2e35bc91b5e1b01f2048c987caf6c4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-231','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','63bbb76e789fcad6b69bd4c64f5950','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-232','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','76be79df3e103cc45f4ee148555e4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-233','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','e7b3a215c88f4d892fa76882e5159f64','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-234','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','8c28fb289889fdd53acda37d11112ce2','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-235','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','6cdeded260bdceb9e1826d4ffbf5a375','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-236','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','28e4b2fa85d59877ad9fa54c6d2b031','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-237','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','a1ffd0638df4322f16f8726f98b4f2','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-238','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','41aa312b273ec9ebf460faaa6e6b299c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-239','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18','20d4b6e95fcfb79a613a24cf75e86c6','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-24','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','b2efc086868b3c3274b7d68014b6ea93','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-240','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','589dcc4157bfcf62a427f2ce7e4e1c29','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-241','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','52bde811efcc8b60f64bc0317ee6045','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-242','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','c58692cfa01f856a60b98215ba62e5a7','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-243','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','6d44d317d139438e24ff60424ea7df8d','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-244','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','e6e61db0f6b2f486a52797219e8545f','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-245','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','f5403a8a515082dd136af948e6bf4c97','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-246','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','fa4d4b30d92fa994ee2977a353a726f1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-247','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','67b39f2b2132f427ff2a6fcf4a79bdeb','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-248','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','e67632f4fa63536017f3bcecb073de71','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-249','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','4c81272b8d3d7e4bd95a8cf8e9a91e6a','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-25','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','add581f3645d35c6ef17892ea196362','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-250','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','54fb2e3a25332da06e38a9d2b43badfd','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-251','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','fb1a29f3188a43c1501e142ba09fd778','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-252','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19','e5c417adb79757dd942b194ad59cd2e3','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-253','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','412115fd6d7bedbba0d3439617328693','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-254','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','e76b81d6b51f58983432c296f319e48','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-255','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','80703c6fd0656cf832f32f75ad64f3','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-256','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','88b295bfc4d05f928c8d7cbf36c84d','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-257','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','853fb4af8c20137ecf9d858713cff6','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-258','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','c33b2874e3d38ddef784a0ccb03e3f74','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-259','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','bb18dfa78fe1322413ff4f0871712a','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-26','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','d11eef4b608b5de1be8c24f4cef73a1','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-260','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','f0953d50abcef615f855b6d6ef0bbd3','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-261','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','2e24f8fdf2b3dfb9abb02ccaeee87f4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-262','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','28d3165b5789d4ccb62ac271c8d86bdd','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-263','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','7f93b659cc1a2a66c8666f7ab5793b','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-264','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','c51f76c76ca7945eeb2423b56fd754ff','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-265','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20','46b310f19ea8c0da3afd50c7f2717f2','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-266','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','aa7981765d72e6c22281f91c71602ce2','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-267','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','b2bc8373ebb491233bea3b6403e2fea','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-268','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','f4882dfee1f2ffac3be37258a8ec4c43','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-269','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','4c9212f9fa9f24ef868c7fd5851b7e8f','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-27','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','98d1653ea222665c66abb33ccd18853f','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-270','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','aaf31e19b19f9e4b840d08ea730d1','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-271','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','47c543135499fdcd7f1ea1a4a71e495d','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-272','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','7df76774c3f25483e4b9612eee98d8','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-273','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','6cbef8ca7253e9b6941625756e3ead12','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-274','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','99c026624d5987f4a39b124c473da2','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-275','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','bab45b77299235943c469ca9e0396cff','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-276','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21','c50376c85bff6bdf26a4ca97e2bfe','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-277','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','e7e8229acc4533fd3fca7534e531063','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-278','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','aed02dbce85e293159b787d270e57d63','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-279','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','93ce9101c3bc7214721f3163b11c33','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-28','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','a185fd8a442e66a329161f429e8c10f5','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-280','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','cef4a9e68e71659662adddd67c976','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-281','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','929d293722d1d652834da0ceefa9c841','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-282','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','7a2834f44349838fcfbcb61648bc8a0','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-283','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','dd19eeb1b52497428e644a84f0653c8e','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-284','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','8bc32e874e45a6cdd60184e9c92d6c4','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-285','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','66af85da9d747cf7b13b19c358fd93c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-286','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','14ac9a98a545c5b172c021486d1d36','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-287','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','7c4e227cf011839ef78fb4a83ed59d6','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-288','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22','ab73c07b88fcfd7fffcd2bd41e05ec8','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-289','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','ffb7495ff05d83cf97d9986f895efe0','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-29','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','3524a06b47e415769fd22f9bd6442d6','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-290','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','fd25f4e5377a68bc11f6927ec4ba1dc','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-291','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','fbdd163ca23861baa2f84dce077b6c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-292','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','d0eebd47c26dc07764741ee4b1ac72','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-293','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','28b8cd9a32fb115c9c746712afa223','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-294','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','ada81a1d3e575780a54bbe79643db8fc','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-295','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','93e944816ec2dc7b31984a9e4932f3bb','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-296','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','54d71bd27cb66b9eb12716bdce3c7c','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-297','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','a9429cc74fb131d5d50899a402b21f','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-298','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','e38bd6437d3ce8274e16d02e73e976a8','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-299','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','2dcda62270603cbfa1581d1339b0a18e','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-3','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:00','1eeb9f4467c832c61b2cadf8da592ba9','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-30','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','b9cbeed525ae08c4f696bda851227be','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-300','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23','c861c2e3e1fcbae170b5fe8c161ba7c9','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-301','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:24','0444230b26f283b1b4b4c3583ca6a2','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-302','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:24','3ae36b982c1a4dc32b623ed7eab649','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-303','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:24','dabab8dcefdde7eefee9d8cc177725','Add Foreign Key Constraint','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-31','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','3242cd7de7211c9d3331dfb854afdabf','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-32','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','8149ef2df786f5e2f7965547ac66d1','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-33','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','59b63eeddd85b6e75834d5ce529622','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-34','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','7363eda0ec9d3d747381124a9984be0','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-35','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','88c2f1f647e779f89929826a776fddc6','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-36','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','a822d3f8bdcdb8ba93d164244d681f19','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-37','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','ad9c5348bed3c5416789fe87923b60','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-38','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','25c5c2d1727636891151ad31d1e70cd','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-39','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','67727fb610365d2da6efb233d77f5ada','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-4','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','9046b645b2dff85ac97ddf1ad6f3074','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-40','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','c136d2cb06570483dcf5f585ff754f','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-41','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02','f0f7a7a4bf316add1449b49698647ef1','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-42','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','9678d659e5e8b86b3645dfb5e1cddea0','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-43','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','40d07fbd79ec3ef39901dc110b4fd75','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-44','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','637177ae6888cf72e917824068f9a3be','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-45','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','f32f6038a35c9261a179c3f1dd96bc','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-46','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','a7b96f4406744ac11bb6a878868e04d','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-47','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','f5221be8e26cd0f59670598766464641','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-48','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','11aa9575b3c9f149db94168be6fd324','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-49','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','13665b264c197c7b30604f0a8a564e4','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-5','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','38c61d5d99b0ab3c444fe36d95181e1','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-50','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','98ee82b9722f705320cabb8fc8d9d284','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-51','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','fe724c66d29e156281396c9d1b29d227','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-52','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','3654e6f75973aa49246dbd741c726743','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-53','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','eb398720a35d58159d92e721e66ae6d','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-54','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','c9ed5a341cef1cbe862b1523b7ce2a5','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-55','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','d441e31ef661e4402141d14ac5734c1','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-56','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','aaaef34153e53d2adcc71d90a0955','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-57','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','d3acd4c3442938508976801dddfee866','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-58','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','b0c0fd9674f39661e6bff6c78e65fcd3','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-59','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','6f7e652ad837a378845fa9eb9757b99','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-6','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','7f540998f53dc2bb2d19de05a14f2','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-60','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','622543a591c2bab1f089cac341d9ce2','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-61','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','fe5acec38c81bfb3277e193dd0dcc7','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-62','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','c4b0da30561adf7d40fcd7da77c574','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-63','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03','45fd4df9a91aaaea2f515dbb8bbaae0','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-64','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','99138560e6e73c3bf6f54fb792552cf','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-65','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','4e33e6a7cf3bd773f126612bf0b9','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-66','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','c223439be520db74976e1c6399b591b0','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-67','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','6a136f60cfeb7ed87b27fd71825a8','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-68','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','6744cea65ee820c9addf59d78b446ce8','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-69','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','c1ee0d08f2c8238f17125d4a58263','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-7','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','b816bb1dbeecf547611bcd37d29ccd27','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-70','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','88c072335290bda8394acf5344b5be','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-71','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','5887deaf859b231a28fca6cd8f53985f','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-72','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','6e889f9922853419f736de152bab863','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-73','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','db75ceff7fabd137f5ffde95c02ab814','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-74','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','d7d5d089c54468ac2cfd638f66fcb4','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-75','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','39dd463941e952d670a5c44194bfe578','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-76','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','dc6155351d7db68e99ff6e95bbc87be','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-77','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04','4fee106cf921289c298f9c67fc87c7c5','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-78','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','3a3de23a22ae9c344b47a4d939e6ff70','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-79','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','88ab4066e17d3a326dc54e5837c09f41','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-8','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','e55f3abe82ce4b674bcdc1b4996b8b9','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-80','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','940c1a878d7788f304e14cf4c3394c7','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-81','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','219f4f94772b86a6785a1168655d630','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-82','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','4e2676797833eba977cbcae8806c05f','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-83','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','587abb7e972b9dbae4711c9da4e55b','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-84','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','9435c219edb4e839af13de48a94f765c','Add Primary Key','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-85','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05','1bf11ad88f6aeb16115e53aec0aa1fc9','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-86','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','1e8c4a47a221a275929253c81814e3','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-87','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','d7aa9fb9b259691ef965935112690c6','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-88','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','8637a8777e63c352c513c78c60a435fb','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-89','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','8124613e1c06fe7dbdd82ec7d77b513','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-9','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01','ee733a5ef91bcfc5b5a366e4d672c6d4','Create Table','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-90','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','ce32a6b73bddd39523fd702837d5e0ac','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-91','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','8b88d2f395eb2b5c7a48a2691527335a','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-92','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','9935e165ac0c994c840f0b6ad7e6ea9','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-93','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','1d54748d2664161ec2a4ec4761dfcbe','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-94','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06','e4cbe444f931f7892fe1ff2cc8ef9','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-95','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','8e83cb5c20116c3bafc2afcec67fbbcd','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-96','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','844a9c8a5e4772bb4383d22c1b7c4f','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-97','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','50c460b4b15dbe1c357c9637d29fba2e','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-98','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','ebc8c01af6a50d966426a572a317d1','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('1227303685425-99','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07','82c523688fbc57714736dfa7aafb48','Create Index','',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('2','upul','liquibase-update-to-latest.xml','2012-05-27 18:11:31','271913afcc5e1fc2a96a6b12705e60a4','Add Foreign Key Constraint','Create the foreign key from the privilege required for to edit\n			a person attribute type and the privilege.privilege column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200805281223','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:33','ca38d15c388fd3987ee8e997f48bcb43','Create Table, Add Foreign Key Constraint','Create the concept_complex table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200805281224','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:33','ca898c6096d952b57e28c5edc2a957','Add Column','Adding the value_complex column to obs.  This may take a long time if you have a large number of observations.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200805281225','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:33','c951352b0c976e84b83acf3cfcbb9e','Insert Row','Adding a \'complex\' Concept Datatype',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200805281226','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:35','b8b85f33a0d9fde9f478d77b1b868c80','Drop Table (x2)','Dropping the mimetype and complex_obs tables as they aren\'t needed in the new complex obs setup',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200809191226','smbugua','liquibase-update-to-latest.xml','2012-05-27 18:11:35','99ca2b5ae282ba5ff1df9c48f5f2e97','Add Column','Adding the hl7 archive message_state column so that archives can be tracked\n			\n			(preCondition database_version check in place because this change was in the old format in trunk for a while)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200809191927','smbugua','liquibase-update-to-latest.xml','2012-05-27 18:11:35','8acc3bbd9bb21da496f4dbcaacfe16','Rename Column, Modify Column','Adding the hl7 archive message_state column so that archives can be tracked',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200811261102','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:31','7ce199737ad5ea72959eb52ece15ab8','Update Data','Fix field property for new Tribe person attribute',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200901101524','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:11:35','8b599959a0ae994041db885337fd94e','Modify Column','Changing datatype of drug.retire_reason from DATETIME to varchar(255)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200901130950','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','add260b86fbdfe8ddfd15480f7c12530','Delete Data (x2)','Remove Manage Tribes and View Tribes privileges from all roles',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200901130951','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','51eaa74d22ee244cc0cbde5ef4758e1c','Delete Data (x2)','Remove Manage Mime Types, View Mime Types, and Purge Mime Types privilege',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200901161126','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','478dceabf15112ad9eccee255df8b','Delete Data','Removed the database_version global property',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090121-0949','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','a38a30d48634ab7268204167761db86c','Custom SQL','Switched the default xslt to use PV1-19 instead of PV1-1',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090122-0853','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','5ef0554257579cb649fe4414efd233e0','Custom SQL, Add Lookup Table, Drop Foreign Key Constraint, Delete Data (x2), Drop Table','Remove duplicate concept name tags',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090123-0305','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','fc5153a938b4ce0aa455ca9fea7ad9','Add Unique Constraint','Add unique constraint to the tags table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090214-2246','isherman','liquibase-update-to-latest.xml','2012-05-27 18:11:39','6c77a79fc9913830755829adaa983227','Custom SQL','Add weight and cd4 to patientGraphConcepts user property (mysql specific)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090214-2247','isherman','liquibase-update-to-latest.xml','2012-05-27 18:11:39','664dee9bed7b178ea62e8de7a8824045','Custom SQL','Add weight and cd4 to patientGraphConcepts user property (using standard sql)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090214-2248','isherman','liquibase-update-to-latest.xml','2012-05-27 18:11:39','489fc62a7b3196ba3887b8a2ddc8d93c','Custom SQL','Add weight and cd4 to patientGraphConcepts user property (mssql specific)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200902142212','ewolodzko','liquibase-update-to-latest.xml','2012-05-27 18:12:05','ca3341c589781757f7b5f3e73a2b8f5','Add Column','Add a sortWeight field to PersonAttributeType',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200902142213','ewolodzko','liquibase-update-to-latest.xml','2012-05-27 18:12:05','918476ca54d9c1e77076be12012841','Update Data','Add default sortWeights to all current PersonAttributeTypes',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090224-1229','Keelhaul+bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:37','2112b4bd53e438fc2ac4dc2e60213440','Create Table, Add Foreign Key Constraint (x2)','Add location tags table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090224-1250','Keelhaul+bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:38','ae593490311f38ee69962330e3788938','Create Table, Add Foreign Key Constraint (x2), Add Primary Key','Add location tag map table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090224-1256','Keelhaul+bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:38','27add85e296c1f22deb2fa17d77a542f','Add Column, Add Foreign Key Constraint','Add parent_location column to location table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090225-1551','dthomas','liquibase-update-to-latest.xml','2012-05-27 18:11:39','c490c377e78a9740a765e19aacf076','Rename Column (x2)','Change location_tag.name to location_tag.tag and location_tag.retired_reason to location_tag.retire_reason',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090301-1259','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:39','88d88f5cc99c93c264e6976feef8eecc','Update Data (x2)','Fixes the description for name layout global property',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090316-1008','vanand','liquibase-update-to-latest.xml','2012-05-27 18:11:42','fcdde237e04473db1e6fd16f56bf80e9','Modify Column (x7), Update Data, Modify Column (x18), Update Data, Modify Column (x11)','Change column types of all boolean columns to smallint. The columns used to be either tinyint(4) or MySQL\'s BIT.\n			(This may take a while on large patient or obs tables)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200903210905','mseaton','liquibase-update-to-latest.xml','2012-05-27 18:11:44','a13f5939f4ce2a6a9a21c1847d3ab6d','Create Table, Add Foreign Key Constraint (x3)','Add a table to enable generic storage of serialized objects',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-cohort','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','e5d01ebcda1a2b4ef993a3c859933947','Add Column','Adding \"uuid\" column to cohort table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','575aaf2321f320331ba877f49a44b8','Add Column','Adding \"uuid\" column to concept table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','57377447c4be5152c5bb18fdceec2312','Add Column','Adding \"uuid\" column to concept_answer table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_class','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','4510924e4fc34a5b4f4786af54a6e9d6','Add Column','Adding \"uuid\" column to concept_class table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_datatype','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','ffa6230eb5d1021556b2c106176b081','Add Column','Adding \"uuid\" column to concept_datatype table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_description','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','a864b52fe66664a95bb25d08ca0fae4','Add Column','Adding \"uuid\" column to concept_description table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_map','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','70db4397c48f719f6b6db9b228a5940','Add Column','Adding \"uuid\" column to concept_map table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','6a5bf2fb43b89825adbab42e32f8c95','Add Column','Adding \"uuid\" column to concept_name table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_name_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','e5175d7effbbe1f327f6765c8563de','Add Column','Adding \"uuid\" column to concept_name_tag table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_proposal','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','d812c01d4487ee3afd8408d322ae6e9','Add Column','Adding \"uuid\" column to concept_proposal table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_set','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','a76a7ad772591c707d1470bfb8e96ebe','Add Column','Adding \"uuid\" column to concept_set table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','82f9e9817631b23dd768d92c451a4b','Add Column','Adding \"uuid\" column to concept_source table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_state_conversion','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','da7523634d5355b5bb2dc7ba3b544682','Add Column','Adding \"uuid\" column to concept_state_conversion table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-drug','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','867c42ea0b5a864beccff584fa963ff','Add Column','Adding \"uuid\" column to drug table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-encounter','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','53d8465949124bc6247b28a4a58121','Add Column','Adding \"uuid\" column to encounter table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-encounter_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','ee9b948fa08ad55c3ecd75c32df82d5','Add Column','Adding \"uuid\" column to encounter_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','e24dae16c5a010a575c9c1ac84d8eb','Add Column','Adding \"uuid\" column to field table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-field_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','7bbeeb1abdc5389f5a7488ee35498b','Add Column','Adding \"uuid\" column to field_answer table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-field_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','6271df216ece46cecde2c5f642e84a','Add Column','Adding \"uuid\" column to field_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-form','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','2569936cbd22e8029253d4e6034f738','Add Column','Adding \"uuid\" column to form table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-form_field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','e237246d492a5d9046edba679c2ef7b4','Add Column','Adding \"uuid\" column to form_field table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-global_property','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','77d9d563a6b488dde8856cd8e44e74','Add Column','Adding \"uuid\" column to global_property table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_in_archive','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','cc8aa360f98aedcc8399a46edb48ca7e','Add Column','Adding \"uuid\" column to hl7_in_archive table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_in_error','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','4857a237f2d29901dc2721861b13aa1','Add Column','Adding \"uuid\" column to hl7_in_error table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_in_queue','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3e0bedc6f28626d1ed8feba9b12744','Add Column','Adding \"uuid\" column to hl7_in_queue table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','0c1637fe4ec912bdf75f4ec338f42','Add Column','Adding \"uuid\" column to hl7_source table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-location','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','2fc3aaf750476ed2df71b6689d941546','Add Column','Adding \"uuid\" column to location table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-location_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','b8c3ac793659918dfb140d94207d5d','Add Column','Adding \"uuid\" column to location_tag table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-note','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','c4722e59a9be1c47d0569216e92ad63','Add Column','Adding \"uuid\" column to note table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-notification_alert','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','7a66a648529a78d215e17023cdf5d5','Add Column','Adding \"uuid\" column to notification_alert table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-notification_template','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','739a3826ba3226875d8f944140e1c188','Add Column','Adding \"uuid\" column to notification_template table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-obs','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','75c1752f21de4b95569c7ac66e826e2f','Add Column','Adding \"uuid\" column to obs table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-orders','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','f19f5e991569bc1341e9dd31a412da43','Add Column','Adding \"uuid\" column to orders table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-order_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','f2c93b646d83d969bf8ba09d11d36edd','Add Column','Adding \"uuid\" column to order_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_identifier','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','dd97565c4ff6c410838a5feb41975d0','Add Column','Adding \"uuid\" column to patient_identifier table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_identifier_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','613f3c8d0226c305678d461a89db238','Add Column','Adding \"uuid\" column to patient_identifier_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','a2c23c3ef77d8ea9a2406c428e207244','Add Column','Adding \"uuid\" column to patient_program table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','57563194b5fa551f129a9cce1b38e8e7','Add Column','Adding \"uuid\" column to patient_state table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','e8a138182c0ba1053131888f8cf8b4','Add Column','Adding \"uuid\" column to person table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_address','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','2617c04da91ecda5fd2b45237f5ddd','Add Column','Adding \"uuid\" column to person_address table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_attribute','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','ae559b7cc39a175062126e4815d762','Add Column','Adding \"uuid\" column to person_attribute table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_attribute_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','68f914b55c3b3fb7dc2a77fd8d933d2','Add Column','Adding \"uuid\" column to person_attribute_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','1b8be5c78ca558b45a25d5eaefbbed7','Add Column','Adding \"uuid\" column to person_name table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-privilege','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','13d0d85bf5609b955b128fd6f6bc5c6d','Add Column','Adding \"uuid\" column to privilege table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','39a4f7c8c86791b166d280d9b22ae','Add Column','Adding \"uuid\" column to program table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-program_workflow','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','70877f3fdcfd50bea8d8d0c19fb115ac','Add Column','Adding \"uuid\" column to program_workflow table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-program_workflow_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','116efa4fd75f61e034c33a2d4e4c75e2','Add Column','Adding \"uuid\" column to program_workflow_state table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-relationship','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','945c9c8a51c2ddfd75195df74b01c37','Add Column','Adding \"uuid\" column to relationship table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-relationship_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','09c5c28357a6999636569c43bf1d4a','Add Column','Adding \"uuid\" column to relationship_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-report_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','4bf73bf794f3b6ec1b5dff44e23679','Add Column','Adding \"uuid\" column to report_object table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-report_schema_xml','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','2b7354fdbf3a45a725ad7392f73c1d2c','Add Column','Adding \"uuid\" column to report_schema_xml table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-role','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','2955291013b5657ffa9eeeb526d5563','Add Column','Adding \"uuid\" column to role table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-serialized_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','bbb72e88cde2dd2f44f72c175a75f10','Add Column','Adding \"uuid\" column to serialized_object table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-cohort','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','c916ab788583392ea698441818ca8b','Update Data','Generating UUIDs for all rows in cohort table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','5cd0f78948d656fbe03411c3872b8d3d','Update Data','Generating UUIDs for all rows in concept table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','76742a2d89cdf9216b23ff1cc43f7e2b','Update Data','Generating UUIDs for all rows in concept_answer table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_class','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','b036159e7e6a62be355ab2da84dc6d6','Update Data','Generating UUIDs for all rows in concept_class table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_datatype','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','ffd8b9d259bb98779a6a444a3c597','Update Data','Generating UUIDs for all rows in concept_datatype table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_description','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','471858eb414dd416787873d59ce92d','Update Data','Generating UUIDs for all rows in concept_description table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_map','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','fd1e26504b7b5e227de9a6265cdfaf6a','Update Data','Generating UUIDs for all rows in concept_map table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','af235654349acd661ecadde2b2c9d29','Update Data','Generating UUIDs for all rows in concept_name table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_name_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','bddb56793bee7cbb59a749557e601b','Update Data','Generating UUIDs for all rows in concept_name_tag table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_proposal','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','d35f42aea2acad9d3eb98a0aa68d','Update Data','Generating UUIDs for all rows in concept_proposal table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_set','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','131a6e5d0c39e32443f72d07f14f86','Update Data','Generating UUIDs for all rows in concept_set table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3376f58bc68455beaeca7723e8dfdc','Update Data','Generating UUIDs for all rows in concept_source table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_state_conversion','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','2daca61a968dc1d71dd012c2a770a9a5','Update Data','Generating UUIDs for all rows in concept_state_conversion table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-drug','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','60428b7567bee56397d3ad9c3c74da2','Update Data','Generating UUIDs for all rows in drug table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-encounter','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','855a3866a99360f46dcb54965341a8e','Update Data','Generating UUIDs for all rows in encounter table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-encounter_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','2694d23adc4fec35aabf472b737fc36e','Update Data','Generating UUIDs for all rows in encounter_type table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','5e406b6bd57710696766bc498b9dc0','Update Data','Generating UUIDs for all rows in field table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-field_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','1b547411666d85b4ee383c2feef3ce','Update Data','Generating UUIDs for all rows in field_answer table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-field_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','b5cd4a815ecfcae3e7a0e16539c469b1','Update Data','Generating UUIDs for all rows in field_type table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-form','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','867b94d343b1f0347371ec9fa8e3e','Update Data','Generating UUIDs for all rows in form table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-form_field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','ea6c2b047b7c59190cd637547dbd3dd','Update Data','Generating UUIDs for all rows in form_field table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-global_property','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','c743637b2a65526c09996236e9967b2','Update Data','Generating UUIDs for all rows in global_property table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_in_archive','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','b1df4ba911718e7987ad3ff8f36fa2b','Update Data','Generating UUIDs for all rows in hl7_in_archive table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_in_error','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','a5fbc93dd5decad5f1c254acabd0fa47','Update Data','Generating UUIDs for all rows in hl7_in_error table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_in_queue','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','9319f535948f73e3fa77872421e21c28','Update Data','Generating UUIDs for all rows in hl7_in_queue table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','de74537c46e71afe35c4e3da63da98c','Update Data','Generating UUIDs for all rows in hl7_source table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-location','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','ba24775d1c4e3a5224a88d4f9fd53a1','Update Data','Generating UUIDs for all rows in location table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-location_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','19627ee1543bc0b639f935921a5ef2a','Update Data','Generating UUIDs for all rows in location_tag table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-note','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','dc91bee3824a094b728628b5d74aa7','Update Data','Generating UUIDs for all rows in note table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-notification_alert','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','d9fccf1943822a79503c7f15837316','Update Data','Generating UUIDs for all rows in notification_alert table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-notification_template','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','ff8dd4c09bcb33e9a6b1cba9275646b','Update Data','Generating UUIDs for all rows in notification_template table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-obs','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','77f2862ce7ca7192a4043a35c06673','Update Data','Generating UUIDs for all rows in obs table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-orders','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','967a61314dfd1114c81afbe4dd52ae67','Update Data','Generating UUIDs for all rows in orders table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-order_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','f460eb4ea5f07d87cce18e84ba65e12','Update Data','Generating UUIDs for all rows in order_type table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_identifier','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','7539b5d6c2a704d95dc5f56e6e12d73','Update Data','Generating UUIDs for all rows in patient_identifier table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_identifier_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','79f11da93475eb7467b9297dfbd7c79','Update Data','Generating UUIDs for all rows in patient_identifier_type table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','1e53eb71d25b1d1eda33fe22d66133','Update Data','Generating UUIDs for all rows in patient_program table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','a0ebd331c38f5296e92c72b96b801d4c','Update Data','Generating UUIDs for all rows in patient_state table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','cf951b6a27951e66a9a0889eb4fd6f15','Update Data','Generating UUIDs for all rows in person table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_address','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','c630f59a4c330969255165c34377d1d','Update Data','Generating UUIDs for all rows in person_address table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_attribute','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','608a4c703f42a7269e5d7c39a1d86de','Update Data','Generating UUIDs for all rows in person_attribute table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_attribute_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','d04f6cc7bfd235bca17e6d1d10505c3','Update Data','Generating UUIDs for all rows in person_attribute_type table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','e22e8f89ef24732458581cc697d55f','Update Data','Generating UUIDs for all rows in person_name table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-privilege','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','e3eed777bb7727aa1c80e55e5b307c','Update Data','Generating UUIDs for all rows in privilege table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','7af9569b516c59b71147a7c8bea93d63','Update Data','Generating UUIDs for all rows in program table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-program_workflow','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','56214fa359f3e3bc39104d37fc996538','Update Data','Generating UUIDs for all rows in program_workflow table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-program_workflow_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','4fc3046f6f1a9eee5da901fdaacae34','Update Data','Generating UUIDs for all rows in program_workflow_state table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-relationship','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','76db1fe2b15c4e35c0cc6accb385ca','Update Data','Generating UUIDs for all rows in relationship table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-relationship_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','716f58764be9b098e3af891951c','Update Data','Generating UUIDs for all rows in relationship_type table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-report_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','acf4b4d7f2f06953fae294bfad74e5b9','Update Data','Generating UUIDs for all rows in report_object table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-report_schema_xml','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','9be2c79cdb24345c90a55ecf9786d1','Update Data','Generating UUIDs for all rows in report_schema_xml table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-role','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','7516c06f5ac23efd21394154e4f157d2','Update Data','Generating UUIDs for all rows in role table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-serialized_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','e872c1f23acaea7d2953ab948d3a4b81','Update Data','Generating UUIDs for all rows in serialized_object table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1517','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','89cc7a14b0582f157ea2dbb9de092fd','Custom Change','Adding UUIDs to all rows in all columns via a java class. (This will take a long time on large databases)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1518','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:52','dfaf705d7776613e619dedf3e06d7640','Add Not-Null Constraint (x52)','Now that UUID generation is done, set the uuid columns to not \"NOT NULL\"',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-cohort','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:52','24d3119128e95cb2e5a1a76bfdc54','Create Index','Creating unique index on cohort.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','52b46db1629e2ba9581d2ff5569238f','Create Index','Creating unique index on concept.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','fda1ed7f30fa23da5a9013529bbf1c3b','Create Index','Creating unique index on concept_answer.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_class','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','1451a7423139d4a59245f5754cd63dac','Create Index','Creating unique index on concept_class.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_datatype','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','7d6afd51a3308f3d7619676eb55e4be6','Create Index','Creating unique index on concept_datatype.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_description','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','2546c2e71f8999d46d31c112507ebf87','Create Index','Creating unique index on concept_description.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_map','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','61c1fac89a8e525494df82743285432','Create Index','Creating unique index on concept_map.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3be74640f8f2d5993afb193b3fe3075','Create Index','Creating unique index on concept_name.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_name_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','f58b6b51d744b015862e9835369c14f6','Create Index','Creating unique index on concept_name_tag.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_proposal','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','b7c251ed66288c2486d39b2e8e5056','Create Index','Creating unique index on concept_proposal.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_set','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','c99542d48ce96e6f351cc158a814ed0','Create Index','Creating unique index on concept_set.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','7ca56bc86099e23ed197af71e423b44b','Create Index','Creating unique index on concept_source.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_state_conversion','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','311f46b442c5740393c13b924cf4d2','Create Index','Creating unique index on concept_state_conversion.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-drug','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','b4867846580078e85629b9554c9845','Create Index','Creating unique index on drug.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-encounter','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','b0a5fc73f82532e4f2b392e95a9d1e9d','Create Index','Creating unique index on encounter.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-encounter_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','5ed4dbb39ded5667d9897849eb609162','Create Index','Creating unique index on encounter_type.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','f1bb647f7e95324ccdf6a8f644a36d47','Create Index','Creating unique index on field.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-field_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','d3dde65374ee7222c83b6487f936a4f','Create Index','Creating unique index on field_answer.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-field_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','559a6a362f1de933a495f7c281bd28','Create Index','Creating unique index on field_type.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-form','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','854ea11fedf3e622cec570e54de222','Create Index','Creating unique index on form.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-form_field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','243c552b3a5c3011b214d261bd32c5e','Create Index','Creating unique index on form_field.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-global_property','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','edf3a71ce9d58b7b5c86889cdee84e','Create Index','Creating unique index on global_property.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_in_archive','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','e3e811242f2c8ef055756866aafaed70','Create Index','Creating unique index on hl7_in_archive.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_in_error','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','d4b3b34289fe9a4b7c609f495cdf20','Create Index','Creating unique index on hl7_in_error.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_in_queue','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','21b688a853a9f43c5ad24a53df7fd8c','Create Index','Creating unique index on hl7_in_queue.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','b5457643d13df39dac482d34fc884','Create Index','Creating unique index on hl7_source.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-location','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','a6c5a18e65815abaa42ee07e792f1a','Create Index','Creating unique index on location.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-location_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','abf99b851bdc38952843b2635104cfc','Create Index','Creating unique index on location_tag.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-note','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','526b32a1d8d77223bd45a722746d246','Create Index','Creating unique index on note.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-notification_alert','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','f87f2b6d5f5074c33245321cfbb5878','Create Index','Creating unique index on notification_alert.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-notification_template','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','add9db68c554fbc2b4360e69438d3a8','Create Index','Creating unique index on notification_template.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-obs','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','7a584580843bfd1a170c061c65413c1','Create Index','Creating unique index on obs.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-orders','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','8ffafd6886f4a5fc1515783eabec738','Create Index','Creating unique index on orders.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-order_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','ae9ea28f147e50c959610dafa5ec25c','Create Index','Creating unique index on order_type.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_identifier','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','4b5861f5669e0f29087d617d27513f1','Create Index','Creating unique index on patient_identifier.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_identifier_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','73da1d5f87d0397bb396a9b3b2ee4ea','Create Index','Creating unique index on patient_identifier_type.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','34b7b01f4a362b637b239209f2a4820','Create Index','Creating unique index on patient_program.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','efc7e9ba6fc3626ad4afe9c9c41fc0','Create Index','Creating unique index on patient_state.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','2a77bcf4862d901d292c5877dfce4f58','Create Index','Creating unique index on person.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_address','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3672c61c62cd26ef3a726613517f6234','Create Index','Creating unique index on person_address.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_attribute','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','d77b26d4596f149a38d65f2be9fa6b51','Create Index','Creating unique index on person_attribute.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_attribute_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','7affacc59b57fabf36578609cbc481c','Create Index','Creating unique index on person_attribute_type.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','f98a895de49abac9dc5483f4de705adf','Create Index','Creating unique index on person_name.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-privilege','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','e9406113927e90f14d8ea3aee7b265e1','Create Index','Creating unique index on privilege.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','f34ba0c98814f03cff165d4b1c391312','Create Index','Creating unique index on program.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-program_workflow','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','d537382486f2a3a870983bc2a7e72a4c','Create Index','Creating unique index on program_workflow.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-program_workflow_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','8020f25b8e995b846d1c3c11e4232399','Create Index','Creating unique index on program_workflow_state.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-relationship','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','e56ca578a8411decdfee74a91184d4f','Create Index','Creating unique index on relationship.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-relationship_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','179c86d0bf953e67eac2c7cd235a11c','Create Index','Creating unique index on relationship_type.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-report_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','7f15947ec522a8fe38517251fdcb4f27','Create Index','Creating unique index on report_object.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-report_schema_xml','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','f1f2922dead3177b121670e26e2be414','Create Index','Creating unique index on report_schema_xml.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-role','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','48679931cd75ae76824f0a194d011b8','Create Index','Creating unique index on role.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-serialized_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','3457ded29450bcb294aea6848e244a1','Create Index','Creating unique index on serialized_object.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090408-1298','Cory McCarthy','liquibase-update-to-latest.xml','2012-05-27 18:11:44','a675aa3da8651979b233d4c4b8d7f1','Modify Column','Changed the datatype for encounter_type to \'text\' instead of just 50 chars',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200904091023','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','a1ee9e6f174e2d8e5ee076126135b7','Delete Data (x4)','Remove Manage Tribes and View Tribes privileges from the privilege table and role_privilege table.\n			The privileges will be recreated by the Tribe module if it is installed.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0804','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','b5e187a86493a19ff33881d5c5adb61','Drop Foreign Key Constraint','Dropping foreign key on concept_set.concept_id table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0805','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','afa3399786d9a6695173727b496ba2','Drop Primary Key','Dropping primary key on concept set table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0806','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','3c192287a93261df2ef571d55d91a5e','Add Column','Adding new integer primary key to concept set table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0807','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','548ba564f1cf1a5e4353bade7d0a71f','Create Index, Add Foreign Key Constraint','Adding index and foreign key to concept_set.concept_id column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0808a','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','13cd2c97df1b7163cb18296c328110','Drop Foreign Key Constraint','Dropping foreign key on patient_identifier.patient_id column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0808b','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','4a69eb4dc87ad51da7497646b55e09','Drop Primary Key','Dropping non-integer primary key on patient identifier table before adding a new integer primary key',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0809','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','912731dafcb26634d6737b05d1f428d','Add Column','Adding new integer primary key to patient identifier table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0810','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','8ba5e84d1f85707b4a248a21cf7afe16','Create Index, Add Foreign Key Constraint','Adding index and foreign key on patient_identifier.patient_id column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0811a','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','3b73a595618cc7d4279899c189aeab','Drop Foreign Key Constraint','Dropping foreign key on concept_word.concept_id column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0811b','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','be823f8a9d48f3df0c83cbafaf803','Drop Primary Key','Dropping non-integer primary key on concept word table before adding new integer one',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0812','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','98a31beac32af7be584e5f35125ebe77','Add Column','Adding integer primary key to concept word table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090414-0812b','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','fa3df9294b026b6375cde2993bc936c','Add Foreign Key Constraint','Re-adding foreign key for concept_word.concept_name_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200904271042','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:05','1b8214c28c262ca31bb67549c2e29e3','Drop Column','Remove the now unused synonym column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090428-0811aa','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','8d1cd3bc4fbeb36c55125e68426804d','Drop Foreign Key Constraint','Removing concept_word.concept_name_id foreign key so that primary key can be changed to concept_word_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090428-0854','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:05','9124601e6dc67a603d950617bd17cea','Add Foreign Key Constraint','Adding foreign key for concept_word.concept_id column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200905071626','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','d2873b168b82edab25ab1080304772c9','Create Index','Add an index to the concept_word.concept_id column (This update may fail if it already exists)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200905150814','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','52a64aaf6ac8af65b8023c0ea96162d','Delete Data','Deleting invalid concept words',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200905150821','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:05','d6dedef195a69f62fd1c73adcfd93146','Custom SQL','Deleting duplicate concept word keys',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200906301606','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','e0a8f2578ba4e6cbaf9a7f41465bd1b','Modify Column','Change person_attribute_type.sort_weight from an integer to a float',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200907161638-1','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','98edf5727177ea045dff438d7fca27','Modify Column','Change obs.value_numeric from a double(22,0) to a double',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200907161638-2','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','cd8d3abc418a18ff786b14f27798389','Modify Column','Change concept_numeric columns from a double(22,0) type to a double',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200907161638-3','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','8f30dc389272e5f94c34286683ba2c1','Modify Column','Change concept_set.sort_weight from a double(22,0) to a double',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200907161638-4','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','7875dcee562bcd9bb5ad49cddcd9241','Modify Column','Change concept_set_derived.sort_weight from a double(22,0) to a double',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200907161638-5','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','1b4a410e183ef30ba9d7b7ae965e2a1','Modify Column','Change drug table columns from a double(22,0) to a double',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200907161638-6','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','8e5c737f5d65e25f73354f4cd26523','Modify Column','Change drug_order.dose from a double(22,0) to a double',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200908291938-1','dthomas','liquibase-update-to-latest.xml','2012-05-27 18:12:29','5658a0964596d66e70804ddaa48bd77c','Modify Column','set hl7_code in ConceptSource to nullable column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200908291938-2a','dthomas','liquibase-update-to-latest.xml','2012-05-27 18:12:29','4fff1cee1a3f13ccc2a13c5448f9b1c','Modify Column','set retired in ConceptSource to tinyint(1) not null',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090831-1039-38-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','612afca3f7f1697d93248951bc8c7','Add Column','Adding \"uuid\" column to scheduler_task_config table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090831-1040-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','baf8889ac5cfe2670e6b9c4bb58a47a','Update Data','Generating UUIDs for all rows in scheduler_task_config table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090831-1041-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','b3e5e26774a54c2cb3397196bedee570','Custom Change','Adding UUIDs to all rows in scheduler_task_config table via a java class for non mysql/oracle/mssql databases.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090831-1042-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','11fe3a4afc8e8997caab8e71781e5b10','Add Not-Null Constraint','Now that UUID generation is done for scheduler_task_config, set the uuid column to not \"NOT NULL\"',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090831-1043-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','b8165a4b9f7ea28a6084d74aadbb9432','Create Index','Creating unique index on scheduler_task_config.uuid column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090907-1','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:06','542a60e1a743881571dd1c86ed1c4','Rename Column','Rename the concept_source.date_voided column to date_retired',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090907-2a','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:26','eba5ce8a7d9634e6f528627a82d6b1','Drop Foreign Key Constraint','Remove the concept_source.voided_by foreign key constraint',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090907-2b','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:27','8412909f334c2221611ce07acfcb5a6','Rename Column, Add Foreign Key Constraint','Rename the concept_source.voided_by column to retired_by',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090907-3','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:27','627e3e7cc7d9a2aece268fa93bf88','Rename Column','Rename the concept_source.voided column to retired',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20090907-4','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:28','74ad3e52598dfc9af0785c753ba818ac','Rename Column','Rename the concept_source.void_reason column to retire_reason',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-1','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:34','6e728239bd76fa58671bdb4d03ec346','Create Table','Create logic token table to store all registered token',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-2','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:35','c516c1b552f2fdace76762d81bb3bae6','Create Table','Create logic token tag table to store all tag associated with a token',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-3','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:37','5a8f5825e1de3fcbc5ed48f0b8cd3e77','Add Foreign Key Constraint','Adding foreign key for primary key of logic_rule_token_tag',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-4a','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:39','c1bd29bc82b2d227f9eb47f6676f28d','Drop Foreign Key Constraint','Removing bad foreign key for logic_rule_token.creator',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-4aa','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:41','bbc452fd8fa3ff3eaab4c5fbb2ac2fe2','Drop Foreign Key Constraint','Removing bad foreign key for logic_rule_token.creator',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-4b','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:13:21','ee57b86d35016d4a26116a195908d4d','Add Foreign Key Constraint','Adding correct foreign key for logic_rule_token.creator',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200909281005-5a','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:13:40','9d6119b183383447fe37c9494767927','Add Foreign Key Constraint','Adding foreign key for logic_rule_token.changed_by',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091001-1023','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:44','6c5b675ed15654c61ad28b7794180c0','Add Column','add retired column to relationship_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091001-1024','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:45','cdee114b801e2fd29f1f906d3fa553c4','Add Column','add retired_by column to relationship_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091001-1025','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:46','ded86a7b7ba57a447fdb14ee12804','Add Foreign Key Constraint','Create the foreign key from the relationship.retired_by to users.user_id.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091001-1026','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:46','56da622349984de2d9d35dfe4f8c592b','Add Column','add date_retired column to relationship_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091001-1027','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:46','5c3441c4d4df1305e22a76a58b9e4','Add Column','add retire_reason column to relationship_type table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-1','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','fe74f276e13dc72ddac24b3d5bfe7b73','Update Data (x5)','Setting core field types to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-10','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','4990b358a988f5eb594e95f205e66','Update Data (x4)','Setting core roles to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-2','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','537a62703f986d8a2db83317a3ac17bb','Update Data (x7)','Setting core person attribute types to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-3','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','c2d6cd47499de2eaaad2bad5c11f9e1','Update Data (x4)','Setting core encounter types to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-4','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','cbf2dfb5f6fec73a9efe9a591803a9c','Update Data (x12)','Setting core concept datatypes to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-5','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','5c2629fbf1258fbb9bcd46e8327ee142','Update Data (x4)','Setting core relationship types to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-6','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','c0dade1ffd2723e8441b6145f83346','Update Data (x15)','Setting core concept classes to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-7','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','e768dab8025d6612bb581c86d95638a','Update Data (x2)','Setting core patient identifier types to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-8','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','7d43ef855a73b2321b4fdb97190f7cb','Update Data','Setting core location to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200910271049-9','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','9d61613fa6c3ad43f79f765d5a73e9','Update Data','Setting core hl7 source to have standard UUIDs',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912031842','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:41','de4dd06c279ad749cb5f1de3ed45586','Drop Foreign Key Constraint, Add Foreign Key Constraint','Changing encounter.provider_id to reference person instead of users',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912031846-1','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:42','3aff267520eec4d52e81ef7614b2da3','Add Column, Update Data','Adding person_id column to users table (if needed)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912031846-2','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:42','334f8c5891f058959155f2ed31da386b','Update Data, Add Not-Null Constraint','Populating users.person_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912031846-3','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:43','f0ebbfbf2d223694de49da385ee203b','Add Foreign Key Constraint, Set Column as Auto-Increment','Restoring foreign key constraint on users.person_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912071501-1','arthurs','liquibase-update-to-latest.xml','2012-05-27 18:13:40','38fc7314599265a8ac635daa063bc32','Update Data','Change name for patient.searchMaxResults global property to person.searchMaxResults',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912091819','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','48846a9c134bd1da5b3234b4e1e041eb','Add Column, Add Foreign Key Constraint','Adding retired metadata columns to users table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912091820','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3b8f7d29adb4b8ffdb9b4cd29877af1','Update Data','Migrating voided metadata to retired metadata for users table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912091821','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','fe9bd963d283aca8d01329a1b3595af1','Drop Foreign Key Constraint, Drop Column (x4)','Dropping voided metadata columns from users table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912140038','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','b2dc51da6fdb4a6d25763dccbd795dc0','Add Column','Adding \"uuid\" column to users table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912140039','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','28215abe10dd981bcd46c9d74e4cefe','Update Data','Generating UUIDs for all rows in users table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912140040','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','e45561523e219fe6c21194e37b9a9de6','Custom Change','Adding UUIDs to users table via a java class. (This will take a long time on large databases)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912141552','madanmohan','liquibase-update-to-latest.xml','2012-05-27 18:13:40','8e2978ddf67343ed80a18f7e92799bc','Add Column, Add Foreign Key Constraint','Add changed_by column to encounter table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912141553','madanmohan','liquibase-update-to-latest.xml','2012-05-27 18:13:40','c3f6cfc84f19785b1d7ecdd2ccf492','Add Column','Add date_changed column to encounter table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091215-0208','sunbiz','liquibase-update-to-latest.xml','2012-05-27 18:13:46','da9945f3554e8dd667c4790276eb5ad','Custom SQL','Prune concepts rows orphaned in concept_numeric tables',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091215-0209','jmiranda','liquibase-update-to-latest.xml','2012-05-27 18:13:46','2feb74f1ca3fc1f8bb9b7986c321feed','Custom SQL','Prune concepts rows orphaned in concept_complex tables',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20091215-0210','jmiranda','liquibase-update-to-latest.xml','2012-05-27 18:13:46','15cd4ca5b736a89f932456fc17494293','Custom SQL','Prune concepts rows orphaned in concept_derived tables',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912151032','n.nehete','liquibase-update-to-latest.xml','2012-05-27 18:13:44','fb31da7c25d166f7564bd77926dd286','Add Not-Null Constraint','Encounter Type should not be null when saving an Encounter',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('200912211118','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:13:41','2bb03ed55ad1af379452fd18d9b46f74','Add Column','Adding language column to concept_derived table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201001072007','upul','liquibase-update-to-latest.xml','2012-05-27 18:13:44','afee6c716d0435895c0c98a98099e4','Add Column','Add last execution time column to scheduler_task_config table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100128-1','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:12:06','5bf382cc41fbfa92bb13abdadba3e15','Insert Row','Adding \'System Developer\' role again (see ticket #1499)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100128-2','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:12:06','b351df1ec993c3906d66ebe5db67d120','Update Data','Switching users back from \'Administrator\' to \'System Developer\' (see ticket #1499)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100128-3','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:12:06','6e35b6f3bf99975e6bc5ad988280ef','Delete Data','Deleting \'Administrator\' role (see ticket #1499)',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100306-095513a','thilini.hg','liquibase-update-to-latest.xml','2012-05-27 18:13:47','2adf32b4543c0bc7c99a9528da09afe','Drop Foreign Key Constraint','Dropping unused foreign key from notification alert table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100306-095513b','thilini.hg','liquibase-update-to-latest.xml','2012-05-27 18:13:47','fd3940c7dfe3195055dd6be9381e8863','Drop Column','Dropping unused user_id column from notification alert table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100322-0908','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:13:47','1e3b87e49b62a358b5289ce470ea0dc','Add Column, Update Data','Adding sort_weight column to concept_answers table and initially sets the sort_weight to the concept_answer_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100323-192043','ricardosbarbosa','liquibase-update-to-latest.xml','2012-05-27 18:13:48','97bc5f19e765d66665f5478147716aa6','Update Data, Delete Data (x2)','Removing the duplicate privilege \'Add Concept Proposal\' in favor of \'Add Concept Proposals\'',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100330-190413','ricardosbarbosa','liquibase-update-to-latest.xml','2012-05-27 18:13:48','2b508e1e4546813dcc3425e09e863be','Update Data, Delete Data (x2)','Removing the duplicate privilege \'Edit Concept Proposal\' in favor of \'Edit Concept Proposals\'',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100412-2217','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:47','6ccd335bb8f1e3dfe5c9b62d018fb27','Add Column','Adding \"uuid\" column to notification_alert_recipient table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100412-2218','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:47','b04eb51018a426202057341c4430d851','Update Data','Generating UUIDs for all rows in notification_alert_recipient table via built in uuid function.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100412-2219','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:47','13e8f84e2a3ac2eb060e68376dbc19','Custom Change','Adding UUIDs to notification_alert_recipient table via a java class (if needed).',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100412-2220','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:48','4df07eb79086636f8498cac5a168be2','Add Not-Null Constraint','Now that UUID generation is done, set the notification_alert_recipient.uuid column to not \"NOT NULL\"',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100413-1509','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:48','f27227d57b9372076542621df1b23','Rename Column','Change location_tag.tag to location_tag.name',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100415-forgotten-from-before','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','48ac37f91a13c53c558923d11c9cee','Add Not-Null Constraint','Adding not null constraint to users.uuid',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100423-1402','slorenz','liquibase-update-to-latest.xml','2012-05-27 18:13:48','4a1427b91614d7b982182c47b347c834','Create Index','Add an index to the encounter.encounter_datetime column to speed up statistical\n			analysis.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100423-1406','slorenz','liquibase-update-to-latest.xml','2012-05-27 18:13:48','1df152ca6d1cace9092a2b04f4d3bd3','Create Index','Add an index to the obs.obs_datetime column to speed up statistical analysis.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100426-1947','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:13:48','873ce8452d8fffff16df292347215ce8','Insert Row','Adding daemon user to users table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100427-1334','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:48','4a22228b56866b7412bf56bf53d4876','Modify Column','Changing the datatype of global_property.property for mysql databases',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100512-1400','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:48','c068ace9c7909db24b354c7db191a3b3','Insert Row','Create core order_type for drug orders',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100513-1947','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:13:48','bd3c85b35c0c189d17a4edfb69479a','Delete Data (x2)','Removing scheduler.username and scheduler.password global properties',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100517-1545','wyclif and djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:48','a4a006cfd7d2f3777c35a47c729a','Custom Change','Switch boolean concepts/observations to be stored as coded',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100525-818-1','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:09','ae19ea64c1936cc692aab61c895d6cf','Create Table, Add Foreign Key Constraint (x2)','Create active list type table.',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100525-818-2','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:13','681391d216a593f59201dfe225d7288','Create Table, Add Foreign Key Constraint (x7)','Create active list table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100525-818-3','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:14','85178ccb515c9892c5cf4826c2778f73','Create Table, Add Foreign Key Constraint','Create allergen table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100525-818-4','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:15','11996601ce66087a69ce6fba3938c63','Create Table','Create problem table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100525-818-5','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:15','f67090e0c159e3c39418cb5d3ae3e82','Insert Row (x2)','Inserting default active list types',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100526-1025','Harsha.cse','liquibase-update-to-latest.xml','2012-05-27 18:13:48','16f132945063bedfb4288b9f934f656e','Drop Not-Null Constraint (x2)','Drop Not-Null constraint from location column in Encounter and Obs table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100604-0933a','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:13:48','b61fce30223b9b7cc2766f60b3abfa49','Add Default Value','Changing the default value to 2 for \'message_state\' column in \'hl7_in_archive\' table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100604-0933b','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:13:48','45a4732916ca8fd35d3df9e320b2a333','Update Data','Converting 0 and 1 to 2 for \'message_state\' column in \'hl7_in_archive\' table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550a','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:15','d7635997e5f8fb833c733f7597ed203b','Add Column','Adding \'concept_name_type\' column to concept_name table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550b','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:15','4b3d935771a1703eeaf268dfbbb16da8','Add Column','Adding \'locale_preferred\' column to concept_name table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550c','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','f151486ccbf8cec7d2327d4cd674b9','Drop Foreign Key Constraint','Dropping foreign key constraint on concept_name_tag_map.concept_name_tag_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550d','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','f9567368a5999517843d7b3f1fd03bce','Update Data, Delete Data (x2)','Setting the concept name type for short names',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550e','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','e7ba70b44259f915524358042f5996','Update Data, Delete Data (x2)','Converting preferred names to FULLY_SPECIFIED names',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550f','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','5ac0213d1b2a2d50d5a0e5e5e45eb10','Update Data, Delete Data (x2)','Converting concept names with country specific concept name tags to preferred names',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550g','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','69da22ab528eb6dbc68c7eaaafa898','Delete Data (x2)','Deleting \'default\' and \'synonym\' concept name tags',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550h','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','dadd4e593c3ed4ec37119a933c7e81c','Custom Change','Validating and attempting to fix invalid concepts and ConceptNames',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100607-1550i','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:18','3133835f91f89b1d1b383ec21dad78fa','Add Foreign Key Constraint','Restoring foreign key constraint on concept_name_tag_map.concept_name_tag_id',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100621-1443','jkeiper','liquibase-update-to-latest.xml','2012-05-27 18:14:18','5fc85cf41532f6ec8658f25954ee7d2d','Modify Column','Modify the error_details column of hl7_in_error to hold\n			stacktraces',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201008021047','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:18','89abf79d12ba23f8388a78f1f12bf2','Create Index','Add an index to the person_name.family_name2 to speed up patient and person searches',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201008201345','mseaton','liquibase-update-to-latest.xml','2012-05-27 18:14:18','7167c287f456287faab9b382c0caecc6','Custom Change','Validates Program Workflow States for possible configuration problems and reports warnings',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201008242121','misha680','liquibase-update-to-latest.xml','2012-05-27 18:14:18','4a3e4ae561a3e9a1b1131dcdbad2b313','Modify Column','Make person_name.person_id not NULLable',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20100924-1110','mseaton','liquibase-update-to-latest.xml','2012-05-27 18:14:19','deb3d45e5d143178be45776152517d3e','Add Column, Add Foreign Key Constraint','Add location_id column to patient_program table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201009281047','misha680','liquibase-update-to-latest.xml','2012-05-27 18:14:19','fa4e5cc66ba97ec1d9ad37156591ff','Drop Column','Remove the now unused default_charge column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010051745','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:19','c401e7afbba90c8db5a422f994cb8d0','Update Data','Setting the global property \'patient.identifierRegex\' to an empty string',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010051746','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:19','4535b642c1591f7114c3e02d9d7a37','Update Data','Setting the global property \'patient.identifierSuffix\' to an empty string',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010151054','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:19','eb939ccae537abf05cfdb05c43b675e7','Create Index','Adding index to form.published column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010151055','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:19','861d3c98ab90a3c9a197343fce7ee11','Create Index','Adding index to form.retired column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010151056','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:19','51346ab9b4b6780c2c8ff8dc193b18f','Create Index','Adding multi column index on form.published and form.retired columns',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261143','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','b2fcb0991f6dfc4f79ee53e94798c2','Rename Column','Rename neighborhood_cell column to address3 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261145','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','6519b246e2343453ec336836c65d1','Rename Column','Rename township_division column to address4 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261147','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3a39cf4d967d8670bd22c596d34859','Rename Column','Rename subregion column to address5 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261149','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','1a80befba2d24244ef24a171562ac82','Rename Column','Rename region column to address6 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261151','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','db73f1b9acdb7af277badc584754df','Rename Column','Rename neighborhood_cell column to address3 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261153','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:20','1c22a65ce145618429c7b57d9ee294b','Rename Column','Rename township_division column to address4 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261156','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:20','194dac315b5cb6964177d121659dd1d9','Rename Column','Rename subregion column to address5 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201010261159','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:20','db75c1bc82161f47b7831296871cb7','Rename Column','Rename region column to address6 and increase the size to 255 characters',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201011011600','jkeiper','liquibase-update-to-latest.xml','2012-05-27 18:14:21','c7c0354954e8e131a0e2f0aa692725b8','Create Index','Adding index to message_state column in HL7 archive table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201011011605','jkeiper','liquibase-update-to-latest.xml','2012-05-27 18:14:21','15296bed5f5b94a941bf273ae6ecd3a','Custom Change','Moving \"deleted\" HL7s from HL7 archive table to queue table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201012081716','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:14:23','eecf7bd9435b6f1b4a08318e22e96','Delete Data','Removing concept that are concept derived and the datatype',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201012081717','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:15:18','842f7086de77f6b31d8f06d56cf56','Drop Table','Removing concept derived tables',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20101209-1721','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','6519d6c9a8c6f2f31c4a8784ac9c42a','Add Column','Add \'weight\' column to concept_word table',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20101209-1722','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','f8ea5691d93b71f1e9b0b3b823ac2f9a','Create Index','Adding index to concept_word.weight column',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20101209-1723','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','4d67c48557f5665a8c2be7e87e22913','Insert Row','Insert a row into the schedule_task_config table for the ConceptIndexUpdateTask',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20101209-1731','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','40dc15b89fa71ae2559d02d5a6b82f','Update Data','Setting the value of \'start_on_startup\' to trigger off conceptIndexUpdateTask on startup',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201012092009','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:14:21','435261f5d18756dba65d55f42528a4','Modify Column (x10)','Increasing length of address fields in person_address and location to 255',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('201102280948','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:42','7248f6f988e3a1b5fd864a433b61aae','Drop Foreign Key Constraint','Removing the foreign key from users.user_id to person.person_id if it still exists',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20110329-2317','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:15:20','1cf77131c583d513d7513b604b8f3940','Delete Data','Removing \'View Encounters\' privilege from Anonymous user',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('20110329-2318','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:15:21','ca9b59cdedd44918453315a89962579e','Delete Data','Removing \'View Observations\' privilege from Anonymous user',NULL,'1.9.4');
-INSERT INTO `liquibasechangelog` VALUES ('disable-foreign-key-checks','ben','liquibase-core-data.xml','2012-05-27 18:11:24','a5f57b3b22b63b75f613458ff51746e2','Custom SQL','',NULL,'1.9.4');
+INSERT INTO `liquibasechangelog` VALUES ('0','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:27','3:ccc4741ff492cb385f44e714053920af','Custom Change','Run the old sqldiff file to get database up to the 1.4.0.20 version if needed. (Requires \'mysql\' to be on the PATH)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('02232009-1141','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:11:39','3:b5921fb42deb90fe52e042838d0638a0','Modify Column','Modify the password column to fit the output of SHA-512 function',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1','upul','liquibase-update-to-latest.xml','2012-05-27 18:11:27','3:7fbc03c45bb69cd497b096629d32c3f5','Add Column','Add the column to person_attribute type to connect each type to a privilege',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:08','3:37a6dc66c67e8c518f9d50971387b438','Modify data type','(Fixed)Modified edit_privilege to correct column size',NULL,'2.0.1',0,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-12','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x11)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-13','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x2)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-14','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x4)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-15','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x15)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-16','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-17','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x2)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-18','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x2)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-2','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:24',NULL,'Insert Row (x5)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-20','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-21','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-22','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-23','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:26',NULL,'Insert Row','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-5','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:24',NULL,'Insert Row','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-6','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x14)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-8','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x7)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226348923233-9','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:25',NULL,'Insert Row (x4)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1226412230538-9a','ben (generated)','liquibase-core-data.xml','2012-05-27 18:11:26',NULL,'Insert Row (x4)','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-1','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:00',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-10','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-100','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-101','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-102','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-103','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-104','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-105','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-106','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-107','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-108','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-109','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-11','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-110','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-111','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:08',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-112','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-113','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-114','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-115','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-116','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-117','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-118','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-119','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-12','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-120','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-121','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-122','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-123','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:09',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-124','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-125','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-126','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-127','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-128','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-129','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-13','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-130','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-131','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-132','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-133','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-134','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-135','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-136','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-137','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:10',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-138','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-139','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-14','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-140','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-141','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-142','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-143','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-144','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-145','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-146','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-147','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-148','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-149','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-15','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-150','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:11',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-151','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-152','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-153','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-154','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-155','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-156','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-157','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-158','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-159','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-16','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-160','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-161','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:12',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-162','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-163','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-164','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-165','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-166','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-167','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-168','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-169','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-17','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-170','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-171','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-172','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-173','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-174','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:13',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-175','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-176','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-177','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-178','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-179','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-18','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-180','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-181','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-182','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-183','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-184','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-185','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-186','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-187','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:14',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-188','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-189','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-19','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-190','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-191','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-192','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-193','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-194','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-195','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-196','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-197','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-198','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-199','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-2','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:00',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-20','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-200','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:15',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-201','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-202','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-203','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-204','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-205','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-206','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-207','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-208','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-209','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-21','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-210','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-211','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-212','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-213','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:16',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-214','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-215','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-216','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-217','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-218','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-219','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-22','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-220','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-221','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-222','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-223','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-224','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-225','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:17',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-226','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-227','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-228','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-229','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-23','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-230','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-231','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-232','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-233','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-234','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-235','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-236','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-237','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-238','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-239','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:18',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-24','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-240','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-241','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-242','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-243','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-244','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-245','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-246','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-247','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-248','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-249','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-25','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-250','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-251','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-252','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:19',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-253','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-254','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-255','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-256','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-257','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-258','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-259','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-26','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-260','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-261','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-262','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-263','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-264','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-265','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:20',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-266','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-267','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-268','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-269','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-27','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-270','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-271','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-272','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-273','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-274','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-275','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-276','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:21',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-277','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-278','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-279','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-28','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-280','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-281','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-282','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-283','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-284','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-285','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-286','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-287','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-288','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:22',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-289','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-29','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-290','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-291','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-292','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-293','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-294','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-295','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-296','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-297','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-298','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-299','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-3','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:00',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-30','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-300','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:23',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-301','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:24',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-302','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:24',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-303','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:24',NULL,'Add Foreign Key Constraint','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-31','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-32','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-33','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-34','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-35','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-36','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-37','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-38','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-39','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-4','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-40','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-41','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:02',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-42','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-43','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-44','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-45','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-46','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-47','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-48','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-49','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-5','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-50','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-51','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-52','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-53','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-54','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-55','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-56','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-57','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-58','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-59','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-6','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-60','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-61','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-62','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-63','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:03',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-64','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-65','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-66','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-67','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-68','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-69','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-7','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-70','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-71','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-72','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-73','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-74','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-75','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-76','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-77','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:04',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-78','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-79','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-8','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-80','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-81','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-82','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-83','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-84','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Add Primary Key','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-85','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:05',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-86','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-87','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-88','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-89','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-9','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:01',NULL,'Create Table','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-90','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-91','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-92','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-93','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-94','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:06',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-95','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-96','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-97','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-98','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('1227303685425-99','ben (generated)','liquibase-schema-only.xml','2012-05-27 18:11:07',NULL,'Create Index','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('2','upul','liquibase-update-to-latest.xml','2012-05-27 18:11:31','3:b1811e5e43321192b275d6e2fe2fa564','Add Foreign Key Constraint','Create the foreign key from the privilege required for to edit\n			a person attribute type and the privilege.privilege column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200805281223','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:33','3:b1fc37f9ec96eac9203f0808c2f4ac26','Create Table, Add Foreign Key Constraint','Create the concept_complex table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200805281224','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:33','3:ea32453830c2215bdb209770396002e7','Add Column','Adding the value_complex column to obs.  This may take a long time if you have a large number of observations.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200805281225','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:33','3:5281031bcc075df3b959e94da4adcaa9','Insert Row','Adding a \'complex\' Concept Datatype',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200805281226','bmckown','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:9a49a3d002485f3a77134d98fb7c8cd8','Drop Table (x2)','Dropping the mimetype and complex_obs tables as they aren\'t needed in the new complex obs setup',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200809191226','smbugua','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:eed0aa27b44ecf668c81e457d99fa7de','Add Column','Adding the hl7 archive message_state column so that archives can be tracked\n			\n			(preCondition database_version check in place because this change was in the old format in trunk for a while)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200809191927','smbugua','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:f0e4fab64749e42770e62e9330c2d288','Rename Column, Modify Column','Adding the hl7 archive message_state column so that archives can be tracked',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200811261102','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:31','3:158dd028359ebfd4f1c9bf2e76a5e143','Update Data','Fix field property for new Tribe person attribute',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200901101524','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:feb4a087d13657164e5c3bc787b7f83f','Modify Column','Changing datatype of drug.retire_reason from DATETIME to varchar(255)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200901130950','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:f1e5e7124bdb4f7378866fdb691e2780','Delete Data (x2)','Remove Manage Tribes and View Tribes privileges from all roles',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200901130951','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:54ac8683819837cc04f1a16b6311d668','Delete Data (x2)','Remove Manage Mime Types, View Mime Types, and Purge Mime Types privilege',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200901161126','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:871b9364dd87b6bfcc0005f40b6eb399','Delete Data','Removed the database_version global property',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090121-0949','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:8639e35e0238019af2f9e326dd5cbc22','Custom SQL','Switched the default xslt to use PV1-19 instead of PV1-1',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090122-0853','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:4903c6f81f0309313013851f09a26b85','Custom SQL, Add Lookup Table, Drop Foreign Key Constraint, Delete Data (x2), Drop Table','Remove duplicate concept name tags',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090123-0305','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:35','3:48cdf2b28fcad687072ac8133e46cba6','Add Unique Constraint','Add unique constraint to the tags table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090214-2246','isherman','liquibase-update-to-latest.xml','2012-05-27 18:11:39','3:d16c607266238df425db61908e7c8745','Custom SQL','Add weight and cd4 to patientGraphConcepts user property (mysql specific)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090214-2247','isherman','liquibase-update-to-latest.xml','2012-05-27 18:11:39','3:e4eeb4a09c2ab695bbde832cd7b6047d','Custom SQL','Add weight and cd4 to patientGraphConcepts user property (using standard sql)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090214-2248','isherman','liquibase-update-to-latest.xml','2012-05-27 18:11:39',NULL,'Custom SQL','Add weight and cd4 to patientGraphConcepts user property (mssql specific)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200902142212','ewolodzko','liquibase-update-to-latest.xml','2012-05-27 18:12:05','3:df93fa2841295b29a0fcd4225c46d1a3','Add Column','Add a sortWeight field to PersonAttributeType',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200902142213','ewolodzko','liquibase-update-to-latest.xml','2012-05-27 18:12:05','3:ace82a1ecb3a0c3246e39f0bebe38423','Update Data','Add default sortWeights to all current PersonAttributeTypes',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090224-1002-create-visit_type','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:39:29','3:ea3c0b323da2d51cf43e982177eace96','Create Table, Add Foreign Key Constraint (x3)','Create visit type table',NULL,'2.0.1',27,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090224-1229','Keelhaul+bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:37','3:f8433194bcb29073c17c7765ce61aab2','Create Table, Add Foreign Key Constraint (x2)','Add location tags table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090224-1250','Keelhaul+bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:38','3:8935a56fac2ad91275248d4675c2c090','Create Table, Add Foreign Key Constraint (x2), Add Primary Key','Add location tag map table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090224-1256','Keelhaul+bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:38','3:9c0e7238dd1daad9edff381ba22a3ada','Add Column, Add Foreign Key Constraint','Add parent_location column to location table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090225-1551','dthomas','liquibase-update-to-latest.xml','2012-05-27 18:11:39','3:a3aed1685bd1051a8c4fae0eab925954','Rename Column (x2)','Change location_tag.name to location_tag.tag and location_tag.retired_reason to location_tag.retire_reason',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090301-1259','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:39','3:21f2ac06dee26613b73003cd1f247ea8','Update Data (x2)','Fixes the description for name layout global property',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090316-1008','vanand','liquibase-update-to-latest.xml','2012-05-27 18:11:42','3:baa49982f1106c65ba33c845bba149b3','Modify Column (x7), Update Data, Modify Column (x18), Update Data, Modify Column (x11)','Change column types of all boolean columns to smallint. The columns used to be either tinyint(4) or MySQL\'s BIT.\n			(This may take a while on large patient or obs tables)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090316-1008-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:24','3:aeeb6c14cd22ffa121a2582e04025f5a','Modify Column (x36)','(Fixed)Changing from smallint to BOOLEAN type on BOOLEAN properties',NULL,'2.0.1',77,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200903210905','mseaton','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:720bb7a3f71f0c0a911d3364e55dd72f','Create Table, Add Foreign Key Constraint (x3)','Add a table to enable generic storage of serialized objects',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200903210905-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:09','3:a11519f50deeece1f9760d3fc1ac3f05','Modify Column','(Fixed)Add a table to enable generic storage of serialized objects',NULL,'2.0.1',1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-cohort','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:5c65821ef168d9e8296466be5990ae08','Add Column','Adding \"uuid\" column to cohort table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:8004d09d6e2a34623b8d0a13d6c38dc4','Add Column','Adding \"uuid\" column to concept table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:adf3f4ebf7e0eb55eb6927dea7ce2a49','Add Column','Adding \"uuid\" column to concept_answer table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_class','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:f39e190a2e12c7a6163a0d8a82544228','Add Column','Adding \"uuid\" column to concept_class table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_datatype','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:d68b3f2323626fee7b433f873a019412','Add Column','Adding \"uuid\" column to concept_datatype table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_description','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:7d043672ede851c5dcd717171f953c75','Add Column','Adding \"uuid\" column to concept_description table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_map','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:c1884f56bd70a205b86e7c4038e6c6f9','Add Column','Adding \"uuid\" column to concept_map table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:822888c5ba1132f6783fbd032c21f238','Add Column','Adding \"uuid\" column to concept_name table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_name_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:dcb584d414ffd8133c97e42585bd34cd','Add Column','Adding \"uuid\" column to concept_name_tag table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_proposal','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:fe19ecccb704331741c227aa72597789','Add Column','Adding \"uuid\" column to concept_proposal table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_set','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:cdc72e16eaec2244c09e9e2fedf5806b','Add Column','Adding \"uuid\" column to concept_set table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:ad101415b93eaf653871eddd4fe4fc17','Add Column','Adding \"uuid\" column to concept_source table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-concept_state_conversion','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:5ce8a6cdbfa8742b033b0b1c12e4cd42','Add Column','Adding \"uuid\" column to concept_state_conversion table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-drug','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:6869bd44f51cb7f63f758fbd8a7fe156','Add Column','Adding \"uuid\" column to drug table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-encounter','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:0808491f7ec59827a0415f2949b9d90e','Add Column','Adding \"uuid\" column to encounter table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-encounter_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:9aaac835f4d9579386990d4990ffb9d6','Add Column','Adding \"uuid\" column to encounter_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:dfee5fe509457ef12b14254bab9e6df5','Add Column','Adding \"uuid\" column to field table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-field_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:c378494d6e9ae45b278c726256619cd7','Add Column','Adding \"uuid\" column to field_answer table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-field_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:dfb47f0b85d5bdad77f3a15cc4d180ec','Add Column','Adding \"uuid\" column to field_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-form','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:45','3:eb707ff99ed8ca2945a43175b904dea4','Add Column','Adding \"uuid\" column to form table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-form_field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:635701ccda0484966f45f0e617119100','Add Column','Adding \"uuid\" column to form_field table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-global_property','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:1c62ba666b60eaa88ee3a90853f3bf59','Add Column','Adding \"uuid\" column to global_property table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_in_archive','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:9c5015280eff821924416112922fd94d','Add Column','Adding \"uuid\" column to hl7_in_archive table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_in_error','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:35b94fc079e6de9ada4329a7bbc55645','Add Column','Adding \"uuid\" column to hl7_in_error table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_in_queue','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:494d9eaaed055d0c5af4b4d85db2095d','Add Column','Adding \"uuid\" column to hl7_in_queue table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-hl7_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:8bc9839788ef5ab415ccf020eb04a1f7','Add Column','Adding \"uuid\" column to hl7_source table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-location','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:7e6b762f813310c72026677d540dee57','Add Column','Adding \"uuid\" column to location table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-location_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:6a94a67e776662268d42f09cf7c66ac0','Add Column','Adding \"uuid\" column to location_tag table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-note','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:f0fd7b6750d07c973aad667b170cdfa8','Add Column','Adding \"uuid\" column to note table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-notification_alert','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:f2865558fb76c7584f6e86786b0ffdea','Add Column','Adding \"uuid\" column to notification_alert table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-notification_template','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:c05536d99eb2479211cb10010d48a2e9','Add Column','Adding \"uuid\" column to notification_template table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-obs','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:46','3:ba99d7eccba2185e9d5ebab98007e577','Add Column','Adding \"uuid\" column to obs table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-orders','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:732a2d4fd91690d544f0c63bdb65819f','Add Column','Adding \"uuid\" column to orders table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-order_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:137552884c5eb5af4c3f77c90df514cb','Add Column','Adding \"uuid\" column to order_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_identifier','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:1a9ddcd8997bcf1a9668051d397e41c1','Add Column','Adding \"uuid\" column to patient_identifier table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_identifier_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:6170d6caa73320fd2433fba0a16e8029','Add Column','Adding \"uuid\" column to patient_identifier_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:8fb284b435669717f4b5aaa66e61fc10','Add Column','Adding \"uuid\" column to patient_program table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-patient_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:b67eb1bbd3e2912a646f56425c38631f','Add Column','Adding \"uuid\" column to patient_state table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:2b89eb77976b9159717e9d7b83c34cf1','Add Column','Adding \"uuid\" column to person table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_address','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:cfdb17b16b6d15477bc72d4d19ac3f29','Add Column','Adding \"uuid\" column to person_address table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_attribute','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:2f6b7fa688987b32d99cda348c6f6c46','Add Column','Adding \"uuid\" column to person_attribute table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_attribute_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:38d4dce320f2fc35db9dfcc2eafc093e','Add Column','Adding \"uuid\" column to person_attribute_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-person_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:339f02d6797870f9e7dd704f093b088c','Add Column','Adding \"uuid\" column to person_name table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-privilege','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:47','3:41f52c4340fdc9f0825ea9660edea8ec','Add Column','Adding \"uuid\" column to privilege table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:a72f80159cdbd576906cd3b9069d425b','Add Column','Adding \"uuid\" column to program table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-program_workflow','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:c69183f7e1614d5a338c0d0944f1e754','Add Column','Adding \"uuid\" column to program_workflow table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-program_workflow_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:e25b0fa351bb667af3ff562855f66bb6','Add Column','Adding \"uuid\" column to program_workflow_state table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-relationship','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:95407167e9f4984de1d710a83371ebd1','Add Column','Adding \"uuid\" column to relationship table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-relationship_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:f8755b127c004d11a43bfd6558be01b7','Add Column','Adding \"uuid\" column to relationship_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-report_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:b7ce0784e817be464370a3154fd4aa9c','Add Column','Adding \"uuid\" column to report_object table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-report_schema_xml','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:ce7ae79a3e3ce429a56fa658c48889b5','Add Column','Adding \"uuid\" column to report_schema_xml table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-role','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:f33887a0b51ab366d414e16202cf55db','Add Column','Adding \"uuid\" column to role table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1515-38-serialized_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:341cfbdff8ebf188d526bf3348619dcc','Add Column','Adding \"uuid\" column to serialized_object table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-cohort','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:110084035197514c8d640b915230cf72','Update Data','Generating UUIDs for all rows in cohort table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:a44bc743cb837d88f7371282f3a5871e','Update Data','Generating UUIDs for all rows in concept table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:f01d7278b153fa10a7d741607501ae1e','Update Data','Generating UUIDs for all rows in concept_answer table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_class','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:786f0ec8beec453ea9487f2e77f9fb4d','Update Data','Generating UUIDs for all rows in concept_class table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_datatype','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:b828e9851365ec70531dabd250374989','Update Data','Generating UUIDs for all rows in concept_datatype table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_description','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:37dbfc43c73553c9c9ecf11206714cc4','Update Data','Generating UUIDs for all rows in concept_description table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_map','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:e843f99c0371aabee21ca94fcef01f39','Update Data','Generating UUIDs for all rows in concept_map table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:dd414ae9367287c9c03342a79abd1d62','Update Data','Generating UUIDs for all rows in concept_name table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_name_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:cd7b5d0ceeb90b2254708b44c10d03e8','Update Data','Generating UUIDs for all rows in concept_name_tag table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_proposal','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:fb1cfa9c5decbafc3293f3dd1d87ff2b','Update Data','Generating UUIDs for all rows in concept_proposal table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_set','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:3b7f3851624014e740f89bc9a431feaa','Update Data','Generating UUIDs for all rows in concept_set table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:53da91ae3e39d7fb7ebca91df3bfd9a6','Update Data','Generating UUIDs for all rows in concept_source table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-concept_state_conversion','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:23197d24e498ad86d4e001b183cc0c6b','Update Data','Generating UUIDs for all rows in concept_state_conversion table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-drug','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:40b47df80bd425337b7bdd8b41497967','Update Data','Generating UUIDs for all rows in drug table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-encounter','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:40146708b71d86d4c8c5340767a98f5e','Update Data','Generating UUIDs for all rows in encounter table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-encounter_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:738c6b6244a84fc8e6d582bcd472ffe6','Update Data','Generating UUIDs for all rows in encounter_type table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:98d2a1550e867e4ef303a4cc47ed904d','Update Data','Generating UUIDs for all rows in field table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-field_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:82bdfe361286d261724eef97dd89e358','Update Data','Generating UUIDs for all rows in field_answer table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-field_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:19a8d007f6147651240ebb9539d3303a','Update Data','Generating UUIDs for all rows in field_type table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-form','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:026ddf1c9050c7367d4eb57dd4105322','Update Data','Generating UUIDs for all rows in form table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-form_field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:a8b0bcdb35830c2badfdcb9b1cfdd3b5','Update Data','Generating UUIDs for all rows in form_field table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-global_property','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:48','3:75a5b4a9473bc9c6bfbabf8e77b0cda7','Update Data','Generating UUIDs for all rows in global_property table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_in_archive','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:09891436d8ea0ad14f7b52fd05daa237','Update Data','Generating UUIDs for all rows in hl7_in_archive table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_in_error','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:8d276bbd8bf9d9d1c64756f37ef91ed3','Update Data','Generating UUIDs for all rows in hl7_in_error table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_in_queue','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:25e8f998171accd46860717f93690ccc','Update Data','Generating UUIDs for all rows in hl7_in_queue table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-hl7_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:45c06e034d7158a0d09afae60c4c83d6','Update Data','Generating UUIDs for all rows in hl7_source table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-location','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:fce0f7eaab989f2ff9664fc66d6b8419','Update Data','Generating UUIDs for all rows in location table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-location_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:50f26d1376ea108bbb65fd4d0633e741','Update Data','Generating UUIDs for all rows in location_tag table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-note','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:f5a0eea2a7c59fffafa674de4356e621','Update Data','Generating UUIDs for all rows in note table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-notification_alert','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:481fbab9bd53449903ac193894adbc28','Update Data','Generating UUIDs for all rows in notification_alert table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-notification_template','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:a4a2990465c4c99747f83ea880cac46a','Update Data','Generating UUIDs for all rows in notification_template table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-obs','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:26d80fdd889922821244f84e3f8039e7','Update Data','Generating UUIDs for all rows in obs table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-orders','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:ec3bc80540d78f416e1d4eef62e8e15a','Update Data','Generating UUIDs for all rows in orders table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-order_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:cae66b98b889c7ee1c8d6ab270a8d0d5','Update Data','Generating UUIDs for all rows in order_type table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_identifier','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:647906cc7cf1fde9b7644b8f2541664f','Update Data','Generating UUIDs for all rows in patient_identifier table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_identifier_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:85f8db0310c15a74b17e968c7730ae12','Update Data','Generating UUIDs for all rows in patient_identifier_type table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:576b7db39f0212f8e92b6f4e1844ea30','Update Data','Generating UUIDs for all rows in patient_program table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-patient_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:250eab0f97fc4eeb4f1a930fbccfcf08','Update Data','Generating UUIDs for all rows in patient_state table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:cedc8bcd77ade51558fb2d12916e31a4','Update Data','Generating UUIDs for all rows in person table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_address','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:0f817424ca41e5c5b459591d6e18b3c6','Update Data','Generating UUIDs for all rows in person_address table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_attribute','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:7f9e09b1267c4a787a9d3e37acfd5746','Update Data','Generating UUIDs for all rows in person_attribute table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_attribute_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:1e5f84054b7b7fdf59673e2260f48d9d','Update Data','Generating UUIDs for all rows in person_attribute_type table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-person_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:f827da2c097b01ca9073c258b19e9540','Update Data','Generating UUIDs for all rows in person_name table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-privilege','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:2ab150a53c91ded0c5b53fa99fde4ba2','Update Data','Generating UUIDs for all rows in privilege table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:132b63f2efcf781187602e043122e7ff','Update Data','Generating UUIDs for all rows in program table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-program_workflow','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:d945359ed4bb6cc6a21f4554a0c50a33','Update Data','Generating UUIDs for all rows in program_workflow table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-program_workflow_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:4bc093882ac096562d63562ac76a1ffa','Update Data','Generating UUIDs for all rows in program_workflow_state table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-relationship','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:25e22c04ada4808cc31fd48f23703333','Update Data','Generating UUIDs for all rows in relationship table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-relationship_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:562ad77e9453595c9cd22a2cdde3cc41','Update Data','Generating UUIDs for all rows in relationship_type table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-report_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:8531f740c64a0d1605225536c1be0860','Update Data','Generating UUIDs for all rows in report_object table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-report_schema_xml','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:cd9efe4d62f2754b057d2d409d6e826a','Update Data','Generating UUIDs for all rows in report_schema_xml table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-role','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:f75bfc36ad13cb9324b9520804a60141','Update Data','Generating UUIDs for all rows in role table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1516-serialized_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:c809b71d2444a8a8e2c5e5574d344c82','Update Data','Generating UUIDs for all rows in serialized_object table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1517','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:49','3:4edd135921eb263d4811cf1c22ef4846','Custom Change','Adding UUIDs to all rows in all columns via a java class. (This will take a long time on large databases)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1518','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:52','3:a9564fc8de85d37f4748a3fa1e69281c','Add Not-Null Constraint (x52)','Now that UUID generation is done, set the uuid columns to not \"NOT NULL\"',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-cohort','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:52','3:260c435f1cf3e3f01d953d630c7a578b','Create Index','Creating unique index on cohort.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:9e363ee4b39e7fdfb547e3a51ad187c7','Create Index','Creating unique index on concept.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:34b049a3fd545928760968beb1e98e00','Create Index','Creating unique index on concept_answer.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_class','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:0fc95dccef2343850adb1fe49d60f3c3','Create Index','Creating unique index on concept_class.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_datatype','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:0cf065b0f780dc2eeca994628af49a34','Create Index','Creating unique index on concept_datatype.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_description','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:16ce0ad6c3e37071bbfcaad744693d0f','Create Index','Creating unique index on concept_description.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_map','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:b8a320c1d44ab94e785c9ae6c41378f3','Create Index','Creating unique index on concept_map.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:0d5866c0d3eadc8df09b1a7c160508ca','Create Index','Creating unique index on concept_name.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_name_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:53','3:7ba597ec0fb5fbfba615ac97df642072','Create Index','Creating unique index on concept_name_tag.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_proposal','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:79f9f4af9669c2b03511832a23db55e0','Create Index','Creating unique index on concept_proposal.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_set','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:f5ba4e2d5ddd4ec66f43501b9749cf70','Create Index','Creating unique index on concept_set.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:c7c47d9c2876bfa53542885e304b21e7','Create Index','Creating unique index on concept_source.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-concept_state_conversion','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:cc9d9bb0d5eb9f6583cd538919b42b9a','Create Index','Creating unique index on concept_state_conversion.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-drug','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:8cac800e9f857e29698e1c80ab7e6a52','Create Index','Creating unique index on drug.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-encounter','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:8fd623411a44ffb0d4e3a4139e916585','Create Index','Creating unique index on encounter.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-encounter_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:71e0e1df8c290d8b6e81e281154661e0','Create Index','Creating unique index on encounter_type.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:54','3:36d9eba3e0a90061c6bf1c8aa483110e','Create Index','Creating unique index on field.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-field_answer','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:81572b572f758cac173b5d14516f600e','Create Index','Creating unique index on field_answer.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-field_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:a0c3927dfde900959131aeb1490a5f51','Create Index','Creating unique index on field_type.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-form','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:61147c780ce563776a1caed795661aca','Create Index','Creating unique index on form.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-form_field','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:bd9def4522865d181e42809f9dd5c116','Create Index','Creating unique index on form_field.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-global_property','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:0e6b84ad5fffa3fd49242b5475e8eb66','Create Index','Creating unique index on global_property.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_in_archive','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:d2f8921c170e416560c234aa74964346','Create Index','Creating unique index on hl7_in_archive.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_in_error','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:9ccec0729ea1b4eaa5068726f9045c25','Create Index','Creating unique index on hl7_in_error.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_in_queue','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:55','3:af537cb4134c3f2ed0357f3280ceb6fe','Create Index','Creating unique index on hl7_in_queue.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-hl7_source','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:a6d1847b6a590319206f65be9d1d3c9e','Create Index','Creating unique index on hl7_source.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-location','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:c435bd4b405d4f11d919777718aa055c','Create Index','Creating unique index on location.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-location_tag','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:33a8a54cde59b23a9cdb7740a9995e1a','Create Index','Creating unique index on location_tag.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-note','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:97279b2ce285e56613a10a77c5af32b2','Create Index','Creating unique index on note.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-notification_alert','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:a763255eddf8607f7d86afbb3099d4b5','Create Index','Creating unique index on notification_alert.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-notification_template','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:9a69bbb343077bc62acdf6a66498029a','Create Index','Creating unique index on notification_template.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-obs','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:de9a7a24e527542e6b4a73e2cd31a7f9','Create Index','Creating unique index on obs.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-orders','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:848c0a00a32c5eb25041ad058fd38263','Create Index','Creating unique index on orders.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-order_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:56','3:d938d263e0acf974d43ad81d2fbe05b0','Create Index','Creating unique index on order_type.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_identifier','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:43389efa06408c8312d130654309d140','Create Index','Creating unique index on patient_identifier.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_identifier_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:3ffe4f31a1c48d2545e8eed4127cc490','Create Index','Creating unique index on patient_identifier_type.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:ce69defda5ba254914f2319f3a7aac02','Create Index','Creating unique index on patient_program.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-patient_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:a4ca15f62b3c8c43f7f47ef8b9e39cd3','Create Index','Creating unique index on patient_state.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:345a5d4e8dea4d56c1a0784e7b35a801','Create Index','Creating unique index on person.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_address','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:105ece744a45b624ea8990f152bb8300','Create Index','Creating unique index on person_address.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_attribute','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:57','3:67a8cdda8605c28f76314873d2606457','Create Index','Creating unique index on person_attribute.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_attribute_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:a234ad0ea13f32fc4529cf556151d611','Create Index','Creating unique index on person_attribute_type.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-person_name','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:d18e326ce221b4b1232ce2e355731338','Create Index','Creating unique index on person_name.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-privilege','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:47e7f70f34a213d870e2aeed795d5e3d','Create Index','Creating unique index on privilege.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-program','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:62f9d9ecd2325d5908237a769e9a8bc7','Create Index','Creating unique index on program.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-program_workflow','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:fabb3152f6055dc0071a2e5d6f573d2f','Create Index','Creating unique index on program_workflow.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-program_workflow_state','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:4fdf0c20aedcdc87b2c6058a1cc8fce7','Create Index','Creating unique index on program_workflow_state.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-relationship','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:c90617ca900b1aef3f29e71f693e8a25','Create Index','Creating unique index on relationship.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-relationship_type','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:58','3:c9f05aca70b6dad54af121b593587a29','Create Index','Creating unique index on relationship_type.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-report_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','3:6069b78580fd0d276f5dae9f3bdf21be','Create Index','Creating unique index on report_object.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-report_schema_xml','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','3:91499d332dda0577fd02b6a6b7b35e99','Create Index','Creating unique index on report_schema_xml.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-role','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','3:c535a800ceb006311bbb7a27e8bab6ea','Create Index','Creating unique index on role.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090402-1519-serialized_object','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:59','3:e8f2b1c3a7a67aadc8499ebcb522c91a','Create Index','Creating unique index on serialized_object.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090408-1298','Cory McCarthy','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:defbd13a058ba3563e232c2093cd2b37','Modify Column','Changed the datatype for encounter_type to \'text\' instead of just 50 chars',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200904091023','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:48adc23e9c5d820a87f6c8d61dfb6b55','Delete Data (x4)','Remove Manage Tribes and View Tribes privileges from the privilege table and role_privilege table.\n			The privileges will be recreated by the Tribe module if it is installed.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0804','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','3:479b4df8e3c746b5b96eeea422799774','Drop Foreign Key Constraint','Dropping foreign key on concept_set.concept_id table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0805','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','3:5017417439ff841eb036ceb94f3c5800','Drop Primary Key','Dropping primary key on concept set table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0806','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','3:6b9cec59fd607569228bf87d4dffa1a5','Add Column','Adding new integer primary key to concept set table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0807','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:00','3:57834f6c953f34035237e06a2dbed9c7','Create Index, Add Foreign Key Constraint','Adding index and foreign key to concept_set.concept_id column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0808a','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','3:6c9d9e6b85c1bf04fdbf9fdec316f2ea','Drop Foreign Key Constraint','Dropping foreign key on patient_identifier.patient_id column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0808b','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','3:12e01363841135ed0dae46d71e7694cf','Drop Primary Key','Dropping non-integer primary key on patient identifier table before adding a new integer primary key',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0809','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','3:864765efa4cae1c8ffb1138d63f77017','Add Column','Adding new integer primary key to patient identifier table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0810','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:02','3:4ca46ee358567e35c897a73c065e3367','Create Index, Add Foreign Key Constraint','Adding index and foreign key on patient_identifier.patient_id column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0811a','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','3:f027a0ad38c0f6302def391da78aaaee','Drop Foreign Key Constraint','Dropping foreign key on concept_word.concept_id column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0811b','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','3:982d502e56854922542286cead4c09ce','Drop Primary Key','Dropping non-integer primary key on concept word table before adding new integer one',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0812','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','3:948e635fe3f63122856ca9b8a174352b','Add Column','Adding integer primary key to concept word table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090414-0812b','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','3:bd7731e58f3db9b944905597a08eb6cb','Add Foreign Key Constraint','Re-adding foreign key for concept_word.concept_name_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200904271042','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:05','3:db63ce704aff4741c52181d1c825ab62','Drop Column','Remove the now unused synonym column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090428-0811aa','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:04','3:58d8f3df1fe704714a7b4957a6c0e7f7','Drop Foreign Key Constraint','Removing concept_word.concept_name_id foreign key so that primary key can be changed to concept_word_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090428-0854','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:05','3:11086a37155507c0238c9532f66b172b','Add Foreign Key Constraint','Adding foreign key for concept_word.concept_id column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200905071626','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:d29884c3ef8fd867c3c2ffbd557c14c2','Create Index','Add an index to the concept_word.concept_id column (This update may fail if it already exists)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200905150814','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:11:44','3:44c729b393232d702553e0768cf94994','Delete Data','Deleting invalid concept words',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200905150821','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:05','3:c0b7abc7eb00f243325b4a3fb2afc614','Custom SQL','Deleting duplicate concept word keys',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200906301606','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:de40c56c128997509d1d943ed047c5d2','Modify Column','Change person_attribute_type.sort_weight from an integer to a float',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200907161638-1','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:dfd352bdc4c5e6c88cd040d03c782e31','Modify Column','Change obs.value_numeric from a double(22,0) to a double',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200907161638-2','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:a8dc0bd1593e6c99a02db443bc4cb001','Modify Column','Change concept_numeric columns from a double(22,0) type to a double',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200907161638-3','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:47b8adbcd480660765dd117020a1e085','Modify Column','Change concept_set.sort_weight from a double(22,0) to a double',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200907161638-4','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:3ffccaa291298fea317eb7025c058492','Modify Column','Change concept_set_derived.sort_weight from a double(22,0) to a double',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200907161638-5','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:3b31cf625830c7e37fa638dbf9625000','Modify Column','Change drug table columns from a double(22,0) to a double',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200907161638-6','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:dc733faec1539038854c0b559b45da0e','Modify Column','Change drug_order.dose from a double(22,0) to a double',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200908291938-1','dthomas','liquibase-update-to-latest.xml','2012-05-27 18:12:29','3:b99a6d7349d367c30e8b404979e07b89','Modify Column','set hl7_code in ConceptSource to nullable column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200908291938-2a','dthomas','liquibase-update-to-latest.xml','2012-05-27 18:12:29','3:7e9e8d9bffcb6e602b155827f72a3856','Modify Column','set retired in ConceptSource to tinyint(1) not null',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090831-1039-38-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:54e254379235d5c8b569a00ac7dc9c3f','Add Column','Adding \"uuid\" column to scheduler_task_config table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090831-1040-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:a9b26bdab35405050c052a9a3f763db0','Update Data','Generating UUIDs for all rows in scheduler_task_config table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090831-1041-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:25127273b2d501664ce325922b0c7db2','Custom Change','Adding UUIDs to all rows in scheduler_task_config table via a java class for non mysql/oracle/mssql databases.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090831-1042-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:76d8a8b5d342fc4111034861537315cf','Add Not-Null Constraint','Now that UUID generation is done for scheduler_task_config, set the uuid column to not \"NOT NULL\"',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090831-1043-scheduler_task_config','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:5408ed04284c4f5d57f5160ca5393733','Create Index','Creating unique index on scheduler_task_config.uuid column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090907-1','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:d6f3ed289cdbce6229b1414ec626a33c','Rename Column','Rename the concept_source.date_voided column to date_retired',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090907-2a','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:26','3:b71e307e4e782cc5a851f764aa7fc0d0','Drop Foreign Key Constraint','Remove the concept_source.voided_by foreign key constraint',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090907-2b','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:27','3:14e07ebc0a1138ee973bbb26b568d16e','Rename Column, Add Foreign Key Constraint','Rename the concept_source.voided_by column to retired_by',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090907-3','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:27','3:adee9ced82158f9a9f3d64245ad591c6','Rename Column','Rename the concept_source.voided column to retired',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20090907-4','Knoll_Frank','liquibase-update-to-latest.xml','2012-05-27 18:12:28','3:ad9b6ed4ef3ae43556d3e8c9e2ec0f5c','Rename Column','Rename the concept_source.void_reason column to retire_reason',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-1','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:34',NULL,'Create Table','Create logic token table to store all registered token',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-2','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:35',NULL,'Create Table','Create logic token tag table to store all tag associated with a token',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-3','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:37',NULL,'Add Foreign Key Constraint','Adding foreign key for primary key of logic_rule_token_tag',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-4a','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:39',NULL,'Drop Foreign Key Constraint','Removing bad foreign key for logic_rule_token.creator',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-4aa','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:12:41',NULL,'Drop Foreign Key Constraint','Removing bad foreign key for logic_rule_token.creator',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-4b','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:13:21',NULL,'Add Foreign Key Constraint','Adding correct foreign key for logic_rule_token.creator',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200909281005-5a','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:13:40',NULL,'Add Foreign Key Constraint','Adding foreign key for logic_rule_token.changed_by',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091001-1023','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:2bf99392005da4e95178bd1e2c28a87b','Add Column','add retired column to relationship_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091001-1024','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:45','3:31b7b10f75047606406cea156bcc255f','Add Column','add retired_by column to relationship_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091001-1025','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:46','3:c6dd75893e5573baa0c7426ecccaa92d','Add Foreign Key Constraint','Create the foreign key from the relationship.retired_by to users.user_id.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091001-1026','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:46','3:47cfbab54a8049948784a165ffe830af','Add Column','add date_retired column to relationship_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091001-1027','rcrichton','liquibase-update-to-latest.xml','2012-05-27 18:13:46','3:2db32da70ac1e319909d692110b8654b','Add Column','add retire_reason column to relationship_type table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-1','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:2e54d97b9f1b9f35b77cee691c23b7a9','Update Data (x5)','Setting core field types to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-10','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:827070940f217296c11ce332dc8858ff','Update Data (x4)','Setting core roles to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-2','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:3132d4cbfaab0c0b612c3fe1c55bd0f1','Update Data (x7)','Setting core person attribute types to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-3','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:f4d1a9004f91b6885a86419bc02f9d0b','Update Data (x4)','Setting core encounter types to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-4','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:0d4f7503bf8f00cb73338bb34305333a','Update Data (x12)','Setting core concept datatypes to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-5','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:98d8ac75977e1b099a4e45d96c6b1d1a','Update Data (x4)','Setting core relationship types to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-6','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:19355a03794869edad3889ac0adbdedf','Update Data (x15)','Setting core concept classes to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-7','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:fe4c89654d02d74de6d8e4b265a33288','Update Data (x2)','Setting core patient identifier types to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-8','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:dc4462b5b4b13c2bc306506848127556','Update Data','Setting core location to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200910271049-9','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:de2a0ed2adafb53f025039e9e8c6719e','Update Data','Setting core hl7 source to have standard UUIDs',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912031842','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:41','3:b966745213bedaeeabab8a874084bb95','Drop Foreign Key Constraint, Add Foreign Key Constraint','Changing encounter.provider_id to reference person instead of users',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912031846-1','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:42','3:23e728a7f214127cb91efd40ebbcc2d1','Add Column, Update Data','Adding person_id column to users table (if needed)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912031846-2','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:42','3:8d57907defa7e92e018038d57cfa78b4','Update Data, Add Not-Null Constraint','Populating users.person_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912031846-3','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:43','3:48a50742f2904682caa1bc469f5b87e3','Add Foreign Key Constraint, Set Column as Auto-Increment','Restoring foreign key constraint on users.person_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912071501-1','arthurs','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:d1158b8a42127d7b8a4d5ad64cc7c225','Update Data','Change name for patient.searchMaxResults global property to person.searchMaxResults',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912091819','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:8c0b2b02a94b9c6c9529e1b29207464b','Add Column, Add Foreign Key Constraint','Adding retired metadata columns to users table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912091819-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:09','3:fd5fd1d2e6884662824bb78c8348fadf','Modify Column','(Fixed)users.retired to BOOLEAN',NULL,'2.0.1',2,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912091820','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:cba73499d1c4d09b0e4ae3b55ecc7d84','Update Data','Migrating voided metadata to retired metadata for users table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912091821','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:9b38d31ebfe427d1f8d6e8530687f29c','Drop Foreign Key Constraint, Drop Column (x4)','Dropping voided metadata columns from users table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912140038','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:be3aaa8da16b8a8841509faaeff070b4','Add Column','Adding \"uuid\" column to users table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912140039','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:5b2a81ac1efba5495962bfb86e51546d','Update Data','Generating UUIDs for all rows in users table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912140040','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:c422b96e5b88eeae4f343d4f988cc4b2','Custom Change','Adding UUIDs to users table via a java class. (This will take a long time on large databases)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912141000-drug-add-date-changed','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:40:29','3:9c9a75e3a78104e72de078ac217b0972','Add Column','Add date_changed column to drug table',NULL,'2.0.1',114,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912141001-drug-add-changed-by','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:40:30','3:196629c722f52df68b5040e5266ac20f','Add Column, Add Foreign Key Constraint','Add changed_by column to drug table',NULL,'2.0.1',115,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912141552','madanmohan','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:835b6b98a7a437d959255ac666c12759','Add Column, Add Foreign Key Constraint','Add changed_by column to encounter table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912141553','madanmohan','liquibase-update-to-latest.xml','2012-05-27 18:13:40','3:7f768aa879beac091501ac9bb47ece4d','Add Column','Add date_changed column to encounter table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091215-0208','sunbiz','liquibase-update-to-latest.xml','2012-05-27 18:13:46','3:1c818a60d8ebc36f4b7911051c1f6764','Custom SQL','Prune concepts rows orphaned in concept_numeric tables',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091215-0209','jmiranda','liquibase-update-to-latest.xml','2012-05-27 18:13:46','3:adeadc55e4dd484b1d63cf123e299371','Custom SQL','Prune concepts rows orphaned in concept_complex tables',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20091215-0210','jmiranda','liquibase-update-to-latest.xml','2012-05-27 18:13:46','3:08e8550629e4d5938494500f61d10961','Custom SQL','Prune concepts rows orphaned in concept_derived tables',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912151032','n.nehete','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:d7d8fededde8a27384ca1eb3f87f7914','Add Not-Null Constraint','Encounter Type should not be null when saving an Encounter',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('200912211118','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:13:41','3:1f976b4eedf537d887451246d49db043','Add Column','Adding language column to concept_derived table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201001072007','upul','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:d5d60060fae8e9c30843b16b23bed9db','Add Column','Add last execution time column to scheduler_task_config table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100111-0111-associating-daemon-user-with-person','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:bebb5c508bb53e7d5be6fb3aa259bd2f','Custom SQL','Associating daemon user with a person',NULL,'2.0.1',107,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100128-1','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:eaa1b8e62aa32654480e7a476dc14a4a','Insert Row','Adding \'System Developer\' role again (see ticket #1499)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100128-2','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:3c486c2ea731dfad7905518cac8d6e70','Update Data','Switching users back from \'Administrator\' to \'System Developer\' (see ticket #1499)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100128-3','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:12:06','3:9acf8cae5d210f88006191e79b76532c','Delete Data','Deleting \'Administrator\' role (see ticket #1499)',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100306-095513a','thilini.hg','liquibase-update-to-latest.xml','2012-05-27 18:13:47','3:b7a60c3c33a05a71dde5a26f35d85851','Drop Foreign Key Constraint','Dropping unused foreign key from notification alert table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100306-095513b','thilini.hg','liquibase-update-to-latest.xml','2012-05-27 18:13:47','3:8a6ebb6aefe04b470d5b3878485f9cc3','Drop Column','Dropping unused user_id column from notification alert table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100322-0908','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:13:47','3:94a8aae1d463754d7125cd546b4c590c','Add Column, Update Data','Adding sort_weight column to concept_answers table and initially sets the sort_weight to the concept_answer_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100323-192043','ricardosbarbosa','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:c294c84ac7ff884d1e618f4eb74b0c52','Update Data, Delete Data (x2)','Removing the duplicate privilege \'Add Concept Proposal\' in favor of \'Add Concept Proposals\'',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100330-190413','ricardosbarbosa','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:d706294defdfb73af9b44db7d37069d0','Update Data, Delete Data (x2)','Removing the duplicate privilege \'Edit Concept Proposal\' in favor of \'Edit Concept Proposals\'',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100412-2217','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:47','3:0c3a3ea15adefa620ab62145f412d0b6','Add Column','Adding \"uuid\" column to notification_alert_recipient table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100412-2218','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:47','3:6fae383b5548c214d2ad2c76346e32e3','Update Data','Generating UUIDs for all rows in notification_alert_recipient table via built in uuid function.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100412-2219','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:47','3:1401fe5f2d0c6bc23afa70b162e15346','Custom Change','Adding UUIDs to notification_alert_recipient table via a java class (if needed).',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100412-2220','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:bf4474dd5700b570e158ddc8250c470b','Add Not-Null Constraint','Now that UUID generation is done, set the notification_alert_recipient.uuid column to not \"NOT NULL\"',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100413-1509','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:7a3ee61077e4dee1ceb4fe127afc835f','Rename Column','Change location_tag.tag to location_tag.name',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100415-forgotten-from-before','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:44','3:d17699fbec80bd035ecb348ae5382754','Add Not-Null Constraint','Adding not null constraint to users.uuid',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100419-1209','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:39:34','3:f87b773f9a8e05892fdbe8740042abb5','Create Table, Add Foreign Key Constraint (x7), Create Index','Create the visit table and add the foreign key for visit_type',NULL,'2.0.1',28,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100419-1209-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:35','3:cb5970216f918522df3a059e29506c27','Modify Column','(Fixed)Changed visit.voided to BOOLEAN',NULL,'2.0.1',29,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100423-1402','slorenz','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:3534020f1c68f70b0e9851d47a4874d6','Create Index','Add an index to the encounter.encounter_datetime column to speed up statistical\n			analysis.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100423-1406','slorenz','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:f058162398862f0bdebc12d7eb54551b','Create Index','Add an index to the obs.obs_datetime column to speed up statistical analysis.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100426-1111-add-not-null-personid-contraint','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:40:28','3:a0b90b98be85aabbdebd957744ab805a','Add Not-Null Constraint','Add the not null person id contraint',NULL,'2.0.1',108,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100426-1111-remove-not-null-personid-contraint','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:39:09','3:5bc2abe108ab2765e36294ff465c63a0','Drop Not-Null Constraint','Drop the not null person id contraint',NULL,'2.0.1',4,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100426-1947','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:09adbdc9cb72dee82e67080b01d6578e','Insert Row','Adding daemon user to users table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100427-1334','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:48',NULL,'Modify Column','Changing the datatype of global_property.property for mysql databases',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100512-1400','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:0fbfb53e2e194543d7b3eaa59834e1e6','Insert Row','Create core order_type for drug orders',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100513-1947','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:068c2bd55d9c731941fe9ef66f0011fb','Delete Data (x2)','Removing scheduler.username and scheduler.password global properties',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100517-1545','wyclif and djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:39a68e6b1954a0954d0f8d0c660a7aff','Custom Change','Switch boolean concepts/observations to be stored as coded',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-1','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:09','3:ed9dcb5bd0d7312db3123825f9bb4347','Create Table, Add Foreign Key Constraint (x2)','Create active list type table.',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-1-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:09','3:4a648a54797fef2222764a7ee0b5e05a','Modify Column','(Fixed)Change active_list_type.retired to BOOLEAN',NULL,'2.0.1',5,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-2','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:13','3:bc5a86f0245f6f822a0d343b2fcf8dc6','Create Table, Add Foreign Key Constraint (x7)','Create active list table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-2-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:09','3:0a2879b368319f6d1e16d0d4417f4492','Modify Column','(Fixed)Change active_list_type.retired to BOOLEAN',NULL,'2.0.1',6,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-3','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:14','3:d382e7b9e23cdcc33ccde2d3f0473c41','Create Table, Add Foreign Key Constraint','Create allergen table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-4','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:15','3:1d6f1abd297c8da5a49d4885d0d34dfb','Create Table','Create problem table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100525-818-5','syhaas','liquibase-update-to-latest.xml','2012-05-27 18:14:15','3:2ac51b2e8813d61428367bad9fadaa33','Insert Row (x2)','Inserting default active list types',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100526-1025','Harsha.cse','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:66ec6553564d30fd63df7c2de41c674f','Drop Not-Null Constraint (x2)','Drop Not-Null constraint from location column in Encounter and Obs table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100603-1625-1-person_address','sapna','liquibase-update-to-latest.xml','2012-06-23 13:39:11','3:6048aa2c393c1349de55a5003199fb81','Add Column','Adding \"date_changed\" column to person_address table',NULL,'2.0.1',9,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100603-1625-2-person_address','sapna','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:5194e3b45b70b003e33d7ab0495f3015','Add Column, Add Foreign Key Constraint','Adding \"changed_by\" column to person_address table',NULL,'2.0.1',10,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100604-0933a','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:9b51b236846a8940de581e199cd76cb2','Add Default Value','Changing the default value to 2 for \'message_state\' column in \'hl7_in_archive\' table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100604-0933b','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:13:48','3:67fc4c12418b500aaf3723e8845429e3','Update Data','Converting 0 and 1 to 2 for \'message_state\' column in \'hl7_in_archive\' table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550a','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:15','3:bfb6250277efd8c81326fe8c3dbdfe35','Add Column','Adding \'concept_name_type\' column to concept_name table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550b','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:15','3:3d43124d8265fbf05f1ef4839f14bece','Add Column','Adding \'locale_preferred\' column to concept_name table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550b-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:10','3:d0dc8dfe3ac629aecee81ccc11dec9c2','Modify Column','(Fixed)Change concept_name.locale_preferred to BOOLEAN',NULL,'2.0.1',7,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550c','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','3:b6573617d37609ae7195fd7a495e2776','Drop Foreign Key Constraint','Dropping foreign key constraint on concept_name_tag_map.concept_name_tag_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550d','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','3:f30fd17874ac8294389ee2a44ca7d6ab','Update Data, Delete Data (x2)','Setting the concept name type for short names',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550e','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','3:0788cd1c32391234a8f0c655897fca24','Update Data, Delete Data (x2)','Converting preferred names to FULLY_SPECIFIED names',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550f','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','3:b57c0f651ed477457fd16e503eaf51a4','Update Data, Delete Data (x2)','Converting concept names with country specific concept name tags to preferred names',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550g','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','3:c3c0a17e0a21d36f38bb2af8f0939da7','Delete Data (x2)','Deleting \'default\' and \'synonym\' concept name tags',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550h','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:17','3:be7b967ed0e7006373bb616b63726144','Custom Change','Validating and attempting to fix invalid concepts and ConceptNames',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100607-1550i','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:18','3:b6260c13bf055f7917c155596502a24b','Add Foreign Key Constraint','Restoring foreign key constraint on concept_name_tag_map.concept_name_tag_id',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100621-1443','jkeiper','liquibase-update-to-latest.xml','2012-05-27 18:14:18','3:16b4bc3512029cf8d3b3c6bee86ed712','Modify Column','Modify the error_details column of hl7_in_error to hold\n			stacktraces',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201008021047','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:18','3:8612ede2553aab53950fa43d2f8def32','Create Index','Add an index to the person_name.family_name2 to speed up patient and person searches',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201008201345','mseaton','liquibase-update-to-latest.xml','2012-05-27 18:14:18','3:5fbbb6215e66847c86483ee7177c3682','Custom Change','Validates Program Workflow States for possible configuration problems and reports warnings',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201008242121','misha680','liquibase-update-to-latest.xml','2012-05-27 18:14:18','3:2319aed08c4f6dcd43d4ace5cdf94650','Modify Column','Make person_name.person_id not NULLable',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20100924-1110','mseaton','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:05ea5f3b806ba47f4a749d3a348c59f7','Add Column, Add Foreign Key Constraint','Add location_id column to patient_program table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201009281047','misha680','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:02b5b9a183729968cd4189798ca034bd','Drop Column','Remove the now unused default_charge column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010051745','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:04ba6f526a71fc0a2b016fd77eaf9ff5','Update Data','Setting the global property \'patient.identifierRegex\' to an empty string',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010051746','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:cb12dfc563d82529de170ffedf948f90','Update Data','Setting the global property \'patient.identifierSuffix\' to an empty string',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010151054','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:26c8ae0c53225f82d4c2a85c09ad9785','Create Index','Adding index to form.published column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010151055','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:1efabdfd082ff2b0a34f570831f74ce5','Create Index','Adding index to form.retired column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010151056','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:00273104184bb4d2bb7155befc77efc3','Create Index','Adding multi column index on form.published and form.retired columns',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261143','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:c02de7e2726893f80ecd1f3ae778cba5','Rename Column','Rename neighborhood_cell column to address3 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261145','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:2d053c2e9b604403df8a408a6bb4f3f8','Rename Column','Rename township_division column to address4 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261147','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:592eee2241fdb1039ba08be07b54a422','Rename Column','Rename subregion column to address5 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261149','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:059e5bf4092d930304f9f0fc305939d9','Rename Column','Rename region column to address6 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261151','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:19','3:8756b20f505f8981a43ece7233ce3e2f','Rename Column','Rename neighborhood_cell column to address3 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261153','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:20','3:9805b9a214fca5a3509a82864274678e','Rename Column','Rename township_division column to address4 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261156','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:20','3:894f4e47fbdc74be94e6ebc9d6fce91e','Rename Column','Rename subregion column to address5 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201010261159','crecabarren','liquibase-update-to-latest.xml','2012-05-27 18:14:20','3:b1827790c63813e6a73d83e2b2d36504','Rename Column','Rename region column to address6 and increase the size to 255 characters',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101029-1016','gobi/prasann','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:714ad65f5d84bdcd4d944a4d5583e4d3','Create Table, Add Unique Constraint','Create table to store concept stop words to avoid in search key indexing',NULL,'2.0.1',13,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101029-1026','gobi/prasann','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:83534d43a9a9cc1ea3a80f1d5f5570af','Insert Row (x10)','Inserting the initial concept stop words',NULL,'2.0.1',14,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201011011600','jkeiper','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:29b35d66dc4168e03e1844296e309327','Create Index','Adding index to message_state column in HL7 archive table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201011011605','jkeiper','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:c604bc0967765f50145f76e80a4bbc99','Custom Change','Moving \"deleted\" HL7s from HL7 archive table to queue table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201011051300','bwolfe','liquibase-update-to-latest.xml','2012-06-23 13:39:11','3:fea4ad8ce44911eeaab8ac8c1cc9122d','Create Index','Adding index on notification_alert.date_to_expire column',NULL,'2.0.1',8,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201012081716','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:14:23','3:4a97a93f2632fc0c3b088b24535ee481','Delete Data','Removing concept that are concept derived and the datatype',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201012081717','nribeka','liquibase-update-to-latest.xml','2012-05-27 18:15:18','3:ad3d0a18bda7e4869d264c70b8cd8d1d','Drop Table','Removing concept derived tables',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101209-10000-encounter-add-visit-id-column','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:39:36','3:7045a94731ef25e04724c77fc97494b4','Add Column, Add Foreign Key Constraint','Adding visit_id column to encounter table',NULL,'2.0.1',30,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101209-1721','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:351460e0f822555b77acff1a89bec267','Add Column','Add \'weight\' column to concept_word table',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101209-1722','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:d63107017bdcef0e28d7ad5e4df21ae5','Create Index','Adding index to concept_word.weight column',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101209-1723','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:25d45d7d5bbff4b24bcc8ff8d34d70d2','Insert Row','Insert a row into the schedule_task_config table for the ConceptIndexUpdateTask',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20101209-1731','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:6de3e859f77856fe939d3ae6a73b4752','Update Data','Setting the value of \'start_on_startup\' to trigger off conceptIndexUpdateTask on startup',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201012092009','djazayeri','liquibase-update-to-latest.xml','2012-05-27 18:14:21','3:15a029c4ffe65710a56d402e608d319a','Modify Column (x10)','Increasing length of address fields in person_address and location to 255',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('2011-07-12-1947-add-outcomesConcept-to-program','grwarren','liquibase-update-to-latest.xml','2012-06-23 13:40:13','3:ea2bb0a2ddeade662f956ef113d020ab','Add Column, Add Foreign Key Constraint','Adding the outcomesConcept property to Program',NULL,'2.0.1',41,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('2011-07-12-2005-add-outcome-to-patientprogram','grwarren','liquibase-update-to-latest.xml','2012-06-23 13:40:13','3:57baf47f9b09b3df649742d69be32015','Add Column, Add Foreign Key Constraint','Adding the outcome property to PatientProgram',NULL,'2.0.1',42,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201101121434','gbalaji,gobi','liquibase-update-to-latest.xml','2012-06-23 13:39:13','3:96320c51e6e296e9dc65866a61268e45','Drop Column','Dropping unused date_started column from obs table',NULL,'2.0.1',23,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201101221453','suho','liquibase-update-to-latest.xml','2012-06-23 13:39:13','3:4088d4906026cc1430fa98e04d294b13','Modify Column','Increasing the serialized_data column of serialized_object to hold mediumtext',NULL,'2.0.1',22,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110124-1030','surangak','liquibase-update-to-latest.xml','2012-06-23 13:39:22','3:e17eee5b8c4bb236a0ea6e6ade5abed7','Add Foreign Key Constraint','Adding correct foreign key for concept_answer.answer_drug',NULL,'2.0.1',25,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110125-1435','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:dadd9da1dad5f2863f8f6bb24b29d598','Add Column','Adding \'start_date\' column to person_address table',NULL,'2.0.1',16,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110125-1436','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:68cec89409d2419fe9439f4753a23036','Add Column','Adding \'end_date\' column to person_address table',NULL,'2.0.1',17,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201101271456-add-enddate-to-relationship','misha680','liquibase-update-to-latest.xml','2012-06-23 13:39:38','3:b593b864d4a870e3b7ba6b61fda57c8d','Add Column','Adding the end_date column to relationship.',NULL,'2.0.1',32,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201101271456-add-startdate-to-relationship','misha680','liquibase-update-to-latest.xml','2012-06-23 13:39:38','3:82020a9f33747f58274196619439781e','Add Column','Adding the start_date column to relationship.',NULL,'2.0.1',31,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110201-1625-1','arahulkmit','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:4f1b23efba67de1917e312942fe7e744','Add Column','Adding \"date_changed\" column to patient_identifier table',NULL,'2.0.1',18,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110201-1625-2','arahulkmit','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:01467a1db56ef3db87dc537d40ab22eb','Add Column, Add Foreign Key Constraint','Adding \"changed_by\" column to patient_identifier table',NULL,'2.0.1',19,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110201-1626-1','arahulkmit','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:63397ce933d1c78309648425fba66a17','Add Column','Adding \"date_changed\" column to relationship table',NULL,'2.0.1',20,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110201-1626-2','arahulkmit','liquibase-update-to-latest.xml','2012-06-23 13:39:13','3:21dae026e42d05b2ebc8fe51408c147f','Add Column, Add Foreign Key Constraint','Adding \"changed_by\" column to relationship table',NULL,'2.0.1',21,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201102081800','gbalaji,gobi','liquibase-update-to-latest.xml','2012-06-23 13:39:13','3:779ca58f39b4e3a14a313f8fc416c242','Drop Column','Dropping unused date_stopped column from obs table',NULL,'2.0.1',24,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110218-1206','rubailly','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:8be61726cd3fed87215557efd284434f','Add Column','Add \'location_behavior\' column to patient_identifier_type table',NULL,'2.0.1',11,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110218-1210','rubailly','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:4f8818ba08f3a9ce2e2ededfdf5b6fcd','Drop Not-Null Constraint','Drop Not-Null constraint from location_id column in patient_identifier table',NULL,'2.0.1',12,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201102280948','bwolfe','liquibase-update-to-latest.xml','2012-05-27 18:13:42','3:98e1075808582c97377651d02faf8f46','Drop Foreign Key Constraint','Removing the foreign key from users.user_id to person.person_id if it still exists',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030a','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:5256e8010fb4c375e2a1ef502176cc2f','Rename Table','Renaming the concept_source table to concept_reference_source',NULL,'2.0.1',56,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030b','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:6fc5f514cd9c2ee14481a7f0b10a0c7c','Create Table, Add Foreign Key Constraint (x4)','Adding concept_reference_term table',NULL,'2.0.1',57,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030b-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:3cf3ba141e6571b900e695b49b6c48a9','Modify Column','(Fixed)Change concept_reference_term.retired to BOOLEAN',NULL,'2.0.1',58,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030c','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:d8407baf728a1db5ad5db7c138cb59cb','Create Table, Add Foreign Key Constraint (x3)','Adding concept_map_type table',NULL,'2.0.1',59,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030c-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:c02f2825633f1a43fc9303ac21ba2c02','Modify Column (x2)','(Fixed)Change concept_map_type.retired to BOOLEAN',NULL,'2.0.1',60,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030d','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:222ef47c65625a17c268a8f68edaa16e','Rename Table','Renaming the concept_map table to concept_reference_map',NULL,'2.0.1',61,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030e','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:50be921cf53ce4a357afc0bac8928495','Add Column','Adding concept_reference_term_id column to concept_reference_map table',NULL,'2.0.1',62,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030f','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:5faead5506cbcde69490fef985711d66','Custom Change','Inserting core concept map types',NULL,'2.0.1',64,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030g','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:affc4d2a4e3143046cfb75b583c7399a','Add Column, Add Foreign Key Constraint','Adding concept_map_type_id column and a foreign key constraint to concept_reference_map table',NULL,'2.0.1',65,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030h','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:4bf584dc7b25a180cc82edb56e1b0e5b','Add Column, Add Foreign Key Constraint','Adding changed_by column and a foreign key constraint to concept_reference_map table',NULL,'2.0.1',66,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030i','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:f4d0468db79007d0355f6f461603b2f7','Add Column','Adding date_changed column and a foreign key constraint to concept_reference_map table',NULL,'2.0.1',67,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030j','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:16','3:a7dc8b89e37fe36263072b43670d7f11','Create Table, Add Foreign Key Constraint (x5)','Adding concept_reference_term_map table',NULL,'2.0.1',68,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030m','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:16','3:b286407bfcdf3853512cb15009c816f1','Custom Change','Creating concept reference terms from existing rows in the concept_reference_map table',NULL,'2.0.1',69,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030n','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:17','3:01868c1383e5c9c409282b50e67e878c','Add Foreign Key Constraint','Adding foreign key constraint to concept_reference_map.concept_reference_term_id column',NULL,'2.0.1',70,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030o','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:18','3:eea9343959864edea569d5a2a2358469','Drop Foreign Key Constraint','Dropping foreign key constraint on concept_reference_map.source column',NULL,'2.0.1',71,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030p','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:18','3:01bf8c07a05f22df2286a4ee27a7acb4','Drop Column','Dropping concept_reference_map.source column',NULL,'2.0.1',72,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030q','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:18','3:f45caaf1c7daa7f2cb036f46a20aa4b1','Drop Column','Dropping concept_reference_map.source_code column',NULL,'2.0.1',73,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110301-1030r','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:18','3:23fd6bc96ee0a497cf330ed24ec0075b','Drop Column','Dropping concept_reference_map.comment column',NULL,'2.0.1',74,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201103011751','abbas','liquibase-update-to-latest.xml','2012-06-23 13:39:25','3:4857dcbefa75784da912bca5caba21b5','Create Table, Add Foreign Key Constraint (x3)','Create the person_merge_log table',NULL,'2.0.1',26,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110326-1','Knoll_Frank','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:3376a34edf88bf2868fd75ba2fb0f6c3','Add Column, Add Foreign Key Constraint','Add obs.previous_version column (TRUNK-420)',NULL,'2.0.1',101,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110326-2','Knoll_Frank','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:7c068bfe918b9d87fefa9f8508e92f58','Custom SQL','Fix all the old void_reason content and add in the new previous_version to the matching obs row (POTENTIALLY VERY SLOW FOR LARGE OBS TABLES)',NULL,'2.0.1',104,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110329-2317','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:15:20','3:371be45e2a3616ce17b6f50862ca196d','Delete Data','Removing \'View Encounters\' privilege from Anonymous user',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110329-2318','wyclif','liquibase-update-to-latest.xml','2012-05-27 18:15:21','3:eb2ece117d8508e843d11eeed7676b21','Delete Data','Removing \'View Observations\' privilege from Anonymous user',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110425-1600-create-visit-attribute-type-table','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:39:43','3:3cf419ea9657f9a072881cafb2543d77','Create Table, Add Foreign Key Constraint (x3)','Creating visit_attribute_type table',NULL,'2.0.1',33,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110425-1600-create-visit-attribute-type-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:44','3:e4b62b99750c9ee4c213a7bc3101f8a6','Modify Column','(Fixed)Change visit_attribute_type.retired to BOOLEAN',NULL,'2.0.1',34,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110425-1700-create-visit-attribute-table','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:39:48','3:24e1e30a41f9f5d92f337444fb45402a','Create Table, Add Foreign Key Constraint (x5)','Creating visit_attribute table',NULL,'2.0.1',36,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110425-1700-create-visit-attribute-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:48','3:8ab9102da66058c326c0a5089de053e8','Modify Column','(Fixed)Change visit_attribute.voided to BOOLEAN',NULL,'2.0.1',37,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110426-11701','zabil','liquibase-update-to-latest.xml','2012-06-23 13:40:25','3:56caae006a3af14242e2ea57627004c7','Create Table, Add Foreign Key Constraint (x4)','Create provider table',NULL,'2.0.1',80,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110426-11701-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:25','3:f222ec7d41ce0255c667fd79b70bffd2','Modify Column','(Fixed)Change provider.retired to BOOLEAN',NULL,'2.0.1',81,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110510-11702-create-provider-attribute-type-table','zabil','liquibase-update-to-latest.xml','2012-06-23 13:40:25','3:7478ac84804d46a4f2b3daa63efe99be','Create Table, Add Foreign Key Constraint (x3)','Creating provider_attribute_type table',NULL,'2.0.1',82,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110510-11702-create-provider-attribute-type-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:25','3:479636c7572a649889527f670eaff533','Modify Column','(Fixed)Change provider_attribute_type.retired to BOOLEAN',NULL,'2.0.1',83,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110628-1400-create-provider-attribute-table','kishoreyekkanti','liquibase-update-to-latest.xml','2012-06-23 13:40:25','3:298aaacafd48547be294f4c9b7c40d35','Create Table, Add Foreign Key Constraint (x5)','Creating provider_attribute table',NULL,'2.0.1',85,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110628-1400-create-provider-attribute-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:14d85967e968d0bcd7a49ddeb6f3e540','Modify Column','(Fixed)Change provider_attribute.voided to BOOLEAN',NULL,'2.0.1',86,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110705-2300-create-encounter-role-table','kishoreyekkanti','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:a381ef81f10e4f7443b4d4c8d6231de8','Create Table, Add Foreign Key Constraint (x3)','Creating encounter_role table',NULL,'2.0.1',87,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110705-2300-create-encounter-role-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:bed2af9d6c3d49eacbdaf2174e682671','Modify Column','(Fixed)Change encounter_role.retired to BOOLEAN',NULL,'2.0.1',88,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110708-2105','cta','liquibase-update-to-latest.xml','2012-06-23 13:40:12','3:a20e9bb27a1aca73a646ad81ef2b9deb','Add Unique Constraint','Add unique constraint to the concept_source table',NULL,'2.0.1',40,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201107192313-change-length-of-regex-column','jtellez','liquibase-update-to-latest.xml','2012-06-23 13:39:49','3:db001544cc0f5a1ff42524a9292b028b','Modify Column','Increasing maximum length of patient identifier type regex format',NULL,'2.0.1',38,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110811-1205-create-encounter-provider-table','sree/vishnu','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:e20ca5412e37df98c58a39552aafb5ad','Create Table, Add Foreign Key Constraint (x3)','Creating encounter_provider table',NULL,'2.0.1',89,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110811-1205-create-encounter-provider-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:8decefa15168e68297f5f2782991c552','Modify Column','(Fixed)Change encounter_provider.voided to BOOLEAN',NULL,'2.0.1',90,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110817-1544-create-location-attribute-type-table','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:13','3:41fa30c01ec2d1107beccb8126146464','Create Table, Add Foreign Key Constraint (x3)','Creating location_attribute_type table',NULL,'2.0.1',43,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110817-1544-create-location-attribute-type-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:13','3:53aff6217c6a9a8f1ca414703b1a8720','Modify Column','(Fixed)Change visit_attribute.retired to BOOLEAN',NULL,'2.0.1',44,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110817-1601-create-location-attribute-table','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:c7cb1b35d68451d10badeb445df599b9','Create Table, Add Foreign Key Constraint (x5)','Creating location_attribute table',NULL,'2.0.1',46,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110817-1601-create-location-attribute-table-fix','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:2450e230f3eda291203485bca6904377','Modify Column','(Fixed)Change visit_attribute.retired to BOOLEAN',NULL,'2.0.1',47,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110819-1455-insert-unknown-encounter-role','raff','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:bfe0b994a3c0a62d0d4c8f7d941991c7','Insert Row','Inserting the unknown encounter role into the encounter_role table',NULL,'2.0.1',91,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110825-1000-creating-providers-for-persons-from-encounter','raff','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:a70d8897d05364a0a4398f2b90542fd4','Custom SQL','Creating providers for persons from the encounter table',NULL,'2.0.1',92,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110825-1000-drop-provider-id-column-from-encounter-table','raff','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:2137e4b5198aa5f12059ee0e8837fb04','Drop Foreign Key Constraint, Drop Column','Dropping the provider_id column from the encounter table',NULL,'2.0.1',94,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110825-1000-migrating-providers-to-encounter-provider','raff','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:e7c39080453e862d5a4013c48c9225fc','Custom SQL','Migrating providers from the encounter table to the encounter_provider table',NULL,'2.0.1',93,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110913-0300','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:19','3:7ad8f362e4cc6df6e37135cc37546d0d','Drop Foreign Key Constraint, Add Foreign Key Constraint','Remove ON DELETE CASCADE from relationship table for person_a',NULL,'2.0.1',75,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110913-0300b','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:20','3:2486028ce670bdea2a5ced509a335170','Drop Foreign Key Constraint, Add Foreign Key Constraint','Remove ON DELETE CASCADE from relationship table for person_b',NULL,'2.0.1',76,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201109152336','bwolfe','liquibase-update-to-latest.xml','2012-06-23 13:40:24','3:a84f855a1db7201e08900f8c7a3d7c5f','Update Data','Updating logging level global property',NULL,'2.0.1',78,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110919-0638','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:40:15','3:5e540b763c3a16e9d37aa6423b7f798f','Rename Column','Renaming concept_map_type.isHidden to is_hidden',NULL,'2.0.1',63,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110919-0639-void_empty_attributes','dkayiwa','liquibase-update-to-latest.xml','2012-06-23 13:40:24','3:ccdbab987b09073fc146f3a4a5a9aee4','Custom SQL','Void all attributes that have empty string values.',NULL,'2.0.1',79,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110922-0551','sunbiz','liquibase-update-to-latest.xml','2012-06-23 13:39:09','3:ab9b55e5104645690a4e1c5e35124258','Modify Column','Changing global_property.property from varbinary to varchar',NULL,'2.0.1',3,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20110926-1200','raff','liquibase-update-to-latest.xml','2012-06-23 13:39:49','3:bf884233110a210b6ffcef826093cf9d','Custom SQL','Change all empty concept_source.hl7_code to NULL',NULL,'2.0.1',39,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301703','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:11456d3e6867f3b521fb35e6f51ebe5a','Update Data','Converting general address format (if applicable)',NULL,'2.0.1',48,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201109301704','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:d64afe121c9355f6bbe46258876ce759','Update Data','Converting Spain address format (if applicable)',NULL,'2.0.1',49,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301705','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:d3b0c8265ee27456dc0491ff5fe8ca01','Update Data','Converting Rwanda address format (if applicable)',NULL,'2.0.1',50,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301706','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:17d3a0900ca751d8ce775a12444c75bf','Update Data','Converting USA address format (if applicable)',NULL,'2.0.1',51,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301707','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:afbd6428d0007325426f3c4446de2e38','Update Data','Converting Kenya address format (if applicable)',NULL,'2.0.1',52,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301708','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:570c9234597b477e4feffbaac0469495','Update Data','Converting Lesotho address format (if applicable)',NULL,'2.0.1',53,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301709','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:20c95ae336f437b4e0c91be5919b7a2b','Update Data','Converting Malawi address format (if applicable)',NULL,'2.0.1',54,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201109301710','suho','liquibase-update-to-latest.xml','2012-06-23 13:40:14','3:b06d71b4c220c7feed9c5a6459bea98a','Update Data','Converting Tanzania address format (if applicable)',NULL,'2.0.1',55,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201110051353-fix-visit-attribute-type-columns','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:39:45','3:d779b41ab27dca879d593aa606016bf6','Add Column (x2)','Refactoring visit_attribute_type table (devs only)',NULL,'2.0.1',35,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201110072042-fix-location-attribute-type-columns','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:13','3:2e32ce0f25391341c8855604f4f40654','Add Column (x2)','Refactoring location_attribute_type table (devs only)',NULL,'2.0.1',45,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201110072043-fix-provider-attribute-type-columns','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:25','3:31aa196adfe1689c1098c5f36d490902','Add Column (x2)','Refactoring provider_attribute_type table (devs only)',NULL,'2.0.1',84,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('20111008-0938-1','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:26','3:fe6d462ba1a7bd81f4865e472cc223ce','Add Column','Allow Global Properties to be typed',NULL,'2.0.1',95,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111008-0938-2','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:f831d92c11eb6cd6b334d86160db0b95','Add Column','Allow Global Properties to be typed',NULL,'2.0.1',96,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111008-0938-3','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:f7bd79dfed90d56053dc376b6b8ee7e3','Add Column','Allow Global Properties to be typed',NULL,'2.0.1',97,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111008-0938-4','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:65003bd1bf99ff0aa8e2947978c58053','Add Column','Allow Global Properties to be typed',NULL,'2.0.1',98,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201110091820-a','jkeiper','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:364a0c70d2adbff31babab6f60ed72e7','Add Column','Add xslt column back to the form table',NULL,'2.0.1',99,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201110091820-b','jkeiper','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:0b792bf39452f2e81e502a7a98f9f3df','Add Column','Add template column back to the form table',NULL,'2.0.1',100,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('201110091820-c','jkeiper','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:f71680d95ecf870619671fb7f416e457','Rename Table','Rename form_resource table to preserve data; 20111010-1515 reference is for bleeding-edge developers and can be generally ignored',NULL,'2.0.1',102,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('20111010-1515','jkeiper','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:3ccdc9a3ecf811382a0c12825c0aeeb3','Create Table, Add Foreign Key Constraint, Add Unique Constraint','Creating form_resource table',NULL,'2.0.1',103,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111128-1601','wyclif','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:12fa4687d149a2f17251e546d47369d6','Insert Row','Inserting Auto Close Visits Task into \'schedule_task_config\' table',NULL,'2.0.1',105,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111209-1400-deleting-non-existing-roles-from-role-role-table','raff','liquibase-update-to-latest.xml','2012-06-23 13:40:27','3:3d74c1dd987a12d916218d68032d726d','Custom SQL','Deleting non-existing roles from the role_role table',NULL,'2.0.1',106,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111214-1500-setting-super-user-gender','raff','liquibase-update-to-latest.xml','2012-06-23 13:40:28','3:2c281abfe7beb51983db13c187c072f3','Custom SQL','Setting super user gender',NULL,'2.0.1',109,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111218-1830','abbas','liquibase-update-to-latest.xml','2012-06-23 13:40:29','3:5f096b88988f19d9d3e596c03fba2b90','Add Unique Constraint, Add Column (x6), Add Foreign Key Constraint (x2)','Add unique uuid constraint and attributes inherited from BaseOpenmrsData to the person_merge_log table',NULL,'2.0.1',110,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111219-1404','bwolfe','liquibase-update-to-latest.xml','2012-06-23 13:40:29','3:3f8cfa9c088a103788bcf70de3ffaa8b','Update Data','Fix empty descriptions on relationship types',NULL,'2.0.1',111,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20111222-1659','djazayeri','liquibase-update-to-latest.xml','2012-06-23 13:40:29','3:990b494647720b680efeefbab2c502de','Create Table, Create Index','Create clob_datatype_storage table',NULL,'2.0.1',113,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201118012301','lkellett','liquibase-update-to-latest.xml','2012-06-23 13:39:12','3:0d96c10c52335339b1003e6dd933ccc2','Add Column','Adding the discontinued_reason_non_coded column to orders.',NULL,'2.0.1',15,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('201202020847','abbas','liquibase-update-to-latest.xml','2012-06-23 13:40:29','3:35bf2f2481ee34975e57f08d933583be','Modify data type, Add Not-Null Constraint','Change merged_data column type to CLOB in person_merge_log table',NULL,'2.0.1',112,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('20120330-0954','jkeiper','liquibase-update-to-latest.xml','2012-06-23 13:40:30','3:9c6084b4407395205fa39b34630d3522','Modify data type','Increase size of drug name column to 255 characters',NULL,'2.0.1',116,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('create-logic-rule-definition','mseaton','liquibase.xml','2012-06-23 13:45:37','3:5327271907425ea8182024723912460c','Create Table, Create Index (x3), Add Foreign Key Constraint (x3)','',NULL,'2.0.1',121,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('create-logic-rule-token-tag','nribeka','liquibase.xml','2012-06-23 13:45:37','3:0d0c10ea14371337b4b2a8da0972d768','Create Table, Add Foreign Key Constraint','',NULL,'2.0.1',120,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('create-logic_token_registration','djazayeri','liquibase.xml','2012-06-23 13:45:37','3:fba04de00a55b2d5478aed1653df7007','Create Table, Add Foreign Key Constraint (x2)','',NULL,'2.0.1',122,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('create-logic_token_registration_tag','djazayeri','liquibase.xml','2012-06-23 13:45:37','3:e941337ae6d3dfb33bf3ff92aeb63b89','Create Table, Add Foreign Key Constraint','',NULL,'2.0.1',123,'MARK_RAN');
+INSERT INTO `liquibasechangelog` VALUES ('create_logic_rule_token','nribeka','liquibase.xml','2012-06-23 13:45:37','3:5c95d01a824456e85a6729745a0e814d','Create Table, Add Foreign Key Constraint (x2)','',NULL,'2.0.1',119,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('disable-foreign-key-checks','ben','liquibase-core-data.xml','2012-05-27 18:11:24',NULL,'Custom SQL','',NULL,'1.9.4',-1,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('drop_logic_rule_token','nribeka','liquibase.xml','2012-06-23 13:45:37','3:4bfc38917a898cfc54c440e045cd655c','Drop Table','',NULL,'2.0.1',118,'EXECUTED');
+INSERT INTO `liquibasechangelog` VALUES ('drop_logic_rule_token_tag','nribeka','liquibase.xml','2012-06-23 13:45:37','3:4ba9ee4a3873ff8c847a3d5fb7275732','Drop Table','',NULL,'2.0.1',117,'EXECUTED');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `liquibasechangeloglock` (
@@ -20672,13 +21090,74 @@ CREATE TABLE `location` (
 INSERT INTO `location` VALUES (1,'Unknown Location',NULL,'','','','','','',NULL,NULL,1,'2005-09-22 00:00:00',NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,'8d6c993e-c2cc-11de-8d13-0010c6dffd0f');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `location_attribute` (
+  `location_attribute_id` int(11) NOT NULL AUTO_INCREMENT,
+  `location_id` int(11) NOT NULL,
+  `attribute_type_id` int(11) NOT NULL,
+  `value_reference` text NOT NULL,
+  `uuid` char(38) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
+  `voided_by` int(11) DEFAULT NULL,
+  `date_voided` datetime DEFAULT NULL,
+  `void_reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`location_attribute_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `location_attribute_location_fk` (`location_id`),
+  KEY `location_attribute_attribute_type_id_fk` (`attribute_type_id`),
+  KEY `location_attribute_creator_fk` (`creator`),
+  KEY `location_attribute_changed_by_fk` (`changed_by`),
+  KEY `location_attribute_voided_by_fk` (`voided_by`),
+  CONSTRAINT `location_attribute_attribute_type_id_fk` FOREIGN KEY (`attribute_type_id`) REFERENCES `location_attribute_type` (`location_attribute_type_id`),
+  CONSTRAINT `location_attribute_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `location_attribute_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `location_attribute_location_fk` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`),
+  CONSTRAINT `location_attribute_voided_by_fk` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `location_attribute_type` (
+  `location_attribute_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `datatype` varchar(255) DEFAULT NULL,
+  `datatype_config` text,
+  `preferred_handler` varchar(255) DEFAULT NULL,
+  `handler_config` text,
+  `min_occurs` int(11) NOT NULL,
+  `max_occurs` int(11) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`location_attribute_type_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `location_attribute_type_creator_fk` (`creator`),
+  KEY `location_attribute_type_changed_by_fk` (`changed_by`),
+  KEY `location_attribute_type_retired_by_fk` (`retired_by`),
+  CONSTRAINT `location_attribute_type_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `location_attribute_type_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `location_attribute_type_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `location_tag` (
   `location_tag_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `creator` int(11) NOT NULL,
   `date_created` datetime NOT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -20742,7 +21221,7 @@ CREATE TABLE `logic_rule_token` (
   `state` varchar(512) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
   PRIMARY KEY (`logic_rule_token_id`),
-  UNIQUE KEY `logic_rule_token_uuid` (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`),
   KEY `token_creator` (`creator`),
   KEY `token_changed_by` (`changed_by`),
   CONSTRAINT `token_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `person` (`person_id`),
@@ -20777,8 +21256,25 @@ CREATE TABLE `logic_token_registration` (
   KEY `token_registration_changed_by` (`changed_by`),
   CONSTRAINT `token_registration_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `token_registration_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `logic_token_registration` VALUES (1,2,'2012-06-23 13:48:50',NULL,NULL,'encounterLocation','org.openmrs.logic.datasource.EncounterDataSource','encounterLocation','encounterLocation','668dd5bb-371e-4d6c-ae02-9da2b2064d81');
+INSERT INTO `logic_token_registration` VALUES (2,2,'2012-06-23 13:48:50',NULL,NULL,'encounterProvider','org.openmrs.logic.datasource.EncounterDataSource','encounterProvider','encounterProvider','1e10f135-5582-42d1-8d34-bc2002770f68');
+INSERT INTO `logic_token_registration` VALUES (3,2,'2012-06-23 13:48:50',NULL,NULL,'encounter','org.openmrs.logic.datasource.EncounterDataSource','encounter','encounter','6aeaf7f2-c31c-42ed-9afa-33bfb1925f7b');
+INSERT INTO `logic_token_registration` VALUES (4,2,'2012-06-23 13:48:57',NULL,NULL,'identifier','org.openmrs.logic.datasource.PatientDataSource','identifier','identifier','9b91fcaf-c249-4cc3-b438-4bc4b55be609');
+INSERT INTO `logic_token_registration` VALUES (5,2,'2012-06-23 13:48:58',NULL,NULL,'family name','org.openmrs.logic.datasource.PersonDataSource','family name','family name','1fc2f099-d5a3-4a05-bb07-4a6a3be42049');
+INSERT INTO `logic_token_registration` VALUES (6,2,'2012-06-23 13:49:07',NULL,NULL,'middle name','org.openmrs.logic.datasource.PersonDataSource','middle name','middle name','4a59220e-0661-4d34-a283-0b7483396661');
+INSERT INTO `logic_token_registration` VALUES (7,2,'2012-06-23 13:49:18',NULL,NULL,'death date','org.openmrs.logic.datasource.PersonDataSource','death date','death date','7157fabc-fed6-4562-b9bc-e4e785f98fb1');
+INSERT INTO `logic_token_registration` VALUES (8,2,'2012-06-23 13:49:39',NULL,NULL,'birthdate','org.openmrs.logic.datasource.PersonDataSource','birthdate','birthdate','eff9d81f-522c-4487-96d8-434459c5e66d');
+INSERT INTO `logic_token_registration` VALUES (9,2,'2012-06-23 13:49:54',NULL,NULL,'cause of death','org.openmrs.logic.datasource.PersonDataSource','cause of death','cause of death','eceb24aa-b8fc-4c98-9509-a6b3543233b3');
+INSERT INTO `logic_token_registration` VALUES (10,2,'2012-06-23 13:50:04',NULL,NULL,'birthdate estimated','org.openmrs.logic.datasource.PersonDataSource','birthdate estimated','birthdate estimated','ce5bdedd-90dd-4fac-9825-ea3304cfc338');
+INSERT INTO `logic_token_registration` VALUES (11,2,'2012-06-23 13:50:14',NULL,NULL,'gender','org.openmrs.logic.datasource.PersonDataSource','gender','gender','fc565ac2-f73d-41d5-b933-fcb4b5c4f3b5');
+INSERT INTO `logic_token_registration` VALUES (12,2,'2012-06-23 13:50:16',NULL,NULL,'family name2','org.openmrs.logic.datasource.PersonDataSource','family name2','family name2','0a188693-391a-4704-9047-5af5126f3db9');
+INSERT INTO `logic_token_registration` VALUES (13,2,'2012-06-23 13:50:16',NULL,NULL,'dead','org.openmrs.logic.datasource.PersonDataSource','dead','dead','d97cd725-974e-4dea-bfbc-472e58e22549');
+INSERT INTO `logic_token_registration` VALUES (14,2,'2012-06-23 13:50:16',NULL,NULL,'given name','org.openmrs.logic.datasource.PersonDataSource','given name','given name','c2defd0a-a0e5-4af9-9c52-c2e768d17605');
+INSERT INTO `logic_token_registration` VALUES (15,2,'2012-06-23 13:50:16',NULL,NULL,'CURRENT STATE','org.openmrs.logic.datasource.ProgramDataSource','CURRENT STATE','CURRENT STATE','4257b1a6-1e9f-4ee6-be39-7de275e1a81d');
+INSERT INTO `logic_token_registration` VALUES (16,2,'2012-06-23 13:50:16',NULL,NULL,'PROGRAM ENROLLMENT','org.openmrs.logic.datasource.ProgramDataSource','PROGRAM ENROLLMENT','PROGRAM ENROLLMENT','9b610ba6-7533-4853-a673-be07ab55ffc6');
+INSERT INTO `logic_token_registration` VALUES (17,2,'2012-06-23 13:50:17',NULL,NULL,'PROGRAM COMPLETION','org.openmrs.logic.datasource.ProgramDataSource','PROGRAM COMPLETION','PROGRAM COMPLETION','6117fe75-96f2-4732-a3b9-3137d3d5839f');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `logic_token_registration_tag` (
@@ -20837,10 +21333,12 @@ CREATE TABLE `notification_alert` (
   UNIQUE KEY `notification_alert_uuid_index` (`uuid`),
   KEY `user_who_changed_alert` (`changed_by`),
   KEY `alert_creator` (`creator`),
+  KEY `alert_date_to_expire_idx` (`date_to_expire`),
   CONSTRAINT `alert_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_changed_alert` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `notification_alert` VALUES (1,'There was an error starting the module: HTML Form Entry Extensions for OpenMRS 1.9 Module',1,0,NULL,1,'2012-06-23 13:47:00',NULL,NULL,'b6b59207-3906-4a62-8617-a219f7789065');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `notification_alert_recipient` (
@@ -20855,6 +21353,7 @@ CREATE TABLE `notification_alert_recipient` (
   CONSTRAINT `id_of_alert` FOREIGN KEY (`alert_id`) REFERENCES `notification_alert` (`alert_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `notification_alert_recipient` VALUES (1,1,0,NULL,'6b0637f2-2a96-4e2c-bb6e-8a9a1a08361d');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `notification_template` (
@@ -20891,17 +21390,16 @@ CREATE TABLE `obs` (
   `value_numeric` double DEFAULT NULL,
   `value_modifier` varchar(2) DEFAULT NULL,
   `value_text` text,
-  `date_started` datetime DEFAULT NULL,
-  `date_stopped` datetime DEFAULT NULL,
   `comments` varchar(255) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `value_complex` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `previous_version` int(11) DEFAULT NULL,
   PRIMARY KEY (`obs_id`),
   UNIQUE KEY `obs_uuid_index` (`uuid`),
   KEY `obs_concept` (`concept_id`),
@@ -20916,6 +21414,8 @@ CREATE TABLE `obs` (
   KEY `answer_concept_drug` (`value_drug`),
   KEY `user_who_voided_obs` (`voided_by`),
   KEY `obs_datetime_idx` (`obs_datetime`),
+  KEY `previous_version` (`previous_version`),
+  CONSTRAINT `previous_version` FOREIGN KEY (`previous_version`) REFERENCES `obs` (`obs_id`),
   CONSTRAINT `answer_concept` FOREIGN KEY (`value_coded`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `answer_concept_drug` FOREIGN KEY (`value_drug`) REFERENCES `drug` (`drug_id`),
   CONSTRAINT `encounter_observations` FOREIGN KEY (`encounter_id`) REFERENCES `encounter` (`encounter_id`),
@@ -20937,7 +21437,7 @@ CREATE TABLE `order_type` (
   `description` varchar(255) NOT NULL DEFAULT '',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -20963,19 +21463,20 @@ CREATE TABLE `orders` (
   `instructions` text,
   `start_date` datetime DEFAULT NULL,
   `auto_expire_date` datetime DEFAULT NULL,
-  `discontinued` smallint(6) NOT NULL DEFAULT '0',
+  `discontinued` tinyint(1) NOT NULL DEFAULT '0',
   `discontinued_date` datetime DEFAULT NULL,
   `discontinued_by` int(11) DEFAULT NULL,
   `discontinued_reason` int(11) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `patient_id` int(11) NOT NULL,
   `accession_number` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `discontinued_reason_non_coded` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`order_id`),
   UNIQUE KEY `orders_uuid_index` (`uuid`),
   KEY `order_creator` (`creator`),
@@ -21005,7 +21506,7 @@ CREATE TABLE `patient` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21028,15 +21529,17 @@ CREATE TABLE `patient_identifier` (
   `patient_id` int(11) NOT NULL DEFAULT '0',
   `identifier` varchar(50) NOT NULL DEFAULT '',
   `identifier_type` int(11) NOT NULL DEFAULT '0',
-  `preferred` smallint(6) NOT NULL DEFAULT '0',
-  `location_id` int(11) NOT NULL DEFAULT '0',
+  `preferred` tinyint(1) NOT NULL DEFAULT '0',
+  `location_id` int(11) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
   PRIMARY KEY (`patient_identifier_id`),
   UNIQUE KEY `patient_identifier_uuid_index` (`uuid`),
   KEY `identifier_name` (`identifier`),
@@ -21045,10 +21548,12 @@ CREATE TABLE `patient_identifier` (
   KEY `patient_identifier_ibfk_2` (`location_id`),
   KEY `identifier_voider` (`voided_by`),
   KEY `idx_patient_identifier_patient` (`patient_id`),
-  CONSTRAINT `identifies_patient` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`),
+  KEY `patient_identifier_changed_by` (`changed_by`),
   CONSTRAINT `defines_identifier_type` FOREIGN KEY (`identifier_type`) REFERENCES `patient_identifier_type` (`patient_identifier_type_id`),
   CONSTRAINT `identifier_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `identifier_voider` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `identifies_patient` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`),
+  CONSTRAINT `patient_identifier_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `patient_identifier_ibfk_2` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -21058,18 +21563,19 @@ CREATE TABLE `patient_identifier_type` (
   `patient_identifier_type_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL DEFAULT '',
   `description` text NOT NULL,
-  `format` varchar(50) DEFAULT NULL,
-  `check_digit` smallint(6) NOT NULL DEFAULT '0',
+  `format` varchar(255) DEFAULT NULL,
+  `check_digit` tinyint(1) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `required` smallint(6) NOT NULL DEFAULT '0',
+  `required` tinyint(1) NOT NULL DEFAULT '0',
   `format_description` varchar(255) DEFAULT NULL,
   `validator` varchar(200) DEFAULT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `location_behavior` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`patient_identifier_type_id`),
   UNIQUE KEY `patient_identifier_type_uuid_index` (`uuid`),
   KEY `retired_status` (`retired`),
@@ -21079,9 +21585,9 @@ CREATE TABLE `patient_identifier_type` (
   CONSTRAINT `user_who_retired_patient_identifier_type` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `patient_identifier_type` VALUES (1,'OpenMRS Identification Number','Unique number used in OpenMRS','',1,1,'2005-09-22 00:00:00',0,NULL,'org.openmrs.patient.impl.LuhnIdentifierValidator',0,NULL,NULL,NULL,'8d793bee-c2cc-11de-8d13-0010c6dffd0f');
-INSERT INTO `patient_identifier_type` VALUES (2,'Old Identification Number','Number given out prior to the OpenMRS system (No check digit)','',0,1,'2005-09-22 00:00:00',0,NULL,NULL,0,NULL,NULL,NULL,'8d79403a-c2cc-11de-8d13-0010c6dffd0f');
-INSERT INTO `patient_identifier_type` VALUES (3,'UPN','Unique Patient Number assigned by the Kenyan Ministry of Health.','\\d{6}-\\d{5}',0,1,'2012-06-04 18:51:05',1,'Follows the format NNNNNN-NNNNN (6 digits - 5 digits).','',0,NULL,NULL,NULL,'aea0a3f7-334b-4410-bc91-205cf9395d01');
+INSERT INTO `patient_identifier_type` VALUES (1,'OpenMRS Identification Number','Unique number used in OpenMRS','',1,1,'2005-09-22 00:00:00',0,NULL,'org.openmrs.patient.impl.LuhnIdentifierValidator',0,NULL,NULL,NULL,'8d793bee-c2cc-11de-8d13-0010c6dffd0f',NULL);
+INSERT INTO `patient_identifier_type` VALUES (2,'Old Identification Number','Number given out prior to the OpenMRS system (No check digit)','',0,1,'2005-09-22 00:00:00',0,NULL,NULL,0,NULL,NULL,NULL,'8d79403a-c2cc-11de-8d13-0010c6dffd0f',NULL);
+INSERT INTO `patient_identifier_type` VALUES (3,'UPN','Unique Patient Number assigned by the Kenyan Ministry of Health.','\\d{6}-\\d{5}',0,1,'2012-06-04 18:51:05',1,'Follows the format NNNNNN-NNNNN (6 digits - 5 digits).','',0,NULL,NULL,NULL,'aea0a3f7-334b-4410-bc91-205cf9395d01',NULL);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `patient_program` (
@@ -21094,12 +21600,13 @@ CREATE TABLE `patient_program` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
   `location_id` int(11) DEFAULT NULL,
+  `outcome_concept_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`patient_program_id`),
   UNIQUE KEY `patient_program_uuid_index` (`uuid`),
   KEY `user_who_changed` (`changed_by`),
@@ -21108,9 +21615,11 @@ CREATE TABLE `patient_program` (
   KEY `program_for_patient` (`program_id`),
   KEY `user_who_voided_patient_program` (`voided_by`),
   KEY `patient_program_location_id` (`location_id`),
-  CONSTRAINT `patient_program_location_id` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`),
+  KEY `patient_program_outcome_concept_id_fk` (`outcome_concept_id`),
   CONSTRAINT `patient_in_program` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`) ON UPDATE CASCADE,
   CONSTRAINT `patient_program_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `patient_program_location_id` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`),
+  CONSTRAINT `patient_program_outcome_concept_id_fk` FOREIGN KEY (`outcome_concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `program_for_patient` FOREIGN KEY (`program_id`) REFERENCES `program` (`program_id`),
   CONSTRAINT `user_who_changed` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_voided_patient_program` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
@@ -21128,7 +21637,7 @@ CREATE TABLE `patient_state` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21149,19 +21658,133 @@ CREATE TABLE `patient_state` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_displaypoint` (
+  `displaypoint_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`displaypoint_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `patientflags_displaypoint` VALUES (1,'Patient Dashboard Header',NULL,0,'2012-06-23 13:46:59',NULL,NULL,0,NULL,NULL,NULL,'e7a461de-bd39-11e1-8cd9-12313c00ddf9');
+INSERT INTO `patientflags_displaypoint` VALUES (2,'Patient Dashboard Overview',NULL,0,'2012-06-23 13:46:59',NULL,NULL,0,NULL,NULL,NULL,'e7a46508-bd39-11e1-8cd9-12313c00ddf9');
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_flag` (
+  `flag_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `criteria` varchar(5000) NOT NULL,
+  `message` varchar(255) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  `evaluator` varchar(255) NOT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  `priority_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`flag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_flag_tag` (
+  `flag_id` int(11) NOT NULL,
+  `tag_id` int(11) NOT NULL,
+  KEY `flag_id` (`flag_id`),
+  KEY `tag_id` (`tag_id`),
+  CONSTRAINT `patientflags_flag_tag_ibfk_1` FOREIGN KEY (`flag_id`) REFERENCES `patientflags_flag` (`flag_id`),
+  CONSTRAINT `patientflags_flag_tag_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `patientflags_tag` (`tag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_priority` (
+  `priority_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `style` varchar(255) NOT NULL,
+  `rank` int(11) NOT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`priority_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_tag` (
+  `tag_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `creator` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`tag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_tag_displaypoint` (
+  `tag_id` int(11) NOT NULL,
+  `displaypoint_id` int(11) NOT NULL,
+  KEY `tag_id` (`tag_id`),
+  KEY `displaypoint_id` (`displaypoint_id`),
+  CONSTRAINT `patientflags_tag_displaypoint_ibfk_1` FOREIGN KEY (`tag_id`) REFERENCES `patientflags_tag` (`tag_id`),
+  CONSTRAINT `patientflags_tag_displaypoint_ibfk_2` FOREIGN KEY (`displaypoint_id`) REFERENCES `patientflags_displaypoint` (`displaypoint_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patientflags_tag_role` (
+  `tag_id` int(11) NOT NULL,
+  `role` varchar(50) NOT NULL,
+  KEY `tag_id` (`tag_id`),
+  KEY `role` (`role`),
+  CONSTRAINT `patientflags_tag_role_ibfk_1` FOREIGN KEY (`tag_id`) REFERENCES `patientflags_tag` (`tag_id`),
+  CONSTRAINT `patientflags_tag_role_ibfk_2` FOREIGN KEY (`role`) REFERENCES `role` (`role`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `person` (
   `person_id` int(11) NOT NULL AUTO_INCREMENT,
   `gender` varchar(50) DEFAULT '',
   `birthdate` date DEFAULT NULL,
-  `birthdate_estimated` smallint(6) NOT NULL DEFAULT '0',
-  `dead` smallint(6) NOT NULL DEFAULT '0',
+  `birthdate_estimated` tinyint(1) NOT NULL DEFAULT '0',
+  `dead` tinyint(1) NOT NULL DEFAULT '0',
   `death_date` datetime DEFAULT NULL,
   `cause_of_death` int(11) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21178,15 +21801,16 @@ CREATE TABLE `person` (
   CONSTRAINT `user_who_changed_person` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_created_person` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_voided_person` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `person` VALUES (1,'',NULL,0,0,NULL,NULL,1,'2005-01-01 00:00:00',NULL,NULL,0,NULL,NULL,NULL,'6d874a11-a827-11e1-8a6a-12313b05d66b');
+INSERT INTO `person` VALUES (1,'M',NULL,0,0,NULL,NULL,1,'2005-01-01 00:00:00',NULL,NULL,0,NULL,NULL,NULL,'6d874a11-a827-11e1-8a6a-12313b05d66b');
+INSERT INTO `person` VALUES (2,'',NULL,0,0,NULL,NULL,1,'2011-12-12 00:00:00',NULL,NULL,0,NULL,NULL,NULL,'B4F30A1B-5EB9-11DF-A648-37A07F9C90FB');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `person_address` (
   `person_address_id` int(11) NOT NULL AUTO_INCREMENT,
   `person_id` int(11) DEFAULT NULL,
-  `preferred` smallint(6) NOT NULL DEFAULT '0',
+  `preferred` tinyint(1) NOT NULL DEFAULT '0',
   `address1` varchar(255) DEFAULT NULL,
   `address2` varchar(255) DEFAULT NULL,
   `city_village` varchar(255) DEFAULT NULL,
@@ -21197,7 +21821,7 @@ CREATE TABLE `person_address` (
   `longitude` varchar(50) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21207,14 +21831,20 @@ CREATE TABLE `person_address` (
   `address5` varchar(255) DEFAULT NULL,
   `address4` varchar(255) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
   PRIMARY KEY (`person_address_id`),
   UNIQUE KEY `person_address_uuid_index` (`uuid`),
   KEY `patient_address_creator` (`creator`),
   KEY `address_for_person` (`person_id`),
   KEY `patient_address_void` (`voided_by`),
+  KEY `person_address_changed_by` (`changed_by`),
   CONSTRAINT `address_for_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`person_id`) ON UPDATE CASCADE,
   CONSTRAINT `patient_address_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `patient_address_void` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
+  CONSTRAINT `patient_address_void` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `person_address_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -21228,7 +21858,7 @@ CREATE TABLE `person_attribute` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21255,16 +21885,16 @@ CREATE TABLE `person_attribute_type` (
   `description` text NOT NULL,
   `format` varchar(50) DEFAULT NULL,
   `foreign_key` int(11) DEFAULT NULL,
-  `searchable` smallint(6) NOT NULL DEFAULT '0',
+  `searchable` tinyint(1) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
-  `edit_privilege` varchar(255) DEFAULT NULL,
+  `edit_privilege` varchar(50) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
   `sort_weight` double DEFAULT NULL,
   PRIMARY KEY (`person_attribute_type_id`),
@@ -21291,9 +21921,39 @@ INSERT INTO `person_attribute_type` VALUES (6,'Health District','District/region
 INSERT INTO `person_attribute_type` VALUES (7,'Health Center','Specific Location of this person\'s home health center.','org.openmrs.Location',0,0,1,'2007-05-04 00:00:00',NULL,NULL,0,NULL,NULL,NULL,NULL,'8d87236c-c2cc-11de-8d13-0010c6dffd0f',3);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `person_merge_log` (
+  `person_merge_log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `winner_person_id` int(11) NOT NULL,
+  `loser_person_id` int(11) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `merged_data` longtext NOT NULL,
+  `uuid` char(38) NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
+  `voided_by` int(11) DEFAULT NULL,
+  `date_voided` datetime DEFAULT NULL,
+  `void_reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`person_merge_log_id`),
+  UNIQUE KEY `person_merge_log_unique_uuid` (`uuid`),
+  KEY `person_merge_log_winner` (`winner_person_id`),
+  KEY `person_merge_log_loser` (`loser_person_id`),
+  KEY `person_merge_log_creator` (`creator`),
+  KEY `person_merge_log_changed_by_fk` (`changed_by`),
+  KEY `person_merge_log_voided_by_fk` (`voided_by`),
+  CONSTRAINT `person_merge_log_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `person_merge_log_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `person_merge_log_loser` FOREIGN KEY (`loser_person_id`) REFERENCES `person` (`person_id`),
+  CONSTRAINT `person_merge_log_voided_by_fk` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `person_merge_log_winner` FOREIGN KEY (`winner_person_id`) REFERENCES `person` (`person_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `person_name` (
   `person_name_id` int(11) NOT NULL AUTO_INCREMENT,
-  `preferred` smallint(6) NOT NULL DEFAULT '0',
+  `preferred` tinyint(1) NOT NULL DEFAULT '0',
   `person_id` int(11) NOT NULL,
   `prefix` varchar(50) DEFAULT NULL,
   `given_name` varchar(50) DEFAULT NULL,
@@ -21305,7 +21965,7 @@ CREATE TABLE `person_name` (
   `degree` varchar(50) DEFAULT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21324,9 +21984,10 @@ CREATE TABLE `person_name` (
   CONSTRAINT `name_for_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`person_id`) ON UPDATE CASCADE,
   CONSTRAINT `user_who_made_name` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_voided_name` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `person_name` VALUES (1,1,1,NULL,'Super','',NULL,'User',NULL,NULL,NULL,1,'2005-01-01 00:00:00',0,NULL,NULL,NULL,NULL,NULL,'6d977383-a827-11e1-8a6a-12313b05d66b');
+INSERT INTO `person_name` VALUES (2,1,2,NULL,'daemon',NULL,NULL,'daemon',NULL,NULL,NULL,1,'2011-12-12 00:00:00',0,NULL,NULL,NULL,NULL,NULL,'C4F30A1B-5EB9-11DF-A648-37A07F9C90FB');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `privilege` (
@@ -21344,6 +22005,10 @@ INSERT INTO `privilege` VALUES ('Add Encounters','Able to add patient encounters
 INSERT INTO `privilege` VALUES ('Add FormEntry Archive','Allows the user to add the formentry archive','01e1a114-5ec6-40cd-b0d7-17baac83d08e');
 INSERT INTO `privilege` VALUES ('Add FormEntry Error','Allows a user to add a formentry error item','e698e29a-4673-4195-b85b-d68d2ede59ee');
 INSERT INTO `privilege` VALUES ('Add FormEntry Queue','Allows user to add a queue item to database','aed3b64d-50a0-4d3f-958a-6ed73d0b091b');
+INSERT INTO `privilege` VALUES ('Add HL7 Inbound Archive','Able to add an HL7 archive item','5b4627c2-ee99-4903-94a6-14abaf1c40a7');
+INSERT INTO `privilege` VALUES ('Add HL7 Inbound Exception','Able to add an HL7 error item','8981132a-2311-49e6-8865-8f4c533e50d9');
+INSERT INTO `privilege` VALUES ('Add HL7 Inbound Queue','Able to add an HL7 Queue item','621db72d-8075-4910-a216-234ab87129a6');
+INSERT INTO `privilege` VALUES ('Add HL7 Source','Able to add an HL7 Source','48e4ae77-c6ee-458c-aac4-b40ac641c112');
 INSERT INTO `privilege` VALUES ('Add Observations','Able to add patient observations','3e48d459-5dea-45f5-ac77-6faee37c0fd2');
 INSERT INTO `privilege` VALUES ('Add Orders','Able to add orders','629a22ea-9bc4-4d15-8398-539d48174e51');
 INSERT INTO `privilege` VALUES ('Add Patient Identifiers','Able to add patient identifiers','f178c527-f5b5-4b21-b5bb-42e2b37d805e');
@@ -21353,12 +22018,17 @@ INSERT INTO `privilege` VALUES ('Add People','Able to add person objects','5dec1
 INSERT INTO `privilege` VALUES ('Add Problems','Add problems','aa16ad33-92df-4572-992e-0f40e48370be');
 INSERT INTO `privilege` VALUES ('Add Relationships','Able to add relationships','975d81f9-47c8-484e-98f5-979d77652801');
 INSERT INTO `privilege` VALUES ('Add Users','Able to add users to OpenMRS','3717980f-d2f2-4f42-adf2-d55d14067486');
+INSERT INTO `privilege` VALUES ('Add Visits','Able to add visits','7fadc1cd-18a9-4cfb-a048-ca7eb80cc7df');
+INSERT INTO `privilege` VALUES ('Configure Visits','Able to choose encounter visit handler and enable/disable encounter visits','d534aaf2-8c16-4f2e-b079-1ef61d2ff20f');
 INSERT INTO `privilege` VALUES ('Delete Cohorts','Able to add a cohort to the system','cbcadd4d-d33a-4f8d-b662-76947b188926');
 INSERT INTO `privilege` VALUES ('Delete Concept Proposals','Able to delete concept proposals from the system','920e5777-6334-4d65-a71c-74876d79ba92');
 INSERT INTO `privilege` VALUES ('Delete Encounters','Able to delete patient encounters','9617e1b6-6e0e-4496-b3ea-593e61ebba41');
 INSERT INTO `privilege` VALUES ('Delete FormEntry Archive','Allows the user to delete a formentry archive','3a4b514e-61c3-4bfe-9689-fb621cedc7dc');
 INSERT INTO `privilege` VALUES ('Delete FormEntry Error','Allows a user to delete a formentry error item','b3b48ad8-d67d-421e-a329-3fc6fbd7f364');
 INSERT INTO `privilege` VALUES ('Delete FormEntry Queue','Allows the user to delete formentry queue items','62a58f4b-2fe0-4961-841e-e4c43ede26d8');
+INSERT INTO `privilege` VALUES ('Delete HL7 Inbound Archive','Able to delete/retire an HL7 archive item','5a65c954-f66c-4412-9f89-c8b21cf907af');
+INSERT INTO `privilege` VALUES ('Delete HL7 Inbound Exception','Able to delete an HL7 archive item','559c4ffb-ac84-4ff3-9803-692510fd1687');
+INSERT INTO `privilege` VALUES ('Delete HL7 Inbound Queue','Able to delete an HL7 Queue item','730ea8ca-eea2-44c6-b37b-6d0890975b5f');
 INSERT INTO `privilege` VALUES ('Delete Observations','Able to delete patient observations','77e37b49-8f3b-4e22-8a26-fb31af7e86dd');
 INSERT INTO `privilege` VALUES ('Delete Orders','Able to delete orders','5b7f70b2-3645-44cb-8f8e-32d40e4923a1');
 INSERT INTO `privilege` VALUES ('Delete Patient Identifiers','Able to delete patient identifiers','ffde2941-c504-4787-a19e-a54cf1ceeb4a');
@@ -21367,6 +22037,7 @@ INSERT INTO `privilege` VALUES ('Delete Patients','Able to delete patients','5c9
 INSERT INTO `privilege` VALUES ('Delete People','Able to delete objects','3d02e577-d505-44ec-ad19-a3adf9804f4a');
 INSERT INTO `privilege` VALUES ('Delete Relationships','Able to delete relationships','fa5ed2d8-cf3e-4278-a9a6-0525381aef0d');
 INSERT INTO `privilege` VALUES ('Delete Users','Able to delete users in OpenMRS','4aecde7b-9576-4c0d-902b-58aefe02e906');
+INSERT INTO `privilege` VALUES ('Delete Visits','Able to delete visits','24fd7e32-a9e3-4fa8-ad7b-2a68dec999e8');
 INSERT INTO `privilege` VALUES ('Edit Allergies','Able to edit allergies','bd82d95b-e986-44c1-8890-d957e6892d27');
 INSERT INTO `privilege` VALUES ('Edit Cohorts','Able to add a cohort to the system','7ea13070-0ac1-4355-b008-4089b26f2367');
 INSERT INTO `privilege` VALUES ('Edit Concept Proposals','Able to edit concept proposals in the system','f7efaddf-37e1-4956-a44e-2dcd5faf6970');
@@ -21384,24 +22055,32 @@ INSERT INTO `privilege` VALUES ('Edit Problems','Able to edit problems','aa9b66c
 INSERT INTO `privilege` VALUES ('Edit Relationships','Able to edit relationships','92ee486c-3e5e-468b-b3de-0fb267a219c6');
 INSERT INTO `privilege` VALUES ('Edit User Passwords','Able to change the passwords of users in OpenMRS','60769902-f2e9-4f71-b3b6-10efff8e173a');
 INSERT INTO `privilege` VALUES ('Edit Users','Able to edit users in OpenMRS','9d15225f-d94b-42ec-8594-991ff0ccda72');
+INSERT INTO `privilege` VALUES ('Edit Visits','Able to edit visits','9250034e-39c9-4aed-bc0f-7b335270646d');
 INSERT INTO `privilege` VALUES ('Form Entry','Able to fill out forms','8967e0c3-587a-4b05-b7ba-b0c21d4e920d');
+INSERT INTO `privilege` VALUES ('Manage Address Templates','Able to add/edit/delete address templates','cd0dd749-9ab3-4dec-9721-b1bc6068e998');
 INSERT INTO `privilege` VALUES ('Manage Alerts','Able to add/edit/delete user alerts','19934b15-e828-4fde-acc0-37c739f5025c');
 INSERT INTO `privilege` VALUES ('Manage Cohort Definitions','Add/Edit/Remove Cohort Definitions','8d66d2f6-8e57-4fad-ac14-1ee34742b85e');
 INSERT INTO `privilege` VALUES ('Manage Concept Classes','Able to add/edit/retire concept classes','a1b5e4bf-89b5-4553-a984-99932438bbf5');
 INSERT INTO `privilege` VALUES ('Manage Concept Datatypes','Able to add/edit/retire concept datatypes','506686d7-88ff-4411-bc9e-cd393382a76d');
+INSERT INTO `privilege` VALUES ('Manage Concept Map Types','Able to add/edit/retire concept map types','33b5ce2e-34b8-41c5-ac60-9dfd394124f9');
 INSERT INTO `privilege` VALUES ('Manage Concept Name tags','Able to add/edit/delete concept name tags','949d9708-963b-44ac-abc6-cd5ab9a4b976');
+INSERT INTO `privilege` VALUES ('Manage Concept Reference Terms','Able to add/edit/retire reference terms','cee34334-5be1-44c1-a0c0-ebc160cddcf4');
 INSERT INTO `privilege` VALUES ('Manage Concept Sources','Able to add/edit/delete concept sources','8d641f18-df65-4269-ae3e-ad006b838b8f');
+INSERT INTO `privilege` VALUES ('Manage Concept Stop Words','Able to view/add/remove the concept stop words','218f8271-e57e-417d-9e75-0e31ba013525');
 INSERT INTO `privilege` VALUES ('Manage Concepts','Able to add/edit/delete concept entries','1e72cdf9-06d2-4c57-a34e-cd2b20b1e178');
 INSERT INTO `privilege` VALUES ('Manage Data Set Definitions','Add/Edit/Remove Data Set Definitions','1a3f520e-387f-4f05-bcec-3d079b4ed62d');
 INSERT INTO `privilege` VALUES ('Manage Dimension Definitions','Add/Edit/Remove Dimension Definitions','dbaef9a6-17e1-426f-acd6-709864afdecb');
+INSERT INTO `privilege` VALUES ('Manage Encounter Roles','Able to add/edit/retire encounter roles','a995b7e7-5e4e-464c-b040-42b50376cd1f');
 INSERT INTO `privilege` VALUES ('Manage Encounter Types','Able to add/edit/retire encounter types','ddf9112d-8583-439a-8e22-ef0f727ee764');
 INSERT INTO `privilege` VALUES ('Manage Field Types','Able to add/edit/retire field types','a3a9d76e-622c-46e9-a41a-79d29884d5e9');
+INSERT INTO `privilege` VALUES ('Manage Flags','Allows user add, edit, and remove flags','6120f001-1cd6-4954-80eb-6632f0016ad7');
 INSERT INTO `privilege` VALUES ('Manage FormEntry XSN','Allows user to upload and edit the xsns stored on the server','a0ee4675-68ce-4cf7-b980-662f26a19d39');
 INSERT INTO `privilege` VALUES ('Manage Forms','Able to add/edit/delete forms','dcddc0b6-9fd2-4404-9547-8d568c928abe');
 INSERT INTO `privilege` VALUES ('Manage Global Properties','Able to add/edit global properties','f11117b0-8219-4713-be26-964003c1e511');
 INSERT INTO `privilege` VALUES ('Manage Identifier Types','Able to add/edit/retire patient identifier types','7a098253-f3d9-40ef-9732-8d7ffb2cd418');
 INSERT INTO `privilege` VALUES ('Manage Implementation Id','Able to view/add/edit the implementation id for the system','95d782fc-6947-4c29-8988-f2f24dd10881');
 INSERT INTO `privilege` VALUES ('Manage Indicator Definitions','Add/Edit/Remove Indicator Definitions','87c5a58a-ee89-45ba-94f1-16bb7df4d4c1');
+INSERT INTO `privilege` VALUES ('Manage Location Attribute Types','Able to add/edit/retire location attribute types','a28dee97-e81f-4d67-bda5-c3a1ea9d5c65');
 INSERT INTO `privilege` VALUES ('Manage Location Tags','Able to add/edit/delete location tags','7597bad9-ca4a-4930-b2fd-241091b52cba');
 INSERT INTO `privilege` VALUES ('Manage Locations','Able to add/edit/delete locations','a3d7467f-2128-40b1-beb2-2531578dc65c');
 INSERT INTO `privilege` VALUES ('Manage Modules','Able to add/remove modules to the system','e4d0087f-659e-46ae-a611-024c10db107f');
@@ -21409,6 +22088,7 @@ INSERT INTO `privilege` VALUES ('Manage Order Types','Able to add/edit/retire or
 INSERT INTO `privilege` VALUES ('Manage Person Attribute Types','Able to add/edit/retire person attribute types','e82f1258-3c44-4f7e-b233-90946510c21b');
 INSERT INTO `privilege` VALUES ('Manage Privileges','Able to add/edit/delete privileges','9470cf70-5e5d-417f-8a3f-f36a6295b9c0');
 INSERT INTO `privilege` VALUES ('Manage Programs','Able to add/view/delete patient programs','659c27bd-6a01-49ae-8ec4-365dab3cece7');
+INSERT INTO `privilege` VALUES ('Manage Providers','Able to edit Provider','5bcbb2d6-97ba-49eb-a811-a28634d80d04');
 INSERT INTO `privilege` VALUES ('Manage Relationship Types','Able to add/edit/retire relationship types','d0434122-a2f8-4ffc-8494-042d560dff68');
 INSERT INTO `privilege` VALUES ('Manage Report Definitions','Add/Edit/Remove Report Definitions','74488dc9-e20a-4c94-989f-fb37d5ad7e1e');
 INSERT INTO `privilege` VALUES ('Manage Report Designs','Add/Edit/Remove Report Designs','d0116a5c-5631-42fa-95d5-03bcfdb79ef7');
@@ -21417,6 +22097,8 @@ INSERT INTO `privilege` VALUES ('Manage Roles','Able to add/edit/delete user rol
 INSERT INTO `privilege` VALUES ('Manage Rule Definitions','Allows creation and editing of user-defined rules','9e699bf4-bfb3-4710-9a8d-643c57445070');
 INSERT INTO `privilege` VALUES ('Manage Scheduler','Able to add/edit/remove scheduled tasks','291c2bb7-f362-4c93-998b-03e36ef0f1ff');
 INSERT INTO `privilege` VALUES ('Manage Tokens','Allows registering and removal of tokens','cfb92cc7-f2ce-415a-8bef-55e8397c6801');
+INSERT INTO `privilege` VALUES ('Manage Visit Attribute Types','Able to add/edit/retire visit attribute types','b4847277-9df1-447a-9d70-4a59c2adaaa1');
+INSERT INTO `privilege` VALUES ('Manage Visit Types','Able to add/edit/delete visit types','f0c46242-0e81-4cde-a3b8-df138bba0b10');
 INSERT INTO `privilege` VALUES ('Patient Dashboard - View Demographics Section','Able to view the \'Demographics\' tab on the patient dashboard','88c9e7e0-1d8a-4c92-abed-e2fc4477d612');
 INSERT INTO `privilege` VALUES ('Patient Dashboard - View Encounters Section','Able to view the \'Encounters\' tab on the patient dashboard','35485e10-6b66-4083-9c95-f1e2b364245d');
 INSERT INTO `privilege` VALUES ('Patient Dashboard - View Forms Section','Able to view the \'Forms\' tab on the patient dashboard','14a89eb3-b363-4ba0-9b32-d6dae453ff2f');
@@ -21424,17 +22106,26 @@ INSERT INTO `privilege` VALUES ('Patient Dashboard - View Graphs Section','Able 
 INSERT INTO `privilege` VALUES ('Patient Dashboard - View Overview Section','Able to view the \'Overview\' tab on the patient dashboard','b6f4d0fc-b6ed-4fad-84c0-ef5ea4f837a0');
 INSERT INTO `privilege` VALUES ('Patient Dashboard - View Patient Summary','Able to view the \'Summary\' tab on the patient dashboard','4737ae5e-af82-4299-b2a5-9afe66cad9c3');
 INSERT INTO `privilege` VALUES ('Patient Dashboard - View Regimen Section','Able to view the \'Regimen\' tab on the patient dashboard','f0db7d2b-5dac-449b-8c94-c965ca7c0736');
+INSERT INTO `privilege` VALUES ('Patient Dashboard - View Visits Section','Able to view the \'Visits\' tab on the patient dashboard','511fa283-4d89-4258-9d27-2c137581cf55');
 INSERT INTO `privilege` VALUES ('Remove Allergies','Remove allergies','60b12b89-02b5-4970-90d3-78bd10dde5cf');
 INSERT INTO `privilege` VALUES ('Remove Problems','Remove problems','cc844cad-9f40-4595-b572-37df0d6686ec');
+INSERT INTO `privilege` VALUES ('Test Flags','Allows the user to test a flag, or set of flags, against a Patient set','c2e06fa5-a23b-4a8c-af74-51956e3c5850');
+INSERT INTO `privilege` VALUES ('Update HL7 Inbound Archive','Able to update an HL7 archive item','9d139e3e-f7e5-4cb6-942d-b6e406300e11');
+INSERT INTO `privilege` VALUES ('Update HL7 Inbound Exception','Able to update an HL7 archive item','c71651ca-8ffe-4d12-9f70-9f879f80f714');
+INSERT INTO `privilege` VALUES ('Update HL7 Inbound Queue','Able to update an HL7 Queue item','492a99c2-e261-4d7b-af76-90c611f572b3');
+INSERT INTO `privilege` VALUES ('Update HL7 Source','Able to update an HL7 Source','750850f9-d37d-4ca8-a098-3295268b176a');
 INSERT INTO `privilege` VALUES ('Upload XSN','Allows user to upload/overwrite the XSNs defined for forms','149dcb2b-ef43-4e39-ad0e-a6152010e018');
 INSERT INTO `privilege` VALUES ('View Administration Functions','Able to view the \'Administration\' link in the navigation bar','d3c41ba6-7a81-4998-a4dd-c68b5c1c66fc');
 INSERT INTO `privilege` VALUES ('View Allergies','Able to view allergies','a1999b7b-f6a4-4681-b80d-4d691b2705e1');
 INSERT INTO `privilege` VALUES ('View Concept Classes','Able to view concept classes','c7ebf372-6e63-45b6-a422-af22db0df952');
 INSERT INTO `privilege` VALUES ('View Concept Datatypes','Able to view concept datatypes','f9ae0643-f855-4edd-b3f8-cbb61a686f8b');
+INSERT INTO `privilege` VALUES ('View Concept Map Types','Able to view concept map types','f8311196-7e72-4e43-9ba7-2c57f4af6782');
 INSERT INTO `privilege` VALUES ('View Concept Proposals','Able to view concept proposals to the system','af1dacb2-fb23-4998-b6d1-1d1cd8b0c1d9');
+INSERT INTO `privilege` VALUES ('View Concept Reference Terms','Able to view concept reference terms','f10e504b-1ac1-4d5d-8114-b823e8080626');
 INSERT INTO `privilege` VALUES ('View Concept Sources','Able to view concept sources','5626a267-ebf9-45e5-a8ae-a8b33a8431a4');
 INSERT INTO `privilege` VALUES ('View Concepts','Able to view concept entries','91f6e724-bf33-4942-8092-2388b857b8c5');
 INSERT INTO `privilege` VALUES ('View Database Changes','Able to view database changes from the admin screen','5180d32f-2fd0-45ea-b604-3cfeb9b79262');
+INSERT INTO `privilege` VALUES ('View Encounter Roles','Able to view encounter roles','8863d51b-4293-41ca-9d64-4900c1940379');
 INSERT INTO `privilege` VALUES ('View Encounter Types','Able to view encounter types','d229dd3a-2221-45c6-a383-ddc8497d90ca');
 INSERT INTO `privilege` VALUES ('View Encounters','Able to view patient encounters','84de9b59-519a-4415-b254-a437760836bb');
 INSERT INTO `privilege` VALUES ('View Field Types','Able to view field types','bcdd501e-f213-4313-93b4-5c6d3872aa4b');
@@ -21443,7 +22134,12 @@ INSERT INTO `privilege` VALUES ('View FormEntry Error','Allows a user to view a 
 INSERT INTO `privilege` VALUES ('View FormEntry Queue','Allows user to view the queue items','638d6172-f420-404b-8647-fa4ded98894d');
 INSERT INTO `privilege` VALUES ('View Forms','Able to view forms','d444dea9-c29b-45fc-a1e5-2b54bf4f2482');
 INSERT INTO `privilege` VALUES ('View Global Properties','Able to view global properties on the administration screen','50b1e337-e856-41c9-9fe2-073987144c88');
+INSERT INTO `privilege` VALUES ('View HL7 Inbound Archive','Able to view an HL7 archive item','7c69b2b2-bbe1-44af-83bd-6f79f6f83a8a');
+INSERT INTO `privilege` VALUES ('View HL7 Inbound Exception','Able to view an HL7 archive item','c8a042c3-b908-4bb8-ac6f-022ab250b7ac');
+INSERT INTO `privilege` VALUES ('View HL7 Inbound Queue','Able to view an HL7 Queue item','1477a21f-7ad4-4abd-8128-2c0498ae725f');
+INSERT INTO `privilege` VALUES ('View HL7 Source','Able to view an HL7 Source','81fd2e4f-025e-4b93-98c8-d1dd02e37159');
 INSERT INTO `privilege` VALUES ('View Identifier Types','Able to view patient identifier types','a7399794-b519-4e8c-9657-e22edaa6b052');
+INSERT INTO `privilege` VALUES ('View Location Attribute Types','Able to view location attribute types','30deda51-d884-47bf-ae61-f8cad99f53e6');
 INSERT INTO `privilege` VALUES ('View Locations','Able to view locations','0d8cc052-cdfe-4d34-9a2f-313c64ff8ed9');
 INSERT INTO `privilege` VALUES ('View Navigation Menu','Able to view the navigation menu (Home, View Patients, Dictionary, Administration, My Profile','f71fbed6-cb35-4dd2-b5dc-c92d0e9d7df2');
 INSERT INTO `privilege` VALUES ('View Observations','Able to view patient observations','965b6d9b-a486-43cb-a4a5-64658da09db4');
@@ -21458,12 +22154,16 @@ INSERT INTO `privilege` VALUES ('View Person Attribute Types','Able to view pers
 INSERT INTO `privilege` VALUES ('View Privileges','Able to view user privileges','84b9556a-2626-4135-9e2e-62fe9bd28c3f');
 INSERT INTO `privilege` VALUES ('View Problems','Able to view problems','8ae9b3b1-849d-488b-8c6e-0f6003cd144f');
 INSERT INTO `privilege` VALUES ('View Programs','Able to view patient programs','1bc3b8a2-1403-405a-a5d0-5aa6b3784e68');
+INSERT INTO `privilege` VALUES ('View Providers','Able to view Provider','4ce8f252-b801-4c4a-8915-1610f4da7db3');
 INSERT INTO `privilege` VALUES ('View Relationship Types','Able to view relationship types','dcad3c14-daf1-4b20-a867-3fba9fc0d6f5');
 INSERT INTO `privilege` VALUES ('View Relationships','Able to view relationships','8b55b1f9-6e59-40d8-b545-8425b74e8b27');
 INSERT INTO `privilege` VALUES ('View Roles','Able to view user roles','65f8bce4-327a-4df6-91fd-242e65eaa979');
 INSERT INTO `privilege` VALUES ('View Rule Definitions','Allows viewing of user-defined rules. (This privilege is not necessary to run rules under normal usage.)','bbb588e7-4ad7-4e30-b12b-46afce5212ab');
 INSERT INTO `privilege` VALUES ('View Unpublished Forms','Able to view and fill out unpublished forms','6d357f96-ae5e-47ac-b6bb-a24c7ac8cc0c');
 INSERT INTO `privilege` VALUES ('View Users','Able to view users in OpenMRS','0bca1cb9-88f3-4c06-81fe-668f53008769');
+INSERT INTO `privilege` VALUES ('View Visit Attribute Types','Able to view visit attribute types','30884d60-2d2b-45ca-8656-093f4be06d3f');
+INSERT INTO `privilege` VALUES ('View Visit Types','Able to view visit types','c6d2c195-dab6-4751-b52e-c214a570de67');
+INSERT INTO `privilege` VALUES ('View Visits','Able to view visits','4401a4a5-d989-4738-b0c1-3ec77d5293cf');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `program` (
@@ -21473,17 +22173,20 @@ CREATE TABLE `program` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `name` varchar(50) NOT NULL,
   `description` varchar(500) DEFAULT NULL,
   `uuid` char(38) NOT NULL,
+  `outcomes_concept_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`program_id`),
   UNIQUE KEY `program_uuid_index` (`uuid`),
   KEY `user_who_changed_program` (`changed_by`),
   KEY `program_concept` (`concept_id`),
   KEY `program_creator` (`creator`),
+  KEY `program_outcomes_concept_id_fk` (`outcomes_concept_id`),
   CONSTRAINT `program_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `program_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `program_outcomes_concept_id_fk` FOREIGN KEY (`outcomes_concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `user_who_changed_program` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -21495,7 +22198,7 @@ CREATE TABLE `program_workflow` (
   `concept_id` int(11) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
   `uuid` char(38) NOT NULL,
@@ -21517,11 +22220,11 @@ CREATE TABLE `program_workflow_state` (
   `program_workflow_state_id` int(11) NOT NULL AUTO_INCREMENT,
   `program_workflow_id` int(11) NOT NULL DEFAULT '0',
   `concept_id` int(11) NOT NULL DEFAULT '0',
-  `initial` smallint(6) NOT NULL DEFAULT '0',
-  `terminal` smallint(6) NOT NULL DEFAULT '0',
+  `initial` tinyint(1) NOT NULL DEFAULT '0',
+  `terminal` tinyint(1) NOT NULL DEFAULT '0',
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
   `uuid` char(38) NOT NULL,
@@ -21539,6 +22242,95 @@ CREATE TABLE `program_workflow_state` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `provider` (
+  `provider_id` int(11) NOT NULL AUTO_INCREMENT,
+  `person_id` int(11) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `identifier` varchar(255) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`provider_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `provider_changed_by_fk` (`changed_by`),
+  KEY `provider_person_id_fk` (`person_id`),
+  KEY `provider_retired_by_fk` (`retired_by`),
+  KEY `provider_creator_fk` (`creator`),
+  CONSTRAINT `provider_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_person_id_fk` FOREIGN KEY (`person_id`) REFERENCES `person` (`person_id`),
+  CONSTRAINT `provider_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `provider_attribute` (
+  `provider_attribute_id` int(11) NOT NULL AUTO_INCREMENT,
+  `provider_id` int(11) NOT NULL,
+  `attribute_type_id` int(11) NOT NULL,
+  `value_reference` text NOT NULL,
+  `uuid` char(38) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
+  `voided_by` int(11) DEFAULT NULL,
+  `date_voided` datetime DEFAULT NULL,
+  `void_reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`provider_attribute_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `provider_attribute_provider_fk` (`provider_id`),
+  KEY `provider_attribute_attribute_type_id_fk` (`attribute_type_id`),
+  KEY `provider_attribute_creator_fk` (`creator`),
+  KEY `provider_attribute_changed_by_fk` (`changed_by`),
+  KEY `provider_attribute_voided_by_fk` (`voided_by`),
+  CONSTRAINT `provider_attribute_voided_by_fk` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_attribute_attribute_type_id_fk` FOREIGN KEY (`attribute_type_id`) REFERENCES `provider_attribute_type` (`provider_attribute_type_id`),
+  CONSTRAINT `provider_attribute_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_attribute_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_attribute_provider_fk` FOREIGN KEY (`provider_id`) REFERENCES `provider` (`provider_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `provider_attribute_type` (
+  `provider_attribute_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `datatype` varchar(255) DEFAULT NULL,
+  `datatype_config` text,
+  `preferred_handler` varchar(255) DEFAULT NULL,
+  `handler_config` text,
+  `min_occurs` int(11) NOT NULL,
+  `max_occurs` int(11) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`provider_attribute_type_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `provider_attribute_type_creator_fk` (`creator`),
+  KEY `provider_attribute_type_changed_by_fk` (`changed_by`),
+  KEY `provider_attribute_type_retired_by_fk` (`retired_by`),
+  CONSTRAINT `provider_attribute_type_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_attribute_type_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `provider_attribute_type_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `relationship` (
   `relationship_id` int(11) NOT NULL AUTO_INCREMENT,
   `person_a` int(11) NOT NULL,
@@ -21546,11 +22338,15 @@ CREATE TABLE `relationship` (
   `person_b` int(11) NOT NULL,
   `creator` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
   `uuid` char(38) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
   PRIMARY KEY (`relationship_id`),
   UNIQUE KEY `relationship_uuid_index` (`uuid`),
   KEY `relation_creator` (`creator`),
@@ -21558,8 +22354,10 @@ CREATE TABLE `relationship` (
   KEY `person_b` (`person_b`),
   KEY `relationship_type_id` (`relationship`),
   KEY `relation_voider` (`voided_by`),
-  CONSTRAINT `person_a` FOREIGN KEY (`person_a`) REFERENCES `person` (`person_id`) ON UPDATE CASCADE,
-  CONSTRAINT `person_b` FOREIGN KEY (`person_b`) REFERENCES `person` (`person_id`) ON UPDATE CASCADE,
+  KEY `relationship_changed_by` (`changed_by`),
+  CONSTRAINT `person_a_is_person` FOREIGN KEY (`person_a`) REFERENCES `person` (`person_id`),
+  CONSTRAINT `person_b_is_person` FOREIGN KEY (`person_b`) REFERENCES `person` (`person_id`),
+  CONSTRAINT `relationship_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `relationship_type_id` FOREIGN KEY (`relationship`) REFERENCES `relationship_type` (`relationship_type_id`),
   CONSTRAINT `relation_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `relation_voider` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
@@ -21592,7 +22390,7 @@ CREATE TABLE `relationship_type` (
 INSERT INTO `relationship_type` VALUES (1,'Doctor','Patient',0,0,'Relationship from a primary care provider to the patient',1,'2007-05-04 00:00:00','8d919b58-c2cc-11de-8d13-0010c6dffd0f',0,NULL,NULL,NULL);
 INSERT INTO `relationship_type` VALUES (2,'Sibling','Sibling',0,0,'Relationship between brother/sister, brother/brother, and sister/sister',1,'2007-05-04 00:00:00','8d91a01c-c2cc-11de-8d13-0010c6dffd0f',0,NULL,NULL,NULL);
 INSERT INTO `relationship_type` VALUES (3,'Parent','Child',0,0,'Relationship from a mother/father to the child',1,'2007-05-04 00:00:00','8d91a210-c2cc-11de-8d13-0010c6dffd0f',0,NULL,NULL,NULL);
-INSERT INTO `relationship_type` VALUES (4,'Aunt/Uncle','Niece/Nephew',0,0,'',1,'2007-05-04 00:00:00','8d91a3dc-c2cc-11de-8d13-0010c6dffd0f',0,NULL,NULL,NULL);
+INSERT INTO `relationship_type` VALUES (4,'Aunt/Uncle','Niece/Nephew',0,0,'Auto generated by OpenMRS',1,'2007-05-04 00:00:00','8d91a3dc-c2cc-11de-8d13-0010c6dffd0f',0,NULL,NULL,NULL);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `report_object` (
@@ -21606,7 +22404,7 @@ CREATE TABLE `report_object` (
   `date_created` datetime NOT NULL,
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `voided` smallint(6) NOT NULL DEFAULT '0',
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
   `voided_by` int(11) DEFAULT NULL,
   `date_voided` datetime DEFAULT NULL,
   `void_reason` varchar(255) DEFAULT NULL,
@@ -21789,10 +22587,11 @@ CREATE TABLE `scheduler_task_config` (
   KEY `scheduler_creator` (`created_by`),
   CONSTRAINT `scheduler_changer` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `scheduler_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `scheduler_task_config` VALUES (1,'Update Concept Index','Iterates through the concept dictionary, re-creating the concept index (which are used for searcing). This task is started when using the \'Update Concept Index Storage\' page and no range is given.  This task stops itself when one iteration has completed.','org.openmrs.scheduler.tasks.ConceptIndexUpdateTask',NULL,NULL,0,0,0,1,'2005-01-01 00:00:00',2,'2012-05-27 18:20:27','7c75911e-0310-11e0-8222-18a905e044dc',NULL);
-INSERT INTO `scheduler_task_config` VALUES (2,'Initialize Logic Rule Providers',NULL,'org.openmrs.logic.task.InitializeLogicRuleProvidersTask','2012-06-04 22:20:30',NULL,1999999999,0,1,NULL,'2012-05-27 18:20:27',NULL,'2012-06-04 22:21:45','e393ede7-13ea-49ad-a86c-57ab063d28fa','2012-05-27 18:20:27');
+INSERT INTO `scheduler_task_config` VALUES (2,'Initialize Logic Rule Providers',NULL,'org.openmrs.logic.task.InitializeLogicRuleProvidersTask','2012-06-23 13:47:13',NULL,1999999999,0,0,2,'2012-05-27 18:20:27',1,'2012-06-23 13:54:30','e393ede7-13ea-49ad-a86c-57ab063d28fa','2012-05-27 18:20:27');
+INSERT INTO `scheduler_task_config` VALUES (3,'Auto Close Visits Task','Stops all active visits that match the visit type(s) specified by the value of the global property \'autoCloseVisits.visitType\'','org.openmrs.scheduler.tasks.AutoCloseVisitsTask','2011-11-28 23:59:59','MM/dd/yyyy HH:mm:ss',86400,0,0,1,'2012-06-23 13:40:27',NULL,NULL,'8c17b376-1a2b-11e1-a51a-00248140a5eb',NULL);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `scheduler_task_config_property` (
@@ -21814,12 +22613,12 @@ CREATE TABLE `serialized_object` (
   `type` varchar(255) NOT NULL,
   `subtype` varchar(255) NOT NULL,
   `serialization_class` varchar(255) NOT NULL,
-  `serialized_data` text NOT NULL,
+  `serialized_data` mediumtext NOT NULL,
   `date_created` datetime NOT NULL,
   `creator` int(11) NOT NULL,
   `date_changed` datetime DEFAULT NULL,
   `changed_by` int(11) DEFAULT NULL,
-  `retired` smallint(6) NOT NULL DEFAULT '0',
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `date_retired` datetime DEFAULT NULL,
   `retired_by` int(11) DEFAULT NULL,
   `retire_reason` varchar(1000) DEFAULT NULL,
@@ -21853,6 +22652,7 @@ CREATE TABLE `user_property` (
   CONSTRAINT `user_property` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `user_property` VALUES (1,'loginAttempts','0');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_role` (
@@ -21880,8 +22680,8 @@ CREATE TABLE `users` (
   `date_created` datetime NOT NULL DEFAULT '0002-11-30 00:00:00',
   `changed_by` int(11) DEFAULT NULL,
   `date_changed` datetime DEFAULT NULL,
-  `person_id` int(11) DEFAULT NULL,
-  `retired` tinyint(4) NOT NULL DEFAULT '0',
+  `person_id` int(11) NOT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
   `retired_by` int(11) DEFAULT NULL,
   `date_retired` datetime DEFAULT NULL,
   `retire_reason` varchar(255) DEFAULT NULL,
@@ -21898,7 +22698,130 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `users` VALUES (1,'admin','','854934faaf82ea16af90ed4ccc4b5024f7b6b7e8d70a238401e6fd27eda45161bdc5d32e4161658b66024af8d415e029ade024e4bd0f654b1729e5a0182ec657','16147a566d4e03240411c4971c42c85ea47f4accbf4e527e6f561bb67a524caba20d9d787c982a3758d7b2f27787749f3c087b4cbcba444243b92885981a3084',NULL,NULL,1,'2005-01-01 00:00:00',1,'2012-05-27 18:18:46',1,0,NULL,NULL,NULL,'b241757a-a827-11e1-8a6a-12313b05d66b');
-INSERT INTO `users` VALUES (2,'daemon','daemon',NULL,NULL,NULL,NULL,1,'2010-04-26 13:25:00',NULL,NULL,NULL,0,NULL,NULL,NULL,'A4F30A1B-5EB9-11DF-A648-37A07F9C90FB');
+INSERT INTO `users` VALUES (2,'daemon','daemon',NULL,NULL,NULL,NULL,1,'2010-04-26 13:25:00',NULL,NULL,2,0,NULL,NULL,NULL,'A4F30A1B-5EB9-11DF-A648-37A07F9C90FB');
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `visit` (
+  `visit_id` int(11) NOT NULL AUTO_INCREMENT,
+  `patient_id` int(11) NOT NULL,
+  `visit_type_id` int(11) NOT NULL,
+  `date_started` datetime NOT NULL,
+  `date_stopped` datetime DEFAULT NULL,
+  `indication_concept_id` int(11) DEFAULT NULL,
+  `location_id` int(11) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
+  `voided_by` int(11) DEFAULT NULL,
+  `date_voided` datetime DEFAULT NULL,
+  `void_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`visit_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `visit_type_fk` (`visit_type_id`),
+  KEY `visit_location_fk` (`location_id`),
+  KEY `visit_creator_fk` (`creator`),
+  KEY `visit_voided_by_fk` (`voided_by`),
+  KEY `visit_changed_by_fk` (`changed_by`),
+  KEY `visit_indication_concept_fk` (`indication_concept_id`),
+  KEY `visit_patient_index` (`patient_id`),
+  CONSTRAINT `visit_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_indication_concept_fk` FOREIGN KEY (`indication_concept_id`) REFERENCES `concept` (`concept_id`),
+  CONSTRAINT `visit_location_fk` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`),
+  CONSTRAINT `visit_patient_fk` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`),
+  CONSTRAINT `visit_type_fk` FOREIGN KEY (`visit_type_id`) REFERENCES `visit_type` (`visit_type_id`),
+  CONSTRAINT `visit_voided_by_fk` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `visit_attribute` (
+  `visit_attribute_id` int(11) NOT NULL AUTO_INCREMENT,
+  `visit_id` int(11) NOT NULL,
+  `attribute_type_id` int(11) NOT NULL,
+  `value_reference` text NOT NULL,
+  `uuid` char(38) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `voided` tinyint(1) NOT NULL DEFAULT '0',
+  `voided_by` int(11) DEFAULT NULL,
+  `date_voided` datetime DEFAULT NULL,
+  `void_reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`visit_attribute_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `visit_attribute_visit_fk` (`visit_id`),
+  KEY `visit_attribute_attribute_type_id_fk` (`attribute_type_id`),
+  KEY `visit_attribute_creator_fk` (`creator`),
+  KEY `visit_attribute_changed_by_fk` (`changed_by`),
+  KEY `visit_attribute_voided_by_fk` (`voided_by`),
+  CONSTRAINT `visit_attribute_attribute_type_id_fk` FOREIGN KEY (`attribute_type_id`) REFERENCES `visit_attribute_type` (`visit_attribute_type_id`),
+  CONSTRAINT `visit_attribute_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_attribute_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_attribute_visit_fk` FOREIGN KEY (`visit_id`) REFERENCES `visit` (`visit_id`),
+  CONSTRAINT `visit_attribute_voided_by_fk` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `visit_attribute_type` (
+  `visit_attribute_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `datatype` varchar(255) DEFAULT NULL,
+  `datatype_config` text,
+  `preferred_handler` varchar(255) DEFAULT NULL,
+  `handler_config` text,
+  `min_occurs` int(11) NOT NULL,
+  `max_occurs` int(11) DEFAULT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(1) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  PRIMARY KEY (`visit_attribute_type_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `visit_attribute_type_creator_fk` (`creator`),
+  KEY `visit_attribute_type_changed_by_fk` (`changed_by`),
+  KEY `visit_attribute_type_retired_by_fk` (`retired_by`),
+  CONSTRAINT `visit_attribute_type_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_attribute_type_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_attribute_type_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `visit_type` (
+  `visit_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `uuid` char(38) NOT NULL,
+  `creator` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `date_changed` datetime DEFAULT NULL,
+  `retired` tinyint(4) NOT NULL DEFAULT '0',
+  `retired_by` int(11) DEFAULT NULL,
+  `date_retired` datetime DEFAULT NULL,
+  `retire_reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`visit_type_id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `visit_type_creator` (`creator`),
+  KEY `visit_type_changed_by` (`changed_by`),
+  KEY `visit_type_retired_by` (`retired_by`),
+  CONSTRAINT `visit_type_retired_by` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_type_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `visit_type_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `xforms_medical_history_field` (

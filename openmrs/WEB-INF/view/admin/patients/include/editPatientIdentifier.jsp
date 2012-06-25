@@ -26,7 +26,9 @@
 		<td><spring:message code="PatientIdentifier.identifierType"/></td>
 		<td>
 			<spring:bind path="identifierType">
-				<select name="${status.expression}" onclick="modifyTab(this, this.options[this.selectedIndex].text, 0)">
+				<c:set var="hideLocation" value="${status.actualValue.locationBehavior == 'NOT_USED'}"/>
+				<select id="identifierTypeBox${varStatus.count == null ? 0 : varStatus.count}" name="${status.expression}" onclick="modifyTab(this, this.options[this.selectedIndex].text, 0);" onChange="toggleLocationBox(this.options[this.selectedIndex].value,this.id);">
+					<option value=""></option>
 					<openmrs:forEachRecord name="patientIdentifierType">
 						<option value="${record.patientIdentifierTypeId}" <c:if test="${record.patientIdentifierTypeId == status.value}">selected</c:if>>
 							${record.name}
@@ -38,16 +40,26 @@
 		</td>
 	</tr>
 	<tr>
-		<td><spring:message code="PatientIdentifier.location"/></td>
+		<td>
+			<c:if test="${identifierLocationUsed}">
+				<spring:message code="PatientIdentifier.location"/>
+			</c:if>
+		</td>
 		<td>
 			<spring:bind path="location">
-				<select name="${status.expression}">
+				<select id="locationBox${varStatus.count == null ? 0 : varStatus.count}" name="${status.expression}" style="${hideLocation || varStatus.count == null ? 'display: none;' : ''}">
+					<option value=""></option>
 					<openmrs:forEachRecord name="location">
 						<option value="${record.locationId}" <c:if test="${record.locationId == status.value}">selected</c:if>>
 							${record.name}
 						</option>
 					</openmrs:forEachRecord>
 				</select>
+				<span id="locationNABox${varStatus.count == null ? 0 : varStatus.count}" style="${hideLocation && varStatus.count != null ? '' : 'display: none;'}">
+					<c:if test="${identifierLocationUsed}">
+						<spring:message code="PatientIdentifier.location.notApplicable"/>
+					</c:if>
+				</span>
 				<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
 			</spring:bind>
 		</td>
@@ -63,6 +75,18 @@
 			</tr>
 		</c:if>
 	</spring:bind>
+	
+	<spring:bind path="changedBy">
+	<c:if test="${status.value != null}">
+		<tr>
+			<td><spring:message code="general.changedBy" /></td>
+			<td>
+				${status.value.personName} -
+				<openmrs:formatDate path="dateChanged" type="long" />
+			</td>
+		</tr>
+	</c:if>
+</spring:bind>
 	<c:if test="${identifier.patientIdentifierId != null}">
 		<tr>
 			<td><spring:message code="general.voided"/></td>

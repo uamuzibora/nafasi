@@ -208,6 +208,11 @@
 		<required>false</required>
 		<rtexprvalue>true</rtexprvalue>
 	</attribute>
+    <attribute>
+        <name>parameterMap</name>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
 	<attribute>
 		<name>allowUserDefault</name>
 		<required>false</required>
@@ -530,6 +535,60 @@
 
 <tag>
 	<description>
+		This tag iterates through a collection of visits passed into it and renders it's body content.
+		It will return all matching visits by default, or [num] visits if it is specified..
+		It will limit the results by visitTypeId only if a [type] parameter is passed in.
+		It will sort by the property passed in - this property should match a public property of Visit - i.e. "visitDatetime"
+		If no sort property is specified, it will sort by visitDatetime by default
+		It will sort ascending by default, descending if "descending=true" is specified.
+	</description>
+	<name>forEachVisit</name>
+	<tag-class>org.openmrs.web.taglib.ForEachVisitTag</tag-class>
+	<body-content>JSP</body-content>
+	<variable>
+		<name-from-attribute>var</name-from-attribute>
+		<variable-class>org.openmrs.Visit</variable-class>
+	</variable>
+	<attribute>
+		<name>visits</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.util.Collection</type>
+	</attribute>
+	<attribute>
+		<name>type</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.Integer</type>
+	</attribute>
+	<attribute>
+		<name>num</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.Integer</type>
+	</attribute>
+	<attribute>
+		<name>sortBy</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.String</type>
+	</attribute>
+	<attribute>
+		<name>descending</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.Boolean</type>
+	</attribute>
+	<attribute>
+		<name>var</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.String</type>
+	</attribute>
+</tag>
+
+<tag>
+	<description>
 		This tag iterates through a collection of drug orders passed into it and renders it's body content.
 		It will return all matching orders by default, or [num] orders if it is specified.
 		It will sort by the property passed in - this property should match a public property of Order/DrugOrder
@@ -777,6 +836,39 @@
 	<body-content>empty</body-content>
 	<attribute>
 		<name>localize</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+</tag>
+
+<tag>
+	<description>
+		Gets the datetime pattern for the current user's locale
+	</description>
+	<name>dateTimePattern</name>
+	<tag-class>org.openmrs.web.taglib.DateTimePatternTag</tag-class>
+	<body-content>empty</body-content>
+	<attribute>
+		<name>localize</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+</tag>
+
+<tag>
+	<description>
+		Gets the time pattern for the current user's locale
+	</description>
+	<name>timePattern</name>
+	<tag-class>org.openmrs.web.taglib.TimePatternTag</tag-class>
+	<body-content>empty</body-content>
+	<attribute>
+		<name>localize</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+    <attribute>
+		<name>format</name>
 		<required>false</required>
 		<rtexprvalue>true</rtexprvalue>
 	</attribute>
@@ -1110,6 +1202,20 @@
 		<rtexprvalue>true</rtexprvalue>
 	</attribute>
 	<attribute>
+		<description>when formatting a concept, tries to print a name of the given type</description>
+		<name>withConceptNameType</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.String</type>
+	</attribute>
+	<attribute>
+		<description>when formatting a concept, tries to print a name with the given tag</description>
+		<name>withConceptNameTag</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+		<type>java.lang.String</type>
+	</attribute>
+	<attribute>
 		<name>obsValue</name>
 		<required>false</required>
 		<rtexprvalue>true</rtexprvalue>
@@ -1155,6 +1261,16 @@
 		<rtexprvalue>true</rtexprvalue>
 	</attribute>
 	<attribute>
+		<name>visitTypeId</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>visitType</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
 		<name>locationId</name>
 		<required>false</required>
 		<rtexprvalue>true</rtexprvalue>
@@ -1189,6 +1305,41 @@
 		<name>javaScriptEscape</name>
 		<required>false</required>
 		<rtexprvalue>false</rtexprvalue>		
+	</attribute>
+	<attribute>
+		<name>visit</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>visitId</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>providerId</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>provider</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>encounterProviders</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>singleCustomValue</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>form</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
 	</attribute>
 </tag>
 <tag>

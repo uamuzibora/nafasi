@@ -15,6 +15,7 @@
 
 <openmrs:htmlInclude file="/dwr/interface/DWRConceptService.js" />
 <openmrs:htmlInclude file="/scripts/jquery/autocomplete/OpenmrsAutoComplete.js" />
+<openmrs:htmlInclude file="/scripts/jquery/autocomplete/jquery.ui.autocomplete.autoSelect.js" />
 
 <c:if test="${empty formFieldId}">
 	<c:set var="formFieldId" value="${formFieldName}_id" />
@@ -46,6 +47,15 @@
 		new AutoComplete("${displayNameInputId}", callback, {
 			select: function(event, ui) {
 				func${escapedFormFieldId}AutoCompleteOnSelect(ui.item.object, ui.item);
+			},
+            placeholder:'<spring:message code="Concept.search.placeholder" javaScriptEscape="true"/>',
+            autoSelect: true
+		});
+		
+		//Clear hidden value on losing focus with no valid entry
+		$j("#${displayNameInputId}").autocomplete().blur(function(event, ui) {
+			if (!event.target.value) {
+				jquerySelectEscaped('${formFieldId}').val('');
 			}
 		});
 
@@ -70,8 +80,10 @@
 		jquerySelectEscaped('${formFieldId}').val(concept.conceptId);
 
 		// if called with initialValue, show the name ourselves
-		if (!item)
+		if (!item) {
 			jquerySelectEscaped('${displayNameInputId}').val(concept.name);
+			jquerySelectEscaped('${displayNameInputId}').autocomplete("option", "initialValue", concept.name);
+		}
 
 		<c:if test="${not empty showOther}">
 			// if showOther is the concept that is selected, show a text field so user can enter that "other" data

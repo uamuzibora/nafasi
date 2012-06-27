@@ -21603,10 +21603,9 @@ CREATE TABLE `patient_identifier_type` (
   KEY `user_who_retired_patient_identifier_type` (`retired_by`),
   CONSTRAINT `user_who_retired_patient_identifier_type` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `type_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `patient_identifier_type` VALUES (1,'OpenMRS Identification Number','Unique number used in OpenMRS','',1,1,'2005-09-22 00:00:00',0,NULL,'org.openmrs.patient.impl.LuhnIdentifierValidator',NULL,0,NULL,NULL,NULL,'8d793bee-c2cc-11de-8d13-0010c6dffd0f');
-INSERT INTO `patient_identifier_type` VALUES (2,'Old Identification Number','Number given out prior to the OpenMRS system (No check digit)','',0,1,'2005-09-22 00:00:00',0,NULL,NULL,NULL,0,NULL,NULL,NULL,'8d79403a-c2cc-11de-8d13-0010c6dffd0f');
+INSERT INTO `patient_identifier_type` VALUES (3,'UPN','Unique Patient Number assigned by the Kenyan Ministry of Health','\\d{6}-\\d{5}',0,1,'2012-06-27 22:56:02',1,'Follows the format NNNNNN-NNNNN (6 digits - 5 digits).',NULL,'NOT_USED',0,NULL,NULL,NULL,'7d37d347-bec3-4457-b8a0-2ca20a527a1e');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `patient_program` (

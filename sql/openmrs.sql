@@ -19677,9 +19677,12 @@ CREATE TABLE `encounter_role` (
   CONSTRAINT `encounter_role_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `encounter_role_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `encounter_role_creator_fk` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `encounter_role` VALUES (1,'Unknown','Unknown encounter role for legacy providers with no encounter role set',1,'2011-08-18 14:00:00',NULL,NULL,0,NULL,NULL,NULL,'a0b03050-c99b-11e0-9572-0800200c9a66');
+INSERT INTO `encounter_role` VALUES (2,'Doctor','A doctor or a medical/clinical officer',1,'2012-07-02 16:15:14',NULL,NULL,0,NULL,NULL,NULL,'86701116-adf4-40c4-8fbc-c33b1b19a21c');
+INSERT INTO `encounter_role` VALUES (3,'Nurse','A registered nurse',1,'2012-07-02 16:15:25',NULL,NULL,0,NULL,NULL,NULL,'82aa8959-41ce-4fcc-8505-ec2adc31aa2b');
+INSERT INTO `encounter_role` VALUES (4,'Data Clerk','A data entry clerk',1,'2012-07-02 16:16:14',NULL,NULL,0,NULL,NULL,NULL,'0d508131-673d-4eae-8ef0-13e58d37f5ea');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `encounter_type` (
@@ -19700,8 +19703,11 @@ CREATE TABLE `encounter_type` (
   KEY `user_who_retired_encounter_type` (`retired_by`),
   CONSTRAINT `user_who_created_type` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_retired_encounter_type` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `encounter_type` VALUES (1,'Adult Initial Visit','The registration clinic attendance by the patient',1,'2012-07-02 16:13:28',0,NULL,NULL,NULL,'26a2fb90-d40e-4048-9e13-2e492cf05e36');
+INSERT INTO `encounter_type` VALUES (2,'Adult Return Visit','Subsequent clinic attendances by the patient',1,'2012-07-02 16:13:58',0,NULL,NULL,NULL,'09dddd77-0579-41a4-86bd-f4e92e4ccdb8');
+INSERT INTO `encounter_type` VALUES (3,'Safe Water Survey','Standard questions on a patient\'s water supply',1,'2012-07-02 16:14:29',0,NULL,NULL,NULL,'d70f9147-6a82-4c87-886b-53c9e6b9c6af');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `field` (

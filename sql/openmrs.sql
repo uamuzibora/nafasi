@@ -156,7 +156,7 @@ CREATE TABLE `concept` (
   CONSTRAINT `concept_datatypes` FOREIGN KEY (`datatype_id`) REFERENCES `concept_datatype` (`concept_datatype_id`),
   CONSTRAINT `user_who_changed_concept` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_retired_concept` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6256 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6257 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept` VALUES (1,0,'','',NULL,4,4,0,1,'2004-01-01 00:00:00','',1,'2005-02-16 00:00:00',NULL,NULL,NULL,'41bcf19e-8dd8-11e1-be2c-e1d7904ed235');
 INSERT INTO `concept` VALUES (2,0,'','',NULL,4,4,0,1,'2004-01-01 00:00:00','',1,'2005-03-03 00:00:00',NULL,NULL,NULL,'41bcfaf4-8dd8-11e1-be2c-e1d7904ed235');
@@ -21177,7 +21177,7 @@ CREATE TABLE `location` (
   CONSTRAINT `user_who_retired_location` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-INSERT INTO `location` VALUES (1,'Unknown Location',NULL,'','','','','','',NULL,NULL,1,'2005-09-22 00:00:00',NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,'8d6c993e-c2cc-11de-8d13-0010c6dffd0f');
+INSERT INTO `location` VALUES (1,'Kakamega PGH CCC','HIV CCC in Kakamega Provincial General Hospital','PO Box 15, Kakamega, 50100',NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,'2005-09-22 00:00:00','Kakamega Central',NULL,NULL,'Shirere','Bukhungu',0,NULL,NULL,NULL,NULL,'8d6c993e-c2cc-11de-8d13-0010c6dffd0f');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `location_attribute` (
@@ -22349,8 +22349,9 @@ CREATE TABLE `provider` (
   CONSTRAINT `provider_changed_by_fk` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `provider_person_id_fk` FOREIGN KEY (`person_id`) REFERENCES `person` (`person_id`),
   CONSTRAINT `provider_retired_by_fk` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `provider` VALUES (1,1,NULL,'1',1,'2012-07-04 17:07:56',NULL,NULL,0,NULL,NULL,NULL,'af639f75-81e1-4ead-ae4b-9cbfb2c5e7e0');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `provider_attribute` (

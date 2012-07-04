@@ -156,7 +156,7 @@ CREATE TABLE `concept` (
   CONSTRAINT `concept_datatypes` FOREIGN KEY (`datatype_id`) REFERENCES `concept_datatype` (`concept_datatype_id`),
   CONSTRAINT `user_who_changed_concept` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_retired_concept` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6252 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6256 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept` VALUES (1,0,'','',NULL,4,4,0,1,'2004-01-01 00:00:00','',1,'2005-02-16 00:00:00',NULL,NULL,NULL,'41bcf19e-8dd8-11e1-be2c-e1d7904ed235');
 INSERT INTO `concept` VALUES (2,0,'','',NULL,4,4,0,1,'2004-01-01 00:00:00','',1,'2005-03-03 00:00:00',NULL,NULL,NULL,'41bcfaf4-8dd8-11e1-be2c-e1d7904ed235');
@@ -2753,6 +2753,10 @@ INSERT INTO `concept` VALUES (6248,0,NULL,NULL,NULL,4,11,0,1,'2012-04-27 15:15:4
 INSERT INTO `concept` VALUES (6249,0,NULL,NULL,NULL,4,11,0,1,'2012-04-27 15:16:32','',NULL,NULL,NULL,NULL,NULL,'63aab6c5-5019-4555-9404-7525d7af2fec');
 INSERT INTO `concept` VALUES (6250,0,NULL,NULL,NULL,4,11,0,1,'2012-04-27 15:17:51','',NULL,NULL,NULL,NULL,NULL,'a4e0f9d6-8438-4b36-89fc-21a8c88c012a');
 INSERT INTO `concept` VALUES (6251,0,NULL,NULL,NULL,4,3,0,1,'2012-07-03 22:42:06',NULL,NULL,NULL,NULL,NULL,NULL,'147f3d35-a777-44b3-b78f-f48434a20232');
+INSERT INTO `concept` VALUES (6252,0,NULL,NULL,NULL,3,7,0,1,'2012-07-04 15:23:34',NULL,NULL,NULL,NULL,NULL,NULL,'f5964e7d-b4cf-4e04-9ab6-313464678274');
+INSERT INTO `concept` VALUES (6253,0,NULL,NULL,NULL,2,7,0,1,'2012-07-04 15:25:36',NULL,NULL,NULL,NULL,NULL,NULL,'efba0528-3aa5-487b-98d3-3a51c04a5006');
+INSERT INTO `concept` VALUES (6254,0,NULL,NULL,NULL,3,7,0,1,'2012-07-04 15:26:09',NULL,NULL,NULL,NULL,NULL,NULL,'710268f4-0c30-4be4-8360-7888f8bc4b8d');
+INSERT INTO `concept` VALUES (6255,0,NULL,NULL,NULL,3,7,0,1,'2012-07-04 15:26:40',NULL,NULL,NULL,NULL,NULL,NULL,'7c7ab47d-137c-4be4-a51c-0fc1b37eec56');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_answer` (
@@ -2774,7 +2778,7 @@ CREATE TABLE `concept_answer` (
   CONSTRAINT `answers_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `answer_answer_drug_fk` FOREIGN KEY (`answer_drug`) REFERENCES `drug` (`drug_id`),
   CONSTRAINT `answer_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1225 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1234 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_answer` VALUES (1,12,1115,NULL,1,'2005-01-26 00:00:00','41d6ad32-8dd8-11e1-be2c-e1d7904ed235',1);
 INSERT INTO `concept_answer` VALUES (2,12,1136,NULL,1,'2005-01-26 00:00:00','41d6b25a-8dd8-11e1-be2c-e1d7904ed235',2);
@@ -3809,6 +3813,15 @@ INSERT INTO `concept_answer` VALUES (1221,6245,6248,NULL,1,'2012-04-27 15:18:32'
 INSERT INTO `concept_answer` VALUES (1222,6245,6249,NULL,1,'2012-04-27 15:18:32','76091f40-d1d4-4124-b0e3-d540ea8f7c10',4);
 INSERT INTO `concept_answer` VALUES (1223,6245,6250,NULL,1,'2012-04-27 15:18:32','1e03c9aa-f588-4fa0-855e-2d3abe39be37',5);
 INSERT INTO `concept_answer` VALUES (1224,6245,5622,NULL,1,'2012-04-27 15:18:32','4acd198c-10f3-47af-b84f-f1ca200b358a',6);
+INSERT INTO `concept_answer` VALUES (1225,6253,971,NULL,1,'2012-07-04 15:25:36','0798ce0d-e999-4300-b71d-dc23b7cab4f7',2);
+INSERT INTO `concept_answer` VALUES (1226,6253,5620,NULL,1,'2012-07-04 15:25:36','d7bd581b-7ddb-45c5-b1fa-638f1afc6a81',8);
+INSERT INTO `concept_answer` VALUES (1227,6253,5618,NULL,1,'2012-07-04 15:25:36','c049f5c0-a286-4c46-bbd3-dbecd513efb7',5);
+INSERT INTO `concept_answer` VALUES (1228,6253,975,NULL,1,'2012-07-04 15:25:36','88a0a6c2-bc30-4a3b-8e14-74af19ffc311',7);
+INSERT INTO `concept_answer` VALUES (1229,6253,5622,NULL,1,'2012-07-04 15:25:36','a57a6cb8-97b1-48a8-95bb-1a9885653fcd',9);
+INSERT INTO `concept_answer` VALUES (1230,6253,970,NULL,1,'2012-07-04 15:25:36','88c52976-2eb3-4739-af38-7ef936306a48',1);
+INSERT INTO `concept_answer` VALUES (1231,6253,973,NULL,1,'2012-07-04 15:25:36','a7c63751-f8df-4a28-abb3-029843716f34',4);
+INSERT INTO `concept_answer` VALUES (1232,6253,972,NULL,1,'2012-07-04 15:25:36','48af0b9d-898d-4aa8-80de-6a4ba4f9f6e4',3);
+INSERT INTO `concept_answer` VALUES (1233,6253,974,NULL,1,'2012-07-04 15:25:36','b7164fa0-30ba-4b0b-b8f0-f07d10ae66c4',6);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_class` (
@@ -3910,7 +3923,7 @@ CREATE TABLE `concept_description` (
   CONSTRAINT `description_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `user_who_changed_description` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_created_description` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6193 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6197 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_description` VALUES (1,1,'Anemia due to bleeding or a hemorrhagic process.','en',1,'2004-01-01 00:00:00',NULL,NULL,'41e0b7e6-8dd8-11e1-be2c-e1d7904ed235');
 INSERT INTO `concept_description` VALUES (2,2,'Anemia, due to the destruction or dissolution of red blood cells, with subsequent release of hemoglobin.','en',1,'2004-01-01 00:00:00',NULL,NULL,'41e0bf20-8dd8-11e1-be2c-e1d7904ed235');
@@ -6426,6 +6439,10 @@ INSERT INTO `concept_description` VALUES (6189,6248,'A entry source for patients
 INSERT INTO `concept_description` VALUES (6190,6249,'A entry source for patients referred to CCC clinic.','en',1,'2012-04-27 15:16:32',NULL,NULL,'5a6fbb5e-ad60-43b3-aa26-3b1590bffd7b');
 INSERT INTO `concept_description` VALUES (6191,6250,'A entry source for patients referred to CCC clinic.','en',1,'2012-04-27 15:17:51',NULL,NULL,'2e40900a-42cf-4f03-9c3a-51340e5c38fc');
 INSERT INTO `concept_description` VALUES (6192,6251,'Combination antiretroviral drug.','en',1,'2012-07-03 22:42:32',NULL,NULL,'c0580af5-818e-44e0-a869-1bbabfbb10c4');
+INSERT INTO `concept_description` VALUES (6193,6252,'The patient\'s treatment supporter','en',1,'2012-07-04 15:23:34',NULL,NULL,'83374acf-3919-4519-abda-45fa0f44e839');
+INSERT INTO `concept_description` VALUES (6194,6253,'The relationship of the treatment supporter to the patient','en',1,'2012-07-04 15:25:36',NULL,NULL,'bc31641e-3636-422b-8a0c-c4c6fe6d0366');
+INSERT INTO `concept_description` VALUES (6195,6254,'The postal address of the patient\'s treatment supporter','en',1,'2012-07-04 15:26:09',NULL,NULL,'8740dc4f-7785-43c8-9f3c-3d4e560b9642');
+INSERT INTO `concept_description` VALUES (6196,6255,'The telephone number of the patient\'s treatment supporter.','en',1,'2012-07-04 15:26:40',NULL,NULL,'27fa8ff1-f947-4db8-a1f3-7fa9003826ea');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_map_type` (
@@ -6548,7 +6565,7 @@ CREATE TABLE `concept_name` (
   CONSTRAINT `name_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `user_who_created_name` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_voided_this_name` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6293 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6297 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_name` VALUES (1,'ANEMIA, BLOOD LOSS','en',1,'2004-01-01 00:00:00',1,0,NULL,NULL,NULL,'41fd6abc-8dd8-11e1-be2c-e1d7904ed235','FULLY_SPECIFIED',0);
 INSERT INTO `concept_name` VALUES (2,'ANEMIA, HEMOLYSIS','en',1,'2004-01-01 00:00:00',2,0,NULL,NULL,NULL,'41fd6e36-8dd8-11e1-be2c-e1d7904ed235','FULLY_SPECIFIED',0);
@@ -10195,6 +10212,10 @@ INSERT INTO `concept_name` VALUES (6249,'TB CLINIC','en',1,'2012-04-27 15:16:32'
 INSERT INTO `concept_name` VALUES (6250,'OUTPATIENT DEPARTMENT','en',1,'2012-04-27 15:17:51',6290,0,NULL,NULL,NULL,'ea00457b-f7d4-4860-93f8-c8d502ea1643',NULL,0);
 INSERT INTO `concept_name` VALUES (6250,'OPD','en',1,'2012-04-27 15:17:51',6291,0,NULL,NULL,NULL,'217d94ec-7a2d-46c3-9df8-21de556ade85','FULLY_SPECIFIED',1);
 INSERT INTO `concept_name` VALUES (6251,'STAVUDINE AND LAMIVUDINE','en',1,'2012-07-03 22:42:06',6292,0,NULL,NULL,NULL,'83052aac-d05a-4bbd-b529-050e5a09434c','FULLY_SPECIFIED',1);
+INSERT INTO `concept_name` VALUES (6252,'TREATMENT SUPPORT NAME','en',1,'2012-07-04 15:23:34',6293,0,NULL,NULL,NULL,'89e9e7c9-d30d-43e1-9506-0a1c11632e50','FULLY_SPECIFIED',1);
+INSERT INTO `concept_name` VALUES (6253,'TREATMENT SUPPORTER RELATIONSHIP','en',1,'2012-07-04 15:25:36',6294,0,NULL,NULL,NULL,'77f83a0c-7569-4383-902f-d87b267792f5','FULLY_SPECIFIED',1);
+INSERT INTO `concept_name` VALUES (6254,'TREATMENT SUPPORTER ADDRESS','en',1,'2012-07-04 15:26:09',6295,0,NULL,NULL,NULL,'3270c549-560a-4cae-8a02-4b7ef000216b','FULLY_SPECIFIED',1);
+INSERT INTO `concept_name` VALUES (6255,'TREATMENT SUPPORTER TELEPHONE NUMBER','en',1,'2012-07-04 15:26:40',6296,0,NULL,NULL,NULL,'1b3fd6a2-89cf-45dd-8d12-da24a215669d','FULLY_SPECIFIED',1);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_name_tag` (
@@ -11702,7 +11723,7 @@ CREATE TABLE `concept_word` (
   KEY `concept_word_weight_index` (`weight`),
   CONSTRAINT `word_for` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `word_for_name` FOREIGN KEY (`concept_name_id`) REFERENCES `concept_name` (`concept_name_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14642 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14655 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_word` VALUES (6581,1,'BLOOD','en',1,1.3658024691358024);
 INSERT INTO `concept_word` VALUES (6582,1,'LOSS','en',1,1.3374074074074074);
@@ -19514,6 +19535,19 @@ INSERT INTO `concept_word` VALUES (14638,1085,'DRUGS','en',1085,1.346875);
 INSERT INTO `concept_word` VALUES (14639,1085,'HAART','en',2915,9.72);
 INSERT INTO `concept_word` VALUES (14640,1085,'ARVS','en',2634,10.5);
 INSERT INTO `concept_word` VALUES (14641,1085,'ANTIRETROVIRAL','en',1085,2.1142857142857143);
+INSERT INTO `concept_word` VALUES (14642,6252,'NAME','en',6293,1.338516746411483);
+INSERT INTO `concept_word` VALUES (14643,6252,'SUPPORT','en',6293,1.3574380165289255);
+INSERT INTO `concept_word` VALUES (14644,6252,'TREATMENT','en',6293,2.2196969696969697);
+INSERT INTO `concept_word` VALUES (14645,6253,'RELATIONSHIP','en',6294,1.3110119047619047);
+INSERT INTO `concept_word` VALUES (14646,6253,'SUPPORTER','en',6294,1.3465909090909092);
+INSERT INTO `concept_word` VALUES (14647,6253,'TREATMENT','en',6294,2.177083333333333);
+INSERT INTO `concept_word` VALUES (14648,6254,'TREATMENT','en',6295,2.1944444444444446);
+INSERT INTO `concept_word` VALUES (14649,6254,'ADDRESS','en',6295,1.322310405643739);
+INSERT INTO `concept_word` VALUES (14650,6254,'SUPPORTER','en',6295,1.3476430976430975);
+INSERT INTO `concept_word` VALUES (14651,6255,'SUPPORTER','en',6296,1.345959595959596);
+INSERT INTO `concept_word` VALUES (14652,6255,'NUMBER','en',6296,1.3046594982078852);
+INSERT INTO `concept_word` VALUES (14653,6255,'TELEPHONE','en',6296,1.3134920634920637);
+INSERT INTO `concept_word` VALUES (14654,6255,'TREATMENT','en',6296,2.1666666666666665);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `drug` (
@@ -19983,14 +20017,14 @@ INSERT INTO `global_property` VALUES ('newPatientForm.relationships',NULL,'Comma
 INSERT INTO `global_property` VALUES ('new_patient_form.showRelationships','false','true/false whether or not to show the relationship editor on the addPatient.htm screen','595a2af4-0f18-467d-9d9f-86a87d011d16','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('obs.complex_obs_dir','complex_obs','Default directory for storing complex obs.','b7d60448-4646-4b2b-a161-97013d26ab5b',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patient.defaultPatientIdentifierValidator','org.openmrs.patient.impl.LuhnIdentifierValidator','This property sets the default patient identifier validator.  The default validator is only used in a handful of (mostly legacy) instances.  For example, it\'s used to generate the isValidCheckDigit calculated column and to append the string \"(default)\" to the name of the default validator on the editPatientIdentifierType form.','99bacb29-9c4f-4422-8802-e1abab31af59',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('patient.headerAttributeTypes',NULL,NULL,'48377e24-ba1e-4104-b246-eb4da84437da',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.headerAttributeTypes',NULL,'A comma delimited list of PersonAttributeType names that will be shown on the patient dashboard','48377e24-ba1e-4104-b246-eb4da84437da',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patient.identifierPrefix',NULL,'This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','0ac52023-04de-439a-bc0d-8c7952d3e706',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patient.identifierRegex',NULL,'WARNING: Using this search property can cause a drop in mysql performance with large patient sets.  A MySQL regular expression for the patient identifier search strings.  The @SEARCH@ string is replaced at runtime with the user\'s search string.  An empty regex will cause a simply \'like\' sql search to be used. Example: ^0*@SEARCH@([A-Z]+-[0-9])?$','1b1babf4-d813-45ff-b018-e8a08e8cc307',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patient.identifierSearchPattern',NULL,'If this is empty, the regex or suffix/prefix search is used.  Comma separated list of identifiers to check.  Allows for faster searching of multiple options rather than the slow regex. e.g. @SEARCH@,0@SEARCH@,@SEARCH-1@-@CHECKDIGIT@,0@SEARCH-1@-@CHECKDIGIT@ would turn a request for \"4127\" into a search for \"in (\'4127\',\'04127\',\'412-7\',\'0412-7\')\"','8928101e-f6eb-44aa-9271-48c558d621f3',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patient.identifierSuffix',NULL,'This property is only used if patient.identifierRegex is empty.  The string here is prepended to the sql indentifier search string.  The sql becomes \"... where identifier like \'<PREFIX><QUERY STRING><SUFFIX>\';\".  Typically this value is either a percent sign (%) or empty.','108af8c3-b98e-4579-bc76-0d5e88fbef59',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes',NULL,NULL,'05a5e692-8708-4f62-b5cb-1a3464ba746c',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.listingAttributeTypes',NULL,'A comma delimited list of PersonAttributeType names that should be displayed for patients in _lists_','05a5e692-8708-4f62-b5cb-1a3464ba746c',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patient.nameValidationRegex','^[a-zA-Z \\-]+$','Names of the patients must pass this regex. Eg : ^[a-zA-Z \\-]+$ contains only english alphabet letters, spaces, and hyphens. A value of .* or the empty string means no validation is done.','22fba0e7-af00-4a7f-8fbc-8ecb45f9e3a0',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','8,5',NULL,'5532b69a-f290-49a8-9312-9204d057f3a2',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('patient.viewingAttributeTypes','8,5','A comma delimited list of PersonAttributeType names that should be displayed for patients when _viewing individually_','5532b69a-f290-49a8-9312-9204d057f3a2',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patientflags.database_version','1.2.10','DO NOT MODIFY.  Current database version number for the patientflags module.','eb516b32-bed1-4419-9973-dc03acf05c7a',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patientflags.mandatory','false','true/false whether or not the patientflags module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','d885698c-96eb-416c-9dc9-50150dd25b47',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('patientflags.patientHeaderDisplay','true','DO NOT MODIFY HERE: use \"manage flag global properties\" to modify; true/false whether or not to display flags in the Patient Dashboard overview','68a0f62f-b0cb-43f9-9307-99d8106fe0df',NULL,NULL,NULL,NULL);
@@ -20030,12 +20064,12 @@ INSERT INTO `global_property` VALUES ('security.passwordRequiresUpperAndLowerCas
 INSERT INTO `global_property` VALUES ('serialization.xstream.mandatory','false','true/false whether or not the serialization.xstream module MUST start when openmrs starts.  This is used to make sure that mission critical modules are always running if openmrs is running.','781dbea7-04e4-43d7-9935-7fbc4a1efe3b',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('serialization.xstream.started','true','DO NOT MODIFY. true/false whether or not the serialization.xstream module has been started.  This is used to make sure modules that were running  prior to a restart are started again','23b907ff-e622-4d91-8935-a9972d458b41',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('user.headerAttributeTypes',NULL,'A comma delimited list of PersonAttributeType names that will be shown on the user dashboard. (not used in v1.5)','92a54b99-e0a0-43d3-8294-8ca4058ace81',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('user.listingAttributeTypes',NULL,NULL,'9350123d-a3fc-4715-9d85-0dfe7b91817b',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('user.viewingAttributeTypes',NULL,NULL,'e4100cfc-764d-468c-b498-75ee833a4164',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('user.listingAttributeTypes',NULL,'A comma delimited list of PersonAttributeType names that should be displayed for users in _lists_','9350123d-a3fc-4715-9d85-0dfe7b91817b',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('user.viewingAttributeTypes',NULL,'A comma delimited list of PersonAttributeType names that should be displayed for users when _viewing individually_','e4100cfc-764d-468c-b498-75ee833a4164',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('use_patient_attribute.healthCenter','false','Indicates whether or not the \'health center\' attribute is shown when viewing/searching for patients','22136c70-26ec-4865-ab7e-6ed3b3c29dbd','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('use_patient_attribute.mothersName','false','Indicates whether or not mother\'s name is able to be added/viewed for a patient','aca3a61d-1835-411b-8ef9-9bd7eec1720e','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('visits.assignmentHandler','org.openmrs.api.handler.ExistingVisitAssignmentHandler','Set to the name of the class responsible for assigning encounters to visits.','6b812a4e-09ee-4513-a7ae-31fb9db9d456',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('visits.enabled','false',NULL,'b5193c3c-6998-4c7b-b2b0-9d2c653f8a6e','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('visits.enabled','false','Set to true to enable the Visits feature. This will replace the \'Encounters\' tab with a \'Visits\' tab on the dashboard.','b5193c3c-6998-4c7b-b2b0-9d2c653f8a6e','org.openmrs.customdatatype.datatype.BooleanDatatype',NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('visits.encounterTypeToVisitTypeMapping',NULL,'Specifies how encounter types are mapped to visit types when automatically assigning encounters to visits. e.g 1:1, 2:1, 3:2 in the format encounterTypeId:visitTypeId','3c6f6c0a-51fc-4206-9491-83e5dce7477d',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.allowBindEdit','false','Set to true if you want to allow editing of question bindings when designing forms.','d04bc33b-c103-4a80-a8b9-24def8b234bf',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('xforms.archive_dir','xforms/archive/%Y/%M','Directory containing the xforms archive items.  This will contain xform model xml files that have been processed and then submitted successfully into the formentry queue.','f76b1e6f-8342-482c-9d01-0f309c370fa1',NULL,NULL,NULL,NULL);

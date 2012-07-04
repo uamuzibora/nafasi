@@ -156,7 +156,7 @@ CREATE TABLE `concept` (
   CONSTRAINT `concept_datatypes` FOREIGN KEY (`datatype_id`) REFERENCES `concept_datatype` (`concept_datatype_id`),
   CONSTRAINT `user_who_changed_concept` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_retired_concept` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6257 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6258 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept` VALUES (1,0,'','',NULL,4,4,0,1,'2004-01-01 00:00:00','',1,'2005-02-16 00:00:00',NULL,NULL,NULL,'41bcf19e-8dd8-11e1-be2c-e1d7904ed235');
 INSERT INTO `concept` VALUES (2,0,'','',NULL,4,4,0,1,'2004-01-01 00:00:00','',1,'2005-03-03 00:00:00',NULL,NULL,NULL,'41bcfaf4-8dd8-11e1-be2c-e1d7904ed235');
@@ -2746,7 +2746,7 @@ INSERT INTO `concept` VALUES (6241,0,NULL,NULL,NULL,4,4,0,1,'2012-04-25 18:22:03
 INSERT INTO `concept` VALUES (6242,0,NULL,NULL,NULL,4,4,0,1,'2012-04-25 18:22:14','',NULL,NULL,NULL,NULL,NULL,'078b5eed-4791-4a92-9bd0-529065bb7eae');
 INSERT INTO `concept` VALUES (6243,0,NULL,NULL,NULL,4,5,0,1,'2012-04-27 15:00:14','',NULL,NULL,NULL,NULL,NULL,'b799a081-1c0d-43e3-a012-74b3b0731b38');
 INSERT INTO `concept` VALUES (6244,0,NULL,NULL,NULL,4,5,0,1,'2012-04-27 15:01:37','',NULL,NULL,NULL,NULL,NULL,'b5b2e6a2-52b1-434e-ab1a-647c5a5fcb73');
-INSERT INTO `concept` VALUES (6245,0,NULL,NULL,NULL,2,7,0,1,'2012-04-27 15:10:15','',NULL,NULL,NULL,NULL,NULL,'03505d68-db0f-4fa8-b27c-b091a6cc1281');
+INSERT INTO `concept` VALUES (6245,0,NULL,NULL,NULL,2,7,0,1,'2012-04-27 15:10:15',NULL,1,'2012-07-04 17:24:42',NULL,NULL,NULL,'03505d68-db0f-4fa8-b27c-b091a6cc1281');
 INSERT INTO `concept` VALUES (6246,0,NULL,NULL,NULL,4,11,0,1,'2012-04-27 15:14:19','',NULL,NULL,NULL,NULL,NULL,'1f196cda-adda-45b0-8370-03e42450bd71');
 INSERT INTO `concept` VALUES (6247,0,NULL,NULL,NULL,4,11,0,1,'2012-04-27 15:15:08','',NULL,NULL,NULL,NULL,NULL,'ad197e9e-87ec-4b2c-ab63-85fe0c841fee');
 INSERT INTO `concept` VALUES (6248,0,NULL,NULL,NULL,4,11,0,1,'2012-04-27 15:15:43','',NULL,NULL,NULL,NULL,NULL,'f7bbd145-24b2-4f42-abd1-8efb3b27f915');
@@ -2758,6 +2758,7 @@ INSERT INTO `concept` VALUES (6253,0,NULL,NULL,NULL,2,7,0,1,'2012-07-04 15:25:36
 INSERT INTO `concept` VALUES (6254,0,NULL,NULL,NULL,3,7,0,1,'2012-07-04 15:26:09',NULL,NULL,NULL,NULL,NULL,NULL,'710268f4-0c30-4be4-8360-7888f8bc4b8d');
 INSERT INTO `concept` VALUES (6255,0,NULL,NULL,NULL,3,7,0,1,'2012-07-04 15:26:40',NULL,NULL,NULL,NULL,NULL,NULL,'7c7ab47d-137c-4be4-a51c-0fc1b37eec56');
 INSERT INTO `concept` VALUES (6256,0,NULL,NULL,NULL,4,11,0,1,'2012-07-04 16:50:27',NULL,NULL,NULL,NULL,NULL,NULL,'3d3edcb2-5ca6-4ec7-84ec-32505ddc7f55');
+INSERT INTO `concept` VALUES (6257,0,NULL,NULL,NULL,4,11,0,1,'2012-07-04 17:24:04',NULL,NULL,NULL,NULL,NULL,NULL,'60176730-1ef7-41b6-883c-32ce3706377c');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_answer` (
@@ -2779,7 +2780,7 @@ CREATE TABLE `concept_answer` (
   CONSTRAINT `answers_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `answer_answer_drug_fk` FOREIGN KEY (`answer_drug`) REFERENCES `drug` (`drug_id`),
   CONSTRAINT `answer_creator` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1234 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1235 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_answer` VALUES (1,12,1115,NULL,1,'2005-01-26 00:00:00','41d6ad32-8dd8-11e1-be2c-e1d7904ed235',1);
 INSERT INTO `concept_answer` VALUES (2,12,1136,NULL,1,'2005-01-26 00:00:00','41d6b25a-8dd8-11e1-be2c-e1d7904ed235',2);
@@ -3811,9 +3812,9 @@ INSERT INTO `concept_answer` VALUES (1218,1054,6244,NULL,1,'2012-04-27 15:03:13'
 INSERT INTO `concept_answer` VALUES (1219,6245,6246,NULL,1,'2012-04-27 15:18:32','fd68924a-f175-4c40-b26d-b4ccfbfefe88',1);
 INSERT INTO `concept_answer` VALUES (1220,6245,6247,NULL,1,'2012-04-27 15:18:32','5d2a4c59-5919-4fdb-a59e-f0b3be5d92b5',2);
 INSERT INTO `concept_answer` VALUES (1221,6245,6248,NULL,1,'2012-04-27 15:18:32','eb040576-e2cb-4eec-9fb0-b9984a8fd327',3);
-INSERT INTO `concept_answer` VALUES (1222,6245,6249,NULL,1,'2012-04-27 15:18:32','76091f40-d1d4-4124-b0e3-d540ea8f7c10',4);
-INSERT INTO `concept_answer` VALUES (1223,6245,6250,NULL,1,'2012-04-27 15:18:32','1e03c9aa-f588-4fa0-855e-2d3abe39be37',5);
-INSERT INTO `concept_answer` VALUES (1224,6245,5622,NULL,1,'2012-04-27 15:18:32','4acd198c-10f3-47af-b84f-f1ca200b358a',6);
+INSERT INTO `concept_answer` VALUES (1222,6245,6249,NULL,1,'2012-04-27 15:18:32','76091f40-d1d4-4124-b0e3-d540ea8f7c10',5);
+INSERT INTO `concept_answer` VALUES (1223,6245,6250,NULL,1,'2012-04-27 15:18:32','1e03c9aa-f588-4fa0-855e-2d3abe39be37',6);
+INSERT INTO `concept_answer` VALUES (1224,6245,5622,NULL,1,'2012-04-27 15:18:32','4acd198c-10f3-47af-b84f-f1ca200b358a',7);
 INSERT INTO `concept_answer` VALUES (1225,6253,971,NULL,1,'2012-07-04 15:25:36','0798ce0d-e999-4300-b71d-dc23b7cab4f7',2);
 INSERT INTO `concept_answer` VALUES (1226,6253,5620,NULL,1,'2012-07-04 15:25:36','d7bd581b-7ddb-45c5-b1fa-638f1afc6a81',8);
 INSERT INTO `concept_answer` VALUES (1227,6253,5618,NULL,1,'2012-07-04 15:25:36','c049f5c0-a286-4c46-bbd3-dbecd513efb7',5);
@@ -3823,6 +3824,7 @@ INSERT INTO `concept_answer` VALUES (1230,6253,970,NULL,1,'2012-07-04 15:25:36',
 INSERT INTO `concept_answer` VALUES (1231,6253,973,NULL,1,'2012-07-04 15:25:36','a7c63751-f8df-4a28-abb3-029843716f34',4);
 INSERT INTO `concept_answer` VALUES (1232,6253,972,NULL,1,'2012-07-04 15:25:36','48af0b9d-898d-4aa8-80de-6a4ba4f9f6e4',3);
 INSERT INTO `concept_answer` VALUES (1233,6253,974,NULL,1,'2012-07-04 15:25:36','b7164fa0-30ba-4b0b-b8f0-f07d10ae66c4',6);
+INSERT INTO `concept_answer` VALUES (1234,6245,6257,NULL,1,'2012-07-04 17:24:42','611e7529-bd90-48f4-a222-3bba5d126059',4);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_class` (
@@ -3924,7 +3926,7 @@ CREATE TABLE `concept_description` (
   CONSTRAINT `description_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `user_who_changed_description` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_created_description` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6198 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6199 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_description` VALUES (1,1,'Anemia due to bleeding or a hemorrhagic process.','en',1,'2004-01-01 00:00:00',NULL,NULL,'41e0b7e6-8dd8-11e1-be2c-e1d7904ed235');
 INSERT INTO `concept_description` VALUES (2,2,'Anemia, due to the destruction or dissolution of red blood cells, with subsequent release of hemoglobin.','en',1,'2004-01-01 00:00:00',NULL,NULL,'41e0bf20-8dd8-11e1-be2c-e1d7904ed235');
@@ -6445,6 +6447,7 @@ INSERT INTO `concept_description` VALUES (6194,6253,'The relationship of the tre
 INSERT INTO `concept_description` VALUES (6195,6254,'The postal address of the patient\'s treatment supporter','en',1,'2012-07-04 15:26:09',NULL,NULL,'8740dc4f-7785-43c8-9f3c-3d4e560b9642');
 INSERT INTO `concept_description` VALUES (6196,6255,'The telephone number of the patient\'s treatment supporter.','en',1,'2012-07-04 15:26:40',NULL,NULL,'27fa8ff1-f947-4db8-a1f3-7fa9003826ea');
 INSERT INTO `concept_description` VALUES (6197,6256,'A program through the Kenyan Government which provides care for HIV patients','en',1,'2012-07-04 16:50:27',NULL,NULL,'1d8f8a00-d15f-40d5-a1e7-54f366935563');
+INSERT INTO `concept_description` VALUES (6198,6257,'A entry source for patients referred to CCC clinic.','en',1,'2012-07-04 17:24:04',NULL,NULL,'e466c824-8e08-43b7-97b1-db0155017fdc');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_map_type` (
@@ -6567,7 +6570,7 @@ CREATE TABLE `concept_name` (
   CONSTRAINT `name_for_concept` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `user_who_created_name` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_voided_this_name` FOREIGN KEY (`voided_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6298 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6299 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_name` VALUES (1,'ANEMIA, BLOOD LOSS','en',1,'2004-01-01 00:00:00',1,0,NULL,NULL,NULL,'41fd6abc-8dd8-11e1-be2c-e1d7904ed235','FULLY_SPECIFIED',0);
 INSERT INTO `concept_name` VALUES (2,'ANEMIA, HEMOLYSIS','en',1,'2004-01-01 00:00:00',2,0,NULL,NULL,NULL,'41fd6e36-8dd8-11e1-be2c-e1d7904ed235','FULLY_SPECIFIED',0);
@@ -10219,6 +10222,7 @@ INSERT INTO `concept_name` VALUES (6253,'TREATMENT SUPPORTER RELATIONSHIP','en',
 INSERT INTO `concept_name` VALUES (6254,'TREATMENT SUPPORTER ADDRESS','en',1,'2012-07-04 15:26:09',6295,0,NULL,NULL,NULL,'3270c549-560a-4cae-8a02-4b7ef000216b','FULLY_SPECIFIED',1);
 INSERT INTO `concept_name` VALUES (6255,'TREATMENT SUPPORTER TELEPHONE NUMBER','en',1,'2012-07-04 15:26:40',6296,0,NULL,NULL,NULL,'1b3fd6a2-89cf-45dd-8d12-da24a215669d','FULLY_SPECIFIED',1);
 INSERT INTO `concept_name` VALUES (6256,'HIV CCC PROGRAM','en',1,'2012-07-04 16:50:27',6297,0,NULL,NULL,NULL,'59a8c0e8-5992-4363-9bd4-37d919fc0838','FULLY_SPECIFIED',1);
+INSERT INTO `concept_name` VALUES (6257,'IPD-CH','en',1,'2012-07-04 17:24:04',6298,0,NULL,NULL,NULL,'8b68824b-ae56-4dab-b6ce-d1c522a5df81','FULLY_SPECIFIED',1);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `concept_name_tag` (
@@ -11726,7 +11730,7 @@ CREATE TABLE `concept_word` (
   KEY `concept_word_weight_index` (`weight`),
   CONSTRAINT `word_for` FOREIGN KEY (`concept_id`) REFERENCES `concept` (`concept_id`),
   CONSTRAINT `word_for_name` FOREIGN KEY (`concept_name_id`) REFERENCES `concept_name` (`concept_name_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14658 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14662 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 INSERT INTO `concept_word` VALUES (6581,1,'BLOOD','en',1,1.3658024691358024);
 INSERT INTO `concept_word` VALUES (6582,1,'LOSS','en',1,1.3374074074074074);
@@ -19529,8 +19533,6 @@ INSERT INTO `concept_word` VALUES (14626,6248,'AD','en',6288,1.5499999999999998)
 INSERT INTO `concept_word` VALUES (14627,6250,'DEPARTMENT','en',6290,1.3112698412698414);
 INSERT INTO `concept_word` VALUES (14628,6250,'OPD','en',6291,12.11111111111111);
 INSERT INTO `concept_word` VALUES (14629,6250,'OUTPATIENT','en',6290,2.102857142857143);
-INSERT INTO `concept_word` VALUES (14630,6245,'ENTRY','en',6284,2.622727272727273);
-INSERT INTO `concept_word` VALUES (14631,6245,'POINT','en',6284,1.418831168831169);
 INSERT INTO `concept_word` VALUES (14635,6251,'LAMIVUDINE','en',6292,1.3305555555555557);
 INSERT INTO `concept_word` VALUES (14636,6251,'AND','en',6292,1.3712121212121213);
 INSERT INTO `concept_word` VALUES (14637,6251,'STAVUDINE','en',6292,2.208333333333333);
@@ -19554,6 +19556,10 @@ INSERT INTO `concept_word` VALUES (14654,6255,'TREATMENT','en',6296,2.1666666666
 INSERT INTO `concept_word` VALUES (14655,6256,'PROGRAM','en',6297,1.375925925925926);
 INSERT INTO `concept_word` VALUES (14656,6256,'HIV','en',6297,2.95);
 INSERT INTO `concept_word` VALUES (14657,6256,'CCC','en',6297,1.4766666666666668);
+INSERT INTO `concept_word` VALUES (14658,6257,'IPD','en',6298,3.25);
+INSERT INTO `concept_word` VALUES (14659,6257,'CH','en',6298,1.5499999999999998);
+INSERT INTO `concept_word` VALUES (14660,6245,'ENTRY','en',6284,2.622727272727273);
+INSERT INTO `concept_word` VALUES (14661,6245,'POINT','en',6284,1.418831168831169);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `drug` (
@@ -19875,8 +19881,9 @@ CREATE TABLE `form` (
   CONSTRAINT `form_encounter_type` FOREIGN KEY (`encounter_type`) REFERENCES `encounter_type` (`encounter_type_id`),
   CONSTRAINT `user_who_created_form` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_last_changed_form` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `form` VALUES (1,'Adult Initial Clinic Visit','0.1',NULL,1,NULL,NULL,'Form for initial clinic attendance by an adult patient. From MoH257 Version October 2010.',1,1,'2012-07-04 17:17:12',1,'2012-07-04 17:23:26',0,NULL,NULL,NULL,'ac467a87-75c4-4af5-9b79-3c7271f7ca6f');
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `form_field` (
@@ -20227,8 +20234,9 @@ CREATE TABLE `htmlformentry_html_form` (
   CONSTRAINT `User who changed htmlformentry_htmlform` FOREIGN KEY (`changed_by`) REFERENCES `users` (`user_id`),
   CONSTRAINT `User who created htmlformentry_htmlform` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_who_retired_html_form` FOREIGN KEY (`retired_by`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `htmlformentry_html_form` VALUES (1,1,NULL,'<htmlform>\r\n	<macros>\r\n		paperFormId = MoH 257\r\n		headerColor = #3B5998\r\n		fontOnHeaderColor = white\r\n	</macros>\r\n\r\n	<style>\r\n		.section {\r\n			border: 1px solid $headerColor;\r\n			padding: 2px;\r\n			text-align: left;\r\n			margin-bottom: 1em;\r\n		}\r\n		.sectionHeader {\r\n			background-color: $headerColor;\r\n			color: $fontOnHeaderColor;\r\n			display: block;\r\n			padding: 2px;\r\n			font-weight: bold;\r\n		}\r\n		table.baseline-aligned td {\r\n			vertical-align: baseline;\r\n		}\r\n	</style>\r\n\r\n	<span style=\"float:right\">Paper Form ID: $paperFormId</span>\r\n	<h2>Comprehensive Care Clinic Patient Care Record - Initial Visit</h2>\r\n\r\n	<section headerLabel=\"Consultation Details\">\r\n		<table class=\"baseline-aligned\">\r\n			<tr>\r\n				<td><strong>Date:</strong> <encounterDate default=\"today\"/></td>\r\n				<td><strong>Location:</strong> <encounterLocation default=\"1\"/></td>\r\n				<td><strong>Provider:</strong> <encounterProvider default=\"currentUser\"/></td>\r\n			</tr>\r\n		</table>\r\n	</section>\r\n\r\n	<section headerLabel=\"Patient Profile\">\r\n		<table class=\"baseline-aligned\">\r\n			<tr>\r\n				<td>Unique Patient Number:</td>\r\n				<td><lookup expression=\"patient.getPatientIdentifier(3)\"/></td>\r\n			</tr>\r\n			<tr>\r\n				<td>Patient\'s Name:</td>\r\n				<td><lookup class=\"value\" expression=\"patient.personName\"/></td>\r\n			</tr>\r\n			<tr>\r\n				<td>Date of Birth:</td>\r\n				<td><lookup class=\"value\" complexExpression=\"#if( \\$patient.birthdateEstimated ) ~#end\"/> <lookup class=\"value\" expression=\"patient.birthdate\"/>\r\n					(Age: <lookup class=\"value\" expression=\"patient.age\"/>)</td>\r\n			</tr>\r\n			<tr>\r\n				<td>District:</td>\r\n				<td><lookup expression=\"patient.personAddress.address1\"/></td>\r\n			</tr>\r\n		</table>\r\n	</section>\r\n	<section headerLabel=\"Treatment Supporter\">\r\n		<table class=\"baseline-aligned\">\r\n			<tr>\r\n				<td>Name:</td>\r\n				<td><obs conceptId=\"6252\"/></td>\r\n			</tr>\r\n			<tr>\r\n				<td>Relationship:</td>\r\n				<td><obs conceptId=\"6253\"/></td>\r\n			</tr>\r\n			<tr>\r\n				<td>Postal Address:</td>\r\n				<td><obs conceptId=\"6254\"/></td>\r\n			</tr>\r\n			<tr>\r\n				<td>Telephone Number:</td>\r\n				<td><obs conceptId=\"6255\"/></td>\r\n			</tr>		\r\n		</table>\r\n	</section>\r\n<section headerLabel=\"Patient Source\">\r\n		<table class=\"baseline-aligned\">\r\n<tr><td>Entry Point:</td><td><obs conceptId=\"6245\"/></td></tr>\r\n<tr><td>Date started ART:</td><td><enrollInProgram programId=\"1\" showDate=\"true\"/></td></tr>\r\n</table>\r\n</section>\r\n\r\n	<submit/>\r\n</htmlform>',1,'2012-07-04 17:17:12',1,'2012-07-04 17:23:26',0,'2b928ea3-32f5-4a77-80b6-6e8364cd34eb',NULL,NULL,NULL,NULL);
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `liquibasechangelog` (

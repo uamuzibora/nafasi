@@ -19962,7 +19962,7 @@ INSERT INTO `global_property` VALUES ('concept.none','1107','Concept id of the c
 INSERT INTO `global_property` VALUES ('concept.otherNonCoded','5622','Concept id of the concept defining the OTHER NON-CODED concept','a84402f8-8cbc-45b1-b3c8-c2f20398ff97',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('concept.patientDied','1742','Concept id of the concept defining the PATIENT DIED concept','40638ed5-0804-4041-8a2a-f8ec145acaf8',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('concept.problemList','1284','The concept id of the PROBLEM LIST concept.  This concept_id is presumed to be the generic grouping (obr) concept in hl7 messages.  An obs_group row is not created for this concept.','0e8c7b7a-9579-4017-820f-e98f246b6d7b',NULL,NULL,NULL,NULL);
-INSERT INTO `global_property` VALUES ('concept.reasonExitedCare',NULL,'Concept id of the concept defining the REASON EXITED CARE concept','db3edd57-77af-4f77-b62b-1001765b08ab',NULL,NULL,NULL,NULL);
+INSERT INTO `global_property` VALUES ('concept.reasonExitedCare','6153','Concept id of the concept defining the REASON EXITED CARE concept','db3edd57-77af-4f77-b62b-1001765b08ab',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('concept.reasonOrderStopped','6098','Concept id of the concept defining the REASON ORDER STOPPED concept','2d091c73-7d47-4869-9f4f-c724655d6ea3',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('concept.true','1','Concept id of the concept defining the TRUE boolean concept','e76de7ef-bf15-4c33-bae1-5239b30472ce',NULL,NULL,NULL,NULL);
 INSERT INTO `global_property` VALUES ('concept.weight','5089','Concept id of the concept defining the WEIGHT concept','b9c898e0-84b8-45d3-b9e8-2517d1b0af21',NULL,NULL,NULL,NULL);

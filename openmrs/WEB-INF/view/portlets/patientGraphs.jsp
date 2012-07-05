@@ -44,7 +44,7 @@ table#labTestTable th {
 	}
 %>
 
-<c:set var="graphConceptString" value="${userConcepts}" />
+<c:set var="graphConceptString" value="5497-21-${userConcepts}" />
 	
 	<div class="boxHeader${model.patientVariation}"><spring:message code="patientDashboard.graphs"/></div>
 	<div class="box${model.patientVariation}">

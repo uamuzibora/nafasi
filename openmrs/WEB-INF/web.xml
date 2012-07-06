@@ -5,7 +5,18 @@
 	version="2.4">
 
 	<display-name>OpenMRS</display-name>
-	<display-name>An Open-Source EMR System</display-name> 
+	<display-name>An Open-Source EMR System</display-name>
+
+	<!-- Require HTTPS for everything -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>HTTPSOnly</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
 
 	<context-param>
         <param-name>contextConfigLocation</param-name>

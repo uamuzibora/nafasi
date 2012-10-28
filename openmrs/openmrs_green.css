@@ -4,17 +4,17 @@
 }
 
 .box, .boxHeader, .boxRed, .boxHeaderRed, .boxExited, .boxHeaderExited {
-	border: 1px solid #1aac9b;
+	border: 1px solid #3B5998;
 }
 
 .boxHeader {
-	background-color: #1aac9b;
+	background-color: #3B5998;
 }
 
 #patientTabs {
-	border-bottom: 1px solid #1aac9b;
+	border-bottom: 1px solid #3B5998;
 }
 
 #patientTabs a:link, #patientTabs a:visited {
-	border: 1px solid #1aac9b;
+	border: 1px solid #3B5998;
 }

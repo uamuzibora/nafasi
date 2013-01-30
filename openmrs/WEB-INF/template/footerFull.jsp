@@ -46,17 +46,22 @@ try {
 window.onload = function(){
 	var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
 	var t = performance.timing;
-	var totaltime = t.loadEventStart - t.navigationStart;
+	var totaltime = t.loadEventStop - t.navigationStart;
+	var networktime = t.requestStart - t.navigationStart;
 	var servertime = t.responseStart - t.requestStart;
-	var browsertime = t.loadEventStart - t.responseEnd;
-	var transmissiontime = t.responseEnd - t.responseStart;
+	var downloadtime = t.responseEnd - t.responseStart;
+	var browsertime = t.loadEventEnd - t.responseEnd;
 	var n = performance.navigation;
 	var navtype = n.type;
-	piwikTracker.setCustomVariable (1, 'Total Load Time', totaltime, 'page');
-	piwikTracker.setCustomVariable (2, 'Server Processing Time', servertime, 'page');
-	piwikTracker.setCustomVariable (3, 'Browser Processing Time', browsertime, 'page');
-	piwikTracker.setCustomVariable (4, 'Transmission Time', transmissiontime, 'page');
-	piwikTracker.setCustomVariable (5, 'Navigation Type', navtype, 'page');
+	if (navtype = 0)
+  	{
+ 		piwikTracker.setCustomVariable (1, 'Page Load Time', totaltime, 'page');
+		piwikTracker.setCustomVariable (2, 'Network Time', networktime, 'page');
+		piwikTracker.setCustomVariable (3, 'Server Response Time', servertime, 'page');
+		piwikTracker.setCustomVariable (4, 'Page Download Time', downloadtime, 'page');
+		piwikTracker.setCustomVariable (5, 'Browser Time', browsertime, 'page');
+		
+  	}
 	piwikTracker.trackPageView();
 	piwikTracker.enableLinkTracking();
 }

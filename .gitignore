@@ -1,1 +1,9 @@
 .DS_Store
+openmrs/WEB-INF/view/module/xforms/resources/formdesigner/*.cache.png
+openmrs/WEB-INF/view/module/xforms/resources/formdesigner/*.cache.html
+openmrs/WEB-INF/view/module/xforms/resources/formdesigner/*.cache.jpg
+openmrs/WEB-INF/view/module/xforms/resources/formdesigner/*.cache.gif
+openmrs/WEB-INF/view/module/xforms/resources/formrunner/*.cache.png
+openmrs/WEB-INF/view/module/xforms/resources/formrunner/*.cache.html
+openmrs/WEB-INF/view/module/xforms/resources/formrunner/*.cache.gif
+openmrs/WEB-INF/view/module/xforms/resources/formrunner/*.cache.jpg

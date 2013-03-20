@@ -507,7 +507,7 @@ table.patientTreatmentPrograms td {
 	width: 7em;
 }
 .box, .boxHeader, .boxRed, .boxHeaderRed, .boxExited, .boxHeaderExited {
-	border: 1px solid #1aac9b;
+	border: 1px solid #3B5998;
 	width: 100%;
 	padding: 5px 2px 5px 2px;
 	text-align: left;
@@ -533,7 +533,7 @@ table.patientTreatmentPrograms td {
 }
 
 .boxHeader {
-	background-color: #1aac9b;
+	background-color: #3B5998;
 	color: white;
 	display: block;
 	padding: 2px;
@@ -1395,4 +1395,12 @@ td.dataTables_empty{
 }
 td.dataTables_empty:hover{
 	background-color: #BBCCF7;
+}
+
+#patientTabs {
+	border-bottom: 1px solid #3B5998;
+}
+
+#patientTabs a:link, #patientTabs a:visited {
+	border: 1px solid #3B5998;
 }

@@ -18,7 +18,7 @@
 	<head>
 		<openmrs:htmlInclude file="/openmrs.js" />
 		<openmrs:htmlInclude file="/scripts/openmrsmessages.js" appendLocale="true" />
-		<openmrs:htmlInclude file="/openmrs.css" />
+		<openmrs:htmlInclude file="/openmrs.min.css" />
 		<openmrs:htmlInclude file="/dwr/engine.js" />
 		<openmrs:htmlInclude file="/dwr/interface/DWRAlertService.js" />
 		<c:if test="${empty DO_NOT_INCLUDE_JQUERY}">

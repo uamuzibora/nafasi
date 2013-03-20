@@ -26,7 +26,38 @@
 		</c:choose>
 
 		<openmrs:htmlInclude file="/openmrs.min.css" />
-
+		
+		<openmrs:htmlInclude file="/openmrs.concatenated.js" />
+		<openmrs:htmlInclude file="/scripts/openmrsmessages.js" appendLocale="true" />
+		<openmrs:htmlInclude file="/dwr/engine.js" />
+		<script type="text/javascript">
+			<c:if test="${empty DO_NOT_INCLUDE_JQUERY}">
+				var $j = jQuery.noConflict();
+			</c:if>
+			/* variable used in js to know the context path */
+			var openmrsContextPath = '${pageContext.request.contextPath}';
+			var dwrLoadingMessage = '<spring:message code="general.loading" />';
+			var jsDateFormat = '<openmrs:datePattern localize="false"/>';
+			var jsTimeFormat = '<openmrs:timePattern format="jquery" localize="false"/>';
+			var jsLocale = '<%= org.openmrs.api.context.Context.getLocale() %>';
+			
+			/* prevents users getting false dwr errors msgs when leaving pages */
+			var pageIsExiting = false;
+			if (typeof(jQuery) != "undefined")
+			    jQuery(window).bind('beforeunload', function () { pageIsExiting = true; } );
+			
+			var handler = function(msg, ex) {
+				if (!pageIsExiting) {
+					var div = document.getElementById("openmrs_dwr_error");
+					div.style.display = ""; // show the error div
+					var msgDiv = document.getElementById("openmrs_dwr_error_msg");
+					msgDiv.innerHTML = '<spring:message code="error.dwr"/>' + " <b>" + msg + "</b>";
+				}
+				
+			};
+			dwr.engine.setErrorHandler(handler);
+			dwr.engine.setWarningHandler(handler);
+		</script>
 		<link rel="shortcut icon" type="image/ico" href="<openmrs:contextPath/><spring:theme code='favicon' />">
 		<link rel="icon" type="image/png" href="<openmrs:contextPath/><spring:theme code='favicon.png' />">
 		

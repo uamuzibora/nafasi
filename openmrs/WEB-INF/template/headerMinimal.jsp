@@ -16,17 +16,10 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
-		<openmrs:htmlInclude file="/openmrs.js" />
+		<openmrs:htmlInclude file="/openmrs.concatenated.js" />
 		<openmrs:htmlInclude file="/scripts/openmrsmessages.js" appendLocale="true" />
 		<openmrs:htmlInclude file="/openmrs.min.css" />
 		<openmrs:htmlInclude file="/dwr/engine.js" />
-		<c:if test="${empty DO_NOT_INCLUDE_JQUERY}">
-			<openmrs:htmlInclude file="/scripts/jquery/jquery.min.js" />
-			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui.custom.min.js" />
-            <openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-timepicker-addon.js" />
-			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-datepicker-i18n.js" />
-			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-timepicker-i18n.js" />
-		</c:if>
 		<link rel="shortcut icon" type="image/ico" href="<openmrs:contextPath/><spring:theme code='favicon' />">
 		<link rel="icon" type="image/png" href="<openmrs:contextPath/><spring:theme code='favicon.png' />">
 

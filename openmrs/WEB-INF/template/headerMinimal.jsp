@@ -25,9 +25,9 @@
 			</c:otherwise>
 		</c:choose>
 
-		<openmrs:htmlInclude file="/openmrs.min.css" />
+		<openmrs:htmlInclude file="/css/openmrs.min.css" />
 		
-		<openmrs:htmlInclude file="/openmrs.concatenated.js" />
+		<openmrs:htmlInclude file="/scripts/openmrs.concatenated.js" />
 		<openmrs:htmlInclude file="/scripts/openmrsmessages.js" appendLocale="true" />
 		<openmrs:htmlInclude file="/dwr/engine.js" />
 		<script type="text/javascript">

@@ -25,10 +25,10 @@
 			</c:otherwise>
 		</c:choose>
 
-		<openmrs:htmlInclude file="/openmrs.min.css" />
+		<openmrs:htmlInclude file="/css/openmrs.min.css" />
 
 			<!-- Le Javascript -->
-		<openmrs:htmlInclude file="/openmrs.concatenated.js" />
+		<openmrs:htmlInclude file="/scripts/openmrs.concatenated.js" />
 		<openmrs:htmlInclude file="/scripts/openmrsmessages.js" appendLocale="true" />
 		<openmrs:htmlInclude file="/dwr/engine.js" />
 		<openmrs:htmlInclude file="/dwr/interface/DWRAlertService.js" />

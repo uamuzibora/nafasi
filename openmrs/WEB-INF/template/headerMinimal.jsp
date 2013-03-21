@@ -24,12 +24,17 @@
 				<title><spring:message code="openmrs.title"/></title>
 			</c:otherwise>
 		</c:choose>
-
-		<openmrs:htmlInclude file="/css/openmrs.min.css" />
-		
-		<openmrs:htmlInclude file="/scripts/openmrs.concatenated.js" />
+		<openmrs:htmlInclude file="/openmrs.min.css" />
+		<openmrs:htmlInclude file="/openmrs.js" />
 		<openmrs:htmlInclude file="/scripts/openmrsmessages.js" appendLocale="true" />
 		<openmrs:htmlInclude file="/dwr/engine.js" />
+		<c:if test="${empty DO_NOT_INCLUDE_JQUERY}">
+			<openmrs:htmlInclude file="/scripts/jquery/jquery.min.js" />
+			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui.custom.min.js" />
+            <openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-timepicker-addon.js" />
+			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-datepicker-i18n.js" />
+			<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-timepicker-i18n.js" />
+		</c:if>
 		<script type="text/javascript">
 			<c:if test="${empty DO_NOT_INCLUDE_JQUERY}">
 				var $j = jQuery.noConflict();

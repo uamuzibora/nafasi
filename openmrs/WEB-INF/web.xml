@@ -535,5 +535,11 @@
 		<error-code>404</error-code>
 		<location>/missing.htm</location>
 	</error-page>
+
+	<!-- Added by Kenrick on 2013-03-23 to prevent JSESSIONIDs in URLs (we use cookies anyhow) -->
+	<session-config>
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
+	<!-- End of addition by Kenrick -->
 	
 </web-app>
